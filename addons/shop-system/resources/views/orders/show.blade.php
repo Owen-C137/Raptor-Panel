@@ -59,7 +59,18 @@
                             </tr>
                             <tr>
                                 <td><strong>Payment Status:</strong></td>
-                                <td>{{ $order->isActive() ? 'Paid' : 'Pending' }}</td>
+                                <td>
+                                    @php $paymentStatus = $order->getPaymentStatus(); @endphp
+                                    @if($paymentStatus === 'completed')
+                                        <span class="badge bg-success">Paid</span>
+                                    @elseif($paymentStatus === 'failed')
+                                        <span class="badge bg-danger">Failed</span>
+                                    @elseif($paymentStatus === 'refunded')
+                                        <span class="badge bg-warning">Refunded</span>
+                                    @else
+                                        <span class="badge bg-secondary">Pending</span>
+                                    @endif
+                                </td>
                             </tr>
                         </table>
                     </div>
@@ -245,7 +256,7 @@
                             
                             @if($order->server)
                                 <div class="text-end">
-                                    <a href="{{ route('server.index', $order->server->uuidShort) }}" class="btn btn-primary">
+                                    <a href="/server/{{ $order->server->uuidShort }}" class="btn btn-primary">
                                         <i class="fas fa-external-link-alt"></i>
                                         Manage Server
                                     </a>

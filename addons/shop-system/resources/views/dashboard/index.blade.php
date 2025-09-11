@@ -266,8 +266,8 @@
                                 </div>
                                 
                                 <div class="col-md-2 text-end">
-                                    @if($service->server_id)
-                                        <a href="{{ route('server.index', $service->server_id) }}" 
+                                    @if($service->server_id && $service->server)
+                                        <a href="/server/{{ $service->server->uuidShort }}" 
                                            class="btn btn-sm btn-outline-primary">
                                             <i class="fas fa-cog"></i>
                                             Manage

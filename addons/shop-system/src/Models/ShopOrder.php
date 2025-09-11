@@ -494,4 +494,38 @@ class ShopOrder extends Model
         
         return $config['user_variables'];
     }
+
+    /**
+     * Check if the payment for this order has been completed.
+     */
+    public function isPaymentCompleted(): bool
+    {
+        return $this->payments()->where('status', 'completed')->exists();
+    }
+
+    /**
+     * Get the payment status for this order.
+     */
+    public function getPaymentStatus(): string
+    {
+        $latestPayment = $this->payments()->latest()->first();
+        
+        if (!$latestPayment) {
+            return 'pending';
+        }
+        
+        return $latestPayment->status;
+    }
+
+    /**
+     * Check if the user can download an invoice for this order.
+     */
+    public function canDownloadInvoice(): bool
+    {
+        // Allow invoice download for paid orders or orders in processing
+        return $this->isPaymentCompleted() || in_array($this->status, [
+            self::STATUS_ACTIVE,
+            self::STATUS_PROCESSING
+        ]);
+    }
 }

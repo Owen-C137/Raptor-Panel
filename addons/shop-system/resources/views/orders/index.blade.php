@@ -154,8 +154,8 @@
                                                 </div>
                                                 
                                                 <div class="col-md-3 text-end">
-                                                    @if($item->server_id)
-                                                        <a href="{{ route('server.index', $item->server_id) }}" 
+                                                    @if($item->server_id && $item->server)
+                                                        <a href="/server/{{ $item->server->uuidShort }}" 
                                                            class="btn btn-sm btn-outline-primary">
                                                             <i class="fas fa-external-link-alt"></i>
                                                             Manage Server

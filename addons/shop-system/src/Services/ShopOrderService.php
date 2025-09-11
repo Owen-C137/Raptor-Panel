@@ -12,6 +12,7 @@ use Pterodactyl\Models\Server;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\EggVariable;
 use Pterodactyl\Services\Servers\ServerCreationService;
+use Pterodactyl\Services\Allocations\AssignmentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -20,6 +21,7 @@ class ShopOrderService
     public function __construct(
         private ShopOrderRepository $repository,
         private ServerCreationService $serverCreationService,
+        private AssignmentService $assignmentService,
         private WalletService $walletService,
         private ShopConfigService $configService,
     ) {}
@@ -423,7 +425,19 @@ class ShopOrderService
 
         // Get a simple node and allocation
         $nodeId = 1; // Use the first available node
-        $allocationId = 3; // Use a predefined allocation
+        $node = \Pterodactyl\Models\Node::find($nodeId);
+        if (!$node) {
+            throw new \RuntimeException('No available nodes for server creation');
+        }
+
+        // Smart allocation selection - find or create allocation
+        $allocation = $this->findOrCreateAllocation($node);
+        
+        \Log::info("🎯 Allocation selected", [
+            'allocation_id' => $allocation->id,
+            'ip' => $allocation->ip,
+            'port' => $allocation->port
+        ]);
 
         // Merge user variables with default egg variables
         $environment = $this->mergeEnvironmentVariables($egg, $userVariables);
@@ -442,7 +456,7 @@ class ShopOrderService
             'egg_id' => $egg->id,
             'nest_id' => $egg->nest_id,
             'node_id' => $nodeId,
-            'allocation_id' => $allocationId,
+            'allocation_id' => $allocation->id,
             'memory' => $plan->memory,
             'swap' => $plan->swap,
             'disk' => $plan->disk,
@@ -749,16 +763,13 @@ class ShopOrderService
             'environment' => $this->getSimpleEnvironmentVariables($egg),
         ];
 
-        // Simple node/allocation selection
+        // Simple node/allocation selection with auto-creation
         $node = $this->selectSimpleNode($plan);
         if (!$node) {
             throw new \RuntimeException('No available nodes for this plan');
         }
         
         $allocation = $this->selectSimpleAllocation($node);
-        if (!$allocation) {
-            throw new \RuntimeException('No available allocations on selected node');
-        }
 
         $serverData['node_id'] = $node->id;
         $serverData['allocation_id'] = $allocation->id;
@@ -792,13 +803,11 @@ class ShopOrderService
     }
 
     /**
-     * Simple allocation selection.
+     * Smart allocation selection with auto-creation.
      */
-    private function selectSimpleAllocation(\Pterodactyl\Models\Node $node): ?\Pterodactyl\Models\Allocation
+    private function selectSimpleAllocation(\Pterodactyl\Models\Node $node): \Pterodactyl\Models\Allocation
     {
-        return \Pterodactyl\Models\Allocation::where('node_id', $node->id)
-            ->whereNull('server_id')
-            ->first();
+        return $this->findOrCreateAllocation($node);
     }
 
     /**
@@ -906,5 +915,90 @@ class ShopOrderService
         $fallbackImage = 'ghcr.io/pterodactyl/yolks:java_17';
         \Log::info("Using fallback image: {$fallbackImage}");
         return $fallbackImage;
+    }
+
+    /**
+     * Smart allocation management - find available allocation or create new ones.
+     */
+    private function findOrCreateAllocation(\Pterodactyl\Models\Node $node): \Pterodactyl\Models\Allocation
+    {
+        // First, try to find an available allocation
+        $allocation = \Pterodactyl\Models\Allocation::where('node_id', $node->id)
+            ->whereNull('server_id')
+            ->first();
+
+        if ($allocation) {
+            \Log::info("🎯 Found existing available allocation", [
+                'allocation_id' => $allocation->id,
+                'ip' => $allocation->ip,
+                'port' => $allocation->port
+            ]);
+            return $allocation;
+        }
+
+        // No available allocation found, create new ones
+        \Log::info("⚠️ No available allocations found, creating new ones");
+        
+        try {
+            $this->createAllocationsForNode($node);
+            
+            // Try to find an allocation again after creation
+            $allocation = \Pterodactyl\Models\Allocation::where('node_id', $node->id)
+                ->whereNull('server_id')
+                ->first();
+                
+            if (!$allocation) {
+                throw new \RuntimeException('Failed to create allocations for node');
+            }
+            
+            \Log::info("✅ Created and selected new allocation", [
+                'allocation_id' => $allocation->id,
+                'ip' => $allocation->ip,
+                'port' => $allocation->port
+            ]);
+            
+            return $allocation;
+            
+        } catch (\Exception $e) {
+            \Log::error("❌ Failed to create allocations for node", [
+                'node_id' => $node->id,
+                'error' => $e->getMessage()
+            ]);
+            throw new \RuntimeException("Failed to create allocations: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create allocations for a node using a standard port range.
+     */
+    private function createAllocationsForNode(\Pterodactyl\Models\Node $node): void
+    {
+        // Use the node's primary IP or fall back to a standard IP
+        $nodeIp = $node->fqdn ?? $node->scheme . '://' . $node->fqdn;
+        
+        // Extract just the IP/hostname without protocol
+        $ip = parse_url($nodeIp, PHP_URL_HOST) ?? $node->fqdn;
+        if (!$ip) {
+            $ip = '0.0.0.0'; // Fallback to bind all interfaces
+        }
+
+        // Create allocations with a standard port range for game servers
+        $allocationData = [
+            'allocation_ip' => $ip,
+            'allocation_ports' => '25565-25575', // Standard Minecraft-like port range
+        ];
+
+        \Log::info("🔨 Creating allocations for node", [
+            'node_id' => $node->id,
+            'ip' => $ip,
+            'port_range' => $allocationData['allocation_ports']
+        ]);
+
+        $this->assignmentService->handle($node, $allocationData);
+        
+        \Log::info("✅ Successfully created allocations for node", [
+            'node_id' => $node->id,
+            'ip' => $ip
+        ]);
     }
 }
