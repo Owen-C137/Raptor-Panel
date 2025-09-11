@@ -24,6 +24,19 @@
     </div>
 </div>
 @endif
+
+{{-- Initial Loading State --}}
+<div class="row" id="initial-loading">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-spinner fa-spin fa-3x mb-3 text-primary"></i>
+                <h4>Loading Your Cart</h4>
+                <p class="text-muted">Please wait while we load your cart items...</p>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="row">
     <div class="col-12">
         <div class="d-flex align-items-center justify-content-between mb-4">
@@ -42,7 +55,7 @@
     </div>
 </div>
 
-<div class="row" id="cart-container">
+<div class="row d-none" id="cart-container">
     {{-- Cart Items --}}
     <div class="col-lg-8">
         <div class="cart-items" id="cart-items">
@@ -123,9 +136,10 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
+@parent
 <script>
-    console.log('Cart script starting...');
+    console.log('🛒 Cart script initializing...');
     
     // Create Shop object if it doesn't exist to bridge with global functions
     if (typeof Shop === 'undefined') {
@@ -154,55 +168,82 @@
         console.log('📍 Current URL:', window.location.href);
         console.log('🎯 Cart summary URL:', '{{ route("shop.cart.summary") }}');
         
-        document.getElementById('cart-items').innerHTML = '<div class="text-center py-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading cart items...</span></div></div>';
-        document.getElementById('cart-summary-content').innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Calculating...</span></div></div>';
+        // Show initial loading state
+        const initialLoading = document.getElementById('initial-loading');
+        const cartContainer = document.getElementById('cart-container');
+        const emptyCart = document.getElementById('empty-cart');
+        
+        console.log('🔍 Elements found:', {
+            initialLoading: !!initialLoading,
+            cartContainer: !!cartContainer,
+            emptyCart: !!emptyCart
+        });
+        
+        if (initialLoading) initialLoading.style.display = 'block';
+        if (cartContainer) cartContainer.classList.add('d-none');
+        if (emptyCart) emptyCart.style.display = 'none';
 
-        console.log('📤 Making fetch request to cart summary...');
-        fetch('{{ route("shop.cart.summary") }}', {
+        // Set a timeout to prevent infinite loading
+        const loadingTimeout = setTimeout(() => {
+            console.log('⏰ Loading timeout reached, showing empty cart');
+            if (initialLoading) initialLoading.style.display = 'none';
+            showEmptyCart();
+        }, 10000); // 10 second timeout
+
+        console.log('📤 Making AJAX request to cart summary...');
+        $.ajax({
+            url: '{{ route("shop.cart.summary") }}',
             method: 'GET',
+            dataType: 'json',
             headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-Requested-With': 'XMLHttpRequest'
             },
-            credentials: 'same-origin'
-        })
-            .then(response => {
-                console.log('📨 Response received:', response);
-                console.log('📊 Response status:', response.status);
-                console.log('📋 Response headers:', [...response.headers.entries()]);
-                console.log('✅ Response ok:', response.ok);
+            beforeSend: function(xhr) {
+                console.log('� jQuery AJAX request starting...');
+                xhr.setRequestHeader('Accept', 'application/json');
+                xhr.setRequestHeader('Content-Type', 'application/json');
+            },
+            success: function(data) {
+                clearTimeout(loadingTimeout); // Clear timeout on success
+                console.log('🎉 Cart data received via jQuery:', data);
+                console.log('🔢 Data type:', typeof data);
+                console.log('✅ Data success:', data.success);
+                console.log('📦 Data items:', data.items);
+                console.log('🔢 Items count:', data.items ? data.items.length : 'undefined');
                 
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        throw new Error(`Authentication required! User needs to log in. Status: ${response.status}`);
-                    } else if (response.status === 419) {
-                        throw new Error(`Session expired! Please refresh the page. Status: ${response.status}`);
-                    } else {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+                // Hide initial loading
+                if (initialLoading) {
+                    console.log('🚫 Hiding initial loading');
+                    initialLoading.style.display = 'none';
                 }
                 
-                return response.json();
-            })
-            .then(data => {
-                console.log('🎉 Cart data received:', data);
                 if (data && data.success) {
+                    console.log('✅ Data success is true, calling renderCart');
                     renderCart(data);
                 } else {
                     console.log('⚠️ Data success is false or missing, showing empty cart');
+                    console.log('📊 Full data object:', JSON.stringify(data, null, 2));
                     showEmptyCart();
                 }
-            })
-            .catch(error => {
-                console.error('❌ Error loading cart:', error);
-                console.error('📝 Error details:', error.message);
-                console.error('📚 Error stack:', error.stack);
+            },
+            error: function(xhr, status, error) {
+                clearTimeout(loadingTimeout); // Clear timeout on error
+                console.error('❌ jQuery AJAX Error:', error);
+                console.error('📝 Status:', status);
+                console.error('📚 XHR:', xhr);
+                console.error('📊 Response Text:', xhr.responseText);
+                
+                // Hide initial loading
+                if (initialLoading) {
+                    console.log('🚫 Hiding initial loading due to error');
+                    initialLoading.style.display = 'none';
+                }
                 
                 if (typeof Shop !== 'undefined' && Shop.showNotification) {
-                    if (error.message.includes('Authentication required')) {
+                    if (xhr.status === 401) {
                         Shop.showNotification('warning', 'Please log in to view your cart.');
-                    } else if (error.message.includes('Session expired')) {
+                    } else if (xhr.status === 419) {
                         Shop.showNotification('warning', 'Session expired. Please refresh the page.');
                     } else {
                         Shop.showNotification('error', 'Failed to load cart items.');
@@ -211,7 +252,8 @@
                     console.log('🚫 Shop object not available for notification');
                 }
                 showEmptyCart();
-            });
+            }
+        });
     }
     
     function renderCart(data) {
@@ -228,8 +270,16 @@
         console.log('Rendering cart with items...');
         
         // Show cart content and hide empty cart
-        document.getElementById('cart-container').style.display = 'block';
-        document.getElementById('empty-cart').style.display = 'none';
+        const cartContainer = document.getElementById('cart-container');
+        const emptyCart = document.getElementById('empty-cart');
+        
+        if (cartContainer) {
+            cartContainer.style.display = '';
+            cartContainer.classList.remove('d-none');
+        }
+        if (emptyCart) {
+            emptyCart.style.display = 'none';
+        }
         
         // Build cart items HTML
         let cartItemsHtml = '';
@@ -259,13 +309,13 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="item-pricing">
-                                        <div class="item-price">$${item.plan.price}</div>
-                                        ${item.plan.setup_fee > 0 ? `<small class="text-muted">+$${item.plan.setup_fee} setup</small>` : ''}
+                                        <div class="item-price">$${parseFloat(item.plan.price).toFixed(2)}</div>
+                                        ${parseFloat(item.plan.setup_fee) > 0 ? `<small class="text-muted">+$${parseFloat(item.plan.setup_fee).toFixed(2)} setup</small>` : ''}
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-center">
-                                        <strong>$${item.subtotal.toFixed(2)}</strong>
+                                        <strong>$${parseFloat(item.subtotal).toFixed(2)}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -315,11 +365,25 @@
         console.log('cart-container element:', document.getElementById('cart-container'));
         console.log('empty-cart element:', document.getElementById('empty-cart'));
         
+        // Clear any loading content
+        const cartItems = document.getElementById('cart-items');
+        const cartSummary = document.getElementById('cart-summary-content');
+        
+        if (cartItems) {
+            cartItems.innerHTML = '';
+            console.log('Cleared cart-items content');
+        }
+        
+        if (cartSummary) {
+            cartSummary.innerHTML = '';
+            console.log('Cleared cart-summary-content');
+        }
+        
         const cartContainer = document.getElementById('cart-container');
         const emptyCart = document.getElementById('empty-cart');
         
         if (cartContainer) {
-            cartContainer.style.display = 'none';
+            cartContainer.classList.add('d-none');
             console.log('Hidden cart-container');
         } else {
             console.error('cart-container element not found!');
@@ -425,9 +489,10 @@
         loadCart();
     });
 </script>
-@endpush
+@endsection
 
-@push('styles')
+@section('styles')
+@parent
 <style>
 .cart-item {
     transition: all 0.3s ease;
@@ -473,6 +538,30 @@
     padding: 3rem 1.5rem;
 }
 
+/* Ensure Bootstrap grid layout integrity */
+#cart-container .row {
+    margin: 0;
+}
+
+#cart-container .col-lg-8,
+#cart-container .col-lg-4 {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Prevent Order Summary from floating */
+.sticky-top {
+    position: sticky !important;
+    top: 20px !important;
+}
+
+@media (max-width: 991px) {
+    .sticky-top {
+        position: relative !important;
+        top: 0 !important;
+    }
+}
+
 @media (max-width: 768px) {
     .cart-item .row > div {
         margin-bottom: 1rem;
@@ -485,4 +574,4 @@
     }
 }
 </style>
-@endpush
+@endsection
