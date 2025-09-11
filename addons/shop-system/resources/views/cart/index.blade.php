@@ -3,6 +3,27 @@
 @section('shop-title', 'Shopping Cart')
 
 @section('shop-content')
+{{-- Debug Info Panel --}}
+@if(config('app.debug'))
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6><i class="fas fa-info-circle"></i> Debug Information</h6>
+            <ul class="mb-0">
+                <li><strong>Authentication Status:</strong> {{ auth()->check() ? 'Logged In' : 'Guest' }}</li>
+                @auth
+                    <li><strong>User ID:</strong> {{ auth()->id() }}</li>
+                    <li><strong>User Name:</strong> {{ auth()->user()->name_first }} {{ auth()->user()->name_last }}</li>
+                    <li><strong>User Email:</strong> {{ auth()->user()->email }}</li>
+                @endauth
+                <li><strong>Route Name:</strong> {{ request()->route()->getName() }}</li>
+                <li><strong>Request URL:</strong> {{ request()->fullUrl() }}</li>
+                <li><strong>Current Time:</strong> {{ now() }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+@endif
 <div class="row">
     <div class="col-12">
         <div class="d-flex align-items-center justify-content-between mb-4">
@@ -127,37 +148,84 @@
     }
     
     function loadCart() {
-        console.log('Loading cart...');
+        console.log('🛒 Starting loadCart()');
+        console.log('🔗 Auth status:', '{{ auth()->check() ? "authenticated" : "guest" }}');
+        console.log('👤 User ID:', '{{ auth()->id() ?? "none" }}');
+        console.log('📍 Current URL:', window.location.href);
+        console.log('🎯 Cart summary URL:', '{{ route("shop.cart.summary") }}');
+        
         document.getElementById('cart-items').innerHTML = '<div class="text-center py-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading cart items...</span></div></div>';
         document.getElementById('cart-summary-content').innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Calculating...</span></div></div>';
 
-        fetch('{{ route("shop.cart.summary") }}')
+        console.log('📤 Making fetch request to cart summary...');
+        fetch('{{ route("shop.cart.summary") }}', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+            },
+            credentials: 'same-origin'
+        })
             .then(response => {
-                console.log('Response status:', response.status);
+                console.log('📨 Response received:', response);
+                console.log('📊 Response status:', response.status);
+                console.log('📋 Response headers:', [...response.headers.entries()]);
+                console.log('✅ Response ok:', response.ok);
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error(`Authentication required! User needs to log in. Status: ${response.status}`);
+                    } else if (response.status === 419) {
+                        throw new Error(`Session expired! Please refresh the page. Status: ${response.status}`);
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                }
+                
                 return response.json();
             })
             .then(data => {
-                console.log('Cart data received:', data);
-                if (data.success) {
+                console.log('🎉 Cart data received:', data);
+                if (data && data.success) {
                     renderCart(data);
                 } else {
+                    console.log('⚠️ Data success is false or missing, showing empty cart');
                     showEmptyCart();
                 }
             })
             .catch(error => {
-                console.error('Error loading cart:', error);
-                Shop.showNotification('error', 'Failed to load cart items.');
+                console.error('❌ Error loading cart:', error);
+                console.error('📝 Error details:', error.message);
+                console.error('📚 Error stack:', error.stack);
+                
+                if (typeof Shop !== 'undefined' && Shop.showNotification) {
+                    if (error.message.includes('Authentication required')) {
+                        Shop.showNotification('warning', 'Please log in to view your cart.');
+                    } else if (error.message.includes('Session expired')) {
+                        Shop.showNotification('warning', 'Session expired. Please refresh the page.');
+                    } else {
+                        Shop.showNotification('error', 'Failed to load cart items.');
+                    }
+                } else {
+                    console.log('🚫 Shop object not available for notification');
+                }
                 showEmptyCart();
             });
     }
     
     function renderCart(data) {
-        console.log('Rendering cart with data:', data);
+        console.log('renderCart called with data:', data);
+        console.log('Data items:', data.items);
+        console.log('Items length:', data.items ? data.items.length : 'undefined');
         
         if (!data.items || data.items.length === 0) {
+            console.log('No items found, calling showEmptyCart');
             showEmptyCart();
             return;
         }
+        
+        console.log('Rendering cart with items...');
         
         // Show cart content and hide empty cart
         document.getElementById('cart-container').style.display = 'block';
@@ -243,13 +311,33 @@
     }
     
     function showEmptyCart() {
-        console.log('Showing empty cart');
-        document.getElementById('cart-container').style.display = 'none';
-        document.getElementById('empty-cart').style.display = 'block';
+        console.log('showEmptyCart called');
+        console.log('cart-container element:', document.getElementById('cart-container'));
+        console.log('empty-cart element:', document.getElementById('empty-cart'));
+        
+        const cartContainer = document.getElementById('cart-container');
+        const emptyCart = document.getElementById('empty-cart');
+        
+        if (cartContainer) {
+            cartContainer.style.display = 'none';
+            console.log('Hidden cart-container');
+        } else {
+            console.error('cart-container element not found!');
+        }
+        
+        if (emptyCart) {
+            emptyCart.style.display = 'block';
+            console.log('Shown empty-cart');
+        } else {
+            console.error('empty-cart element not found!');
+        }
         
         // Update cart count to 0
         if (typeof updateCartCount === 'function') {
             updateCartCount(0);
+            console.log('Updated cart count to 0');
+        } else {
+            console.log('updateCartCount function not available');
         }
     }
     
@@ -314,6 +402,26 @@
     // Load cart when page is ready
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, starting cart load...');
+        console.log('Current URL:', window.location.href);
+        console.log('User agent:', navigator.userAgent);
+        
+        // Check if required elements exist
+        const cartItems = document.getElementById('cart-items');
+        const cartSummary = document.getElementById('cart-summary-content');
+        const cartContainer = document.getElementById('cart-container');
+        const emptyCart = document.getElementById('empty-cart');
+        
+        console.log('Required elements check:');
+        console.log('- cart-items:', cartItems ? 'found' : 'MISSING');
+        console.log('- cart-summary-content:', cartSummary ? 'found' : 'MISSING');
+        console.log('- cart-container:', cartContainer ? 'found' : 'MISSING');
+        console.log('- empty-cart:', emptyCart ? 'found' : 'MISSING');
+        
+        if (!cartItems || !cartSummary) {
+            console.error('Required cart elements missing! Cannot load cart.');
+            return;
+        }
+        
         loadCart();
     });
 </script>

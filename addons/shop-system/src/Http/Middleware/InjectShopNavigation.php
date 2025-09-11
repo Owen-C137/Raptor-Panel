@@ -233,8 +233,11 @@ class InjectShopNavigation
     
     private function injectClientNavigation($response, Request $request)
     {
-        // Only inject on client pages (not admin, auth, or API)
-        if ($request->is('admin*') || $request->is('auth*') || $request->is('api*')) {
+        // Only inject on client pages (not admin, auth, API, or shop pages)
+        if ($request->is('admin*') || 
+            $request->is('auth*') || 
+            $request->is('api*') || 
+            $request->is('shop*')) {
             return;
         }
         

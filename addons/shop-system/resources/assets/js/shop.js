@@ -195,7 +195,7 @@ function updateCartCount() {
         .then(response => {
             if (response.status === 401 || response.status === 403) {
                 // User not authenticated, hide cart count
-                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count, .cart-count-nav');
                 cartCountElements.forEach(element => {
                     element.textContent = 0;
                     element.style.display = 'none';
@@ -206,17 +206,26 @@ function updateCartCount() {
         })
         .then(data => {
             if (data) {
-                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count, .cart-count-nav');
                 cartCountElements.forEach(element => {
                     element.textContent = data.cart_count || 0;
-                    element.style.display = (data.cart_count && data.cart_count > 0) ? 'inline' : 'none';
+                    if (data.cart_count && data.cart_count > 0) {
+                        element.style.display = 'inline';
+                        // Add animation class if available
+                        element.classList.add('animate__animated', 'animate__pulse');
+                        setTimeout(() => {
+                            element.classList.remove('animate__animated', 'animate__pulse');
+                        }, 1000);
+                    } else {
+                        element.style.display = 'none';
+                    }
                 });
             }
         })
         .catch(error => {
             console.error('Error updating cart count:', error);
             // Hide cart count on error
-            const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+            const cartCountElements = document.querySelectorAll('.cart-count, #cart-count, .cart-count-nav');
             cartCountElements.forEach(element => {
                 element.textContent = 0;
                 element.style.display = 'none';

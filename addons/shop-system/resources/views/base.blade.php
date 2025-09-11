@@ -43,7 +43,7 @@
 
         @yield('assets')
     </head>
-    <body class="bg-light">
+    <body class="">
         @yield('content')
         
         @section('scripts')
