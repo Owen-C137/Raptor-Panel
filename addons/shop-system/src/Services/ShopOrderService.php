@@ -127,9 +127,13 @@ class ShopOrderService
     {
         $order = ShopOrder::findOrFail($orderId);
         
+        // Calculate next due date based on billing cycle
+        $nextDueAt = $order->calculateNextDueDate(now());
+        
         $order->update([
             'status' => ShopOrder::STATUS_ACTIVE,
             'last_renewed_at' => now(),
+            'next_due_at' => $nextDueAt,
         ]);
 
         // Update the corresponding payment record to completed
