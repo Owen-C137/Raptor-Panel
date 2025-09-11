@@ -111,6 +111,36 @@
                     </table>
                 </div>
                 
+                @if($order->hasBillingDetails())
+                    <hr>
+                    <h5>Billing Information</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            @if($order->getCustomerName())
+                                <p><strong>Customer:</strong> {{ $order->getCustomerName() }}</p>
+                            @endif
+                            
+                            @if($order->getCustomerEmail())
+                                <p><strong>Email:</strong> {{ $order->getCustomerEmail() }}</p>
+                            @endif
+                            
+                            @if(!empty($order->billing_details['company']))
+                                <p><strong>Company:</strong> {{ $order->billing_details['company'] }}</p>
+                            @endif
+                        </div>
+                        <div class="col-md-6">
+                            @if($order->getBillingAddress())
+                                <p><strong>Billing Address:</strong></p>
+                                <address style="white-space: pre-line;">{{ $order->getBillingAddress() }}</address>
+                            @endif
+                            
+                            @if($order->payment_method)
+                                <p><strong>Payment Method:</strong> {{ ucfirst($order->payment_method) }}</p>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+                
                 <div class="text-end">
                     <a href="{{ route('shop.orders.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i>

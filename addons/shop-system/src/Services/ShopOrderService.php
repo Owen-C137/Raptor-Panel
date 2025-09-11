@@ -110,6 +110,16 @@ class ShopOrderService
             'expires_at' => now()->addMonth(), // Default 1 month
         ];
 
+        // Add billing details if provided
+        if (!empty($data['billing_details'])) {
+            $orderData['billing_details'] = $data['billing_details'];
+        }
+
+        // Add payment method if provided
+        if (!empty($data['payment_method'])) {
+            $orderData['payment_method'] = $data['payment_method'];
+        }
+
         $order = $this->repository->create($orderData);
 
         // Apply coupon if provided

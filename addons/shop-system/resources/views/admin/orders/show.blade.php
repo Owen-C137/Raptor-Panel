@@ -133,6 +133,44 @@
                 </div>
             </div>
         @endif
+
+        @if($order->hasBillingDetails())
+            <div class="box">
+                <div class="box-header with-border">
+                    <h3 class="box-title">Billing Information</h3>
+                </div>
+                <div class="box-body">
+                    <dl class="dl-horizontal">
+                        @if($order->getCustomerName())
+                            <dt>Customer Name:</dt>
+                            <dd>{{ $order->getCustomerName() }}</dd>
+                        @endif
+                        
+                        @if($order->getCustomerEmail())
+                            <dt>Email:</dt>
+                            <dd>{{ $order->getCustomerEmail() }}</dd>
+                        @endif
+                        
+                        @if(!empty($order->billing_details['company']))
+                            <dt>Company:</dt>
+                            <dd>{{ $order->billing_details['company'] }}</dd>
+                        @endif
+                        
+                        @if($order->getBillingAddress())
+                            <dt>Billing Address:</dt>
+                            <dd>
+                                <address style="white-space: pre-line;">{{ $order->getBillingAddress() }}</address>
+                            </dd>
+                        @endif
+                        
+                        @if($order->payment_method)
+                            <dt>Payment Method:</dt>
+                            <dd>{{ ucfirst($order->payment_method) }}</dd>
+                        @endif
+                    </dl>
+                </div>
+            </div>
+        @endif
     </div>
     
     <div class="col-md-4">

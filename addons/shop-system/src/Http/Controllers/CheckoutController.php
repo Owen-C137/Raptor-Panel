@@ -506,6 +506,8 @@ class CheckoutController extends Controller
             'metadata' => [
                 'order_id' => $order->id,
                 'user_id' => $order->user_id,
+                'billing_details' => $order->billing_details ?? [],
+                'payment_method' => $order->payment_method,
             ],
             'payment_method_data' => $paymentData['payment_method_data'] ?? [],
         ]);
@@ -533,6 +535,8 @@ class CheckoutController extends Controller
                 'metadata' => [
                     'order_id' => $order->id,
                     'user_id' => $order->user_id,
+                    'billing_details' => $order->billing_details ?? [],
+                    'payment_method' => $order->payment_method,
                 ],
             ]);
             

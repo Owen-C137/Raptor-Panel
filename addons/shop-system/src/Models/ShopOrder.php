@@ -27,6 +27,8 @@ use Pterodactyl\Models\Server;
  * @property Carbon|null $suspended_at
  * @property Carbon|null $terminated_at
  * @property array $server_config
+ * @property array|null $billing_details
+ * @property string|null $payment_method
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * 
@@ -113,6 +115,8 @@ class ShopOrder extends Model
         'suspended_at',
         'terminated_at',
         'server_config',
+        'billing_details',
+        'payment_method',
     ];
 
     /**
@@ -130,6 +134,7 @@ class ShopOrder extends Model
         'suspended_at' => 'datetime',
         'terminated_at' => 'datetime',
         'server_config' => 'array',
+        'billing_details' => 'array',
     ];
 
     /**
@@ -364,5 +369,81 @@ class ShopOrder extends Model
             self::STATUS_TERMINATED => 'Terminated',
             default => ucfirst($this->status),
         };
+    }
+
+    /**
+     * Get customer full name from billing details.
+     */
+    public function getCustomerName(): ?string
+    {
+        if (!$this->billing_details) {
+            return null;
+        }
+
+        $firstName = $this->billing_details['first_name'] ?? '';
+        $lastName = $this->billing_details['last_name'] ?? '';
+        
+        return trim($firstName . ' ' . $lastName) ?: null;
+    }
+
+    /**
+     * Get customer email from billing details.
+     */
+    public function getCustomerEmail(): ?string
+    {
+        return $this->billing_details['email'] ?? $this->user->email ?? null;
+    }
+
+    /**
+     * Get billing address as formatted string.
+     */
+    public function getBillingAddress(): ?string
+    {
+        if (!$this->billing_details) {
+            return null;
+        }
+
+        $address = [];
+        
+        if (!empty($this->billing_details['address'])) {
+            $address[] = $this->billing_details['address'];
+        }
+        
+        if (!empty($this->billing_details['address2'])) {
+            $address[] = $this->billing_details['address2'];
+        }
+        
+        $cityStateZip = [];
+        if (!empty($this->billing_details['city'])) {
+            $cityStateZip[] = $this->billing_details['city'];
+        }
+        
+        if (!empty($this->billing_details['state'])) {
+            $cityStateZip[] = $this->billing_details['state'];
+        }
+        
+        if (!empty($this->billing_details['postal_code'])) {
+            $cityStateZip[] = $this->billing_details['postal_code'];
+        }
+        
+        if (!empty($cityStateZip)) {
+            $address[] = implode(', ', $cityStateZip);
+        }
+        
+        if (!empty($this->billing_details['country'])) {
+            $address[] = $this->billing_details['country'];
+        }
+        
+        return !empty($address) ? implode("\n", $address) : null;
+    }
+
+    /**
+     * Check if billing details are complete.
+     */
+    public function hasBillingDetails(): bool
+    {
+        return !empty($this->billing_details) && 
+               !empty($this->billing_details['first_name']) && 
+               !empty($this->billing_details['last_name']);
     }
 }
