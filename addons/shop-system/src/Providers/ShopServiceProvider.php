@@ -106,7 +106,12 @@ class ShopServiceProvider extends ServiceProvider
     {
         Route::model('category', \PterodactylAddons\ShopSystem\Models\ShopCategory::class);
         Route::model('product', \PterodactylAddons\ShopSystem\Models\ShopCategory::class);
-        Route::model('order', \PterodactylAddons\ShopSystem\Models\ShopOrder::class);
+        
+        // Bind order by UUID instead of ID for payment callback routes
+        Route::bind('order', function ($value) {
+            return \PterodactylAddons\ShopSystem\Models\ShopOrder::where('uuid', $value)->firstOrFail();
+        });
+        
         Route::model('coupon', \PterodactylAddons\ShopSystem\Models\ShopCoupon::class);
         Route::model('plan', \PterodactylAddons\ShopSystem\Models\ShopPlan::class);
     }

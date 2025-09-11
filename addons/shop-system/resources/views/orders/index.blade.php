@@ -65,7 +65,7 @@
                                 <div class="col-md-3 text-center">
                                     <div class="order-total">
                                         <strong class="text-success">
-                                            {{ config('shop.currency.symbol', '$') }}{{ number_format($order->total, 2) }}
+                                            {{ config('shop.currency.symbol', '$') }}{{ number_format($order->amount, 2) }}
                                         </strong>
                                     </div>
                                 </div>

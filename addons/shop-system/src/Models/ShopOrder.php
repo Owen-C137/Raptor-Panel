@@ -333,4 +333,36 @@ class ShopOrder extends Model
             default => 'bg-gray-100 text-gray-800',
         };
     }
+
+    /**
+     * Get status color for Bootstrap badges.
+     */
+    public function getStatusColor(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => 'warning',
+            self::STATUS_PROCESSING => 'info',
+            self::STATUS_ACTIVE => 'success',
+            self::STATUS_SUSPENDED => 'danger',
+            self::STATUS_CANCELLED => 'secondary',
+            self::STATUS_TERMINATED => 'dark',
+            default => 'secondary',
+        };
+    }
+
+    /**
+     * Get status label for display.
+     */
+    public function getStatusLabel(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PENDING => 'Pending',
+            self::STATUS_PROCESSING => 'Processing',
+            self::STATUS_ACTIVE => 'Active',
+            self::STATUS_SUSPENDED => 'Suspended',
+            self::STATUS_CANCELLED => 'Cancelled',
+            self::STATUS_TERMINATED => 'Terminated',
+            default => ucfirst($this->status),
+        };
+    }
 }

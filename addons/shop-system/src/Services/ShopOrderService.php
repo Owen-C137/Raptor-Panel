@@ -6,6 +6,7 @@ use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPlan;
 use PterodactylAddons\ShopSystem\Models\ShopCoupon;
 use PterodactylAddons\ShopSystem\Models\ShopCouponUsage;
+use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use PterodactylAddons\ShopSystem\Repositories\ShopOrderRepository;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
@@ -130,6 +131,15 @@ class ShopOrderService
             'status' => ShopOrder::STATUS_ACTIVE,
             'last_renewed_at' => now(),
         ]);
+
+        // Update the corresponding payment record to completed
+        $payment = $order->payments()->where('type', 'order_payment')->first();
+        if ($payment) {
+            $payment->update([
+                'status' => ShopPayment::STATUS_COMPLETED,
+                'processed_at' => now(),
+            ]);
+        }
 
         return true;
     }
