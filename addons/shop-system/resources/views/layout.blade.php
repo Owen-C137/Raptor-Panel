@@ -80,8 +80,8 @@
                                 <div class="me-3">
                                     <span class="badge bg-success fs-6">
                                         <i class="fas fa-wallet me-1"></i>
-                                        <span class="wallet-balance" data-balance="{{ auth()->user()->wallet->balance ?? 0 }}">
-                                            {{ $paymentConfig['currency_symbol'] ?? '$' }}{{ number_format(auth()->user()->wallet->balance ?? 0, 2) }}
+                                        <span class="wallet-balance" data-balance="{{ $userWallet->balance ?? 0 }}">
+                                            {{ $paymentConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance ?? 0, 2) }}
                                         </span>
                                     </span>
                                 </div>

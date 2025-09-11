@@ -428,4 +428,40 @@ class WebhookController extends Controller
             }
         }
     }
+
+    /**
+     * Handle generic webhook for any gateway.
+     */
+    public function handle(Request $request, string $gateway): JsonResponse
+    {
+        Log::info('Generic webhook received', [
+            'gateway' => $gateway,
+            'payload' => $request->all(),
+        ]);
+
+        try {
+            $paymentGateway = $this->paymentManager->gateway($gateway);
+            
+            if (!$paymentGateway) {
+                Log::error('Unknown payment gateway for webhook', ['gateway' => $gateway]);
+                return response()->json(['error' => 'Unknown gateway'], 400);
+            }
+
+            $result = $paymentGateway->handleWebhook($request->all());
+            
+            return response()->json([
+                'success' => $result,
+                'message' => $result ? 'Webhook processed' : 'Webhook failed'
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Webhook processing failed', [
+                'gateway' => $gateway,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['error' => 'Webhook processing failed'], 500);
+        }
+    }
 }

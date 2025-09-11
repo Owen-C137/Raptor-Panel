@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 modeMessage = `🔧 PayPal is running in ${paypalMode} mode`;
                 Shop.showNotification('info', modeMessage);
             } else if (this.value === 'wallet') {
-                Shop.notification('info', '💰 Using wallet balance for payment');
+                Shop.showNotification('info', '💰 Using wallet balance for payment');
             }
             
             updateOrderButton();
@@ -633,17 +633,17 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const result = await response.json();
         
-        if (result.success) {
-            if (result.requires_action) {
+        if (result.success && result.data) {
+            if (result.data.requires_payment_action && result.data.payment_intent) {
                 // Handle 3D secure
-                const {error: confirmError} = await stripe.confirmCardPayment(result.payment_intent.client_secret);
+                const {error: confirmError} = await stripe.confirmCardPayment(result.data.payment_intent.client_secret);
                 if (confirmError) {
                     throw new Error(confirmError.message);
                 }
                 // Redirect to success page
-                window.location.href = result.redirect_url;
+                window.location.href = result.data.redirect_url || '/shop/orders';
             } else {
-                window.location.href = result.redirect_url;
+                window.location.href = result.data.redirect_url || '/shop/orders';
             }
         } else {
             throw new Error(result.message);
@@ -664,8 +664,19 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const result = await response.json();
         
-        if (result.success) {
-            window.location.href = result.redirect_url;
+        console.log('🎯 PayPal frontend result:', result);
+        console.log('🔍 data object:', result.data);
+        console.log('🔍 redirect_url value:', result.data?.redirect_url);
+        console.log('🔍 redirect_url type:', typeof result.data?.redirect_url);
+        
+        if (result.success && result.data) {
+            if (result.data.redirect_url && result.data.redirect_url !== 'undefined') {
+                console.log('✅ Redirecting to:', result.data.redirect_url);
+                window.location.href = result.data.redirect_url;
+            } else {
+                console.error('❌ Invalid redirect_url:', result.data.redirect_url);
+                throw new Error('Invalid redirect URL received');
+            }
         } else {
             throw new Error(result.message);
         }
@@ -685,8 +696,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const result = await response.json();
         
-        if (result.success) {
-            window.location.href = result.redirect_url;
+        if (result.success && result.data) {
+            window.location.href = result.data.redirect_url || '/shop/orders';
         } else {
             throw new Error(result.message);
         }

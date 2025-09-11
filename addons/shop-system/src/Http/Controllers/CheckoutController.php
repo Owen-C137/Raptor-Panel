@@ -13,6 +13,7 @@ use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
 use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\CartService;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -212,17 +213,19 @@ class CheckoutController extends Controller
                 'billing_details.city' => 'sometimes|string|max:100',
                 'billing_details.country' => 'sometimes|string|size:2',
                 'billing_details.postal_code' => 'sometimes|string|max:20',
-                // Flat billing fields (for backward compatibility)
-                'first_name' => 'sometimes|string|max:255',
-                'last_name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|max:255',
-                'company' => 'sometimes|string|max:255',
-                'address' => 'sometimes|string|max:255',
-                'address2' => 'sometimes|string|max:255',
-                'city' => 'sometimes|string|max:100',
-                'state' => 'sometimes|string|max:100',
-                'country' => 'sometimes|string|size:2',
-                'postal_code' => 'sometimes|string|max:20',
+                // Flat billing fields (for backward compatibility) - nullable to handle empty fields
+                'first_name' => 'sometimes|nullable|string|max:255',
+                'last_name' => 'sometimes|nullable|string|max:255',
+                'email' => 'sometimes|nullable|email|max:255',
+                'company' => 'sometimes|nullable|string|max:255',
+                'address' => 'sometimes|nullable|string|max:255',
+                'address2' => 'sometimes|nullable|string|max:255',
+                'city' => 'sometimes|nullable|string|max:100',
+                'state' => 'sometimes|nullable|string|max:100',
+                'country' => 'sometimes|nullable|string|size:2',
+                'postal_code' => 'sometimes|nullable|string|max:20',
+                'notes' => 'sometimes|nullable|string',
+                'terms_accept' => 'sometimes|nullable',
             ]);
             
             Log::info('✅ Validation passed');
@@ -286,6 +289,11 @@ class CheckoutController extends Controller
             // Process payment
             $paymentResult = $this->processPayment($order, $request->payment_gateway, $request->all());
 
+            Log::info('🔍 Payment result after processing', [
+                'payment_result' => $paymentResult,
+                'has_redirect_url' => isset($paymentResult['redirect_url']),
+            ]);
+
             if ($paymentResult['success']) {
                 // Clear cart and coupon
                 session()->forget(['shop_cart', 'applied_coupon']);
@@ -298,12 +306,18 @@ class CheckoutController extends Controller
                     'payment_method' => $request->payment_gateway,
                 ]);
 
-                return $this->successResponse([
+                $responseData = [
                     'order_uuid' => $order->uuid,
                     'redirect_url' => $paymentResult['redirect_url'] ?? route('shop.orders.show', $order->uuid),
                     'requires_payment_action' => $paymentResult['requires_action'] ?? false,
                     'payment_intent' => $paymentResult['payment_intent'] ?? null,
-                ], 'Order created successfully!');
+                ];
+
+                Log::info('🚀 Final response data being sent to frontend', [
+                    'response_data' => $responseData,
+                ]);
+
+                return $this->successResponse($responseData, 'Order created successfully!');
             } else {
                 DB::rollBack();
                 return $this->errorResponse($paymentResult['message'] ?? 'Payment processing failed.');
@@ -355,8 +369,20 @@ class CheckoutController extends Controller
         $setupTotal = 0;
 
         foreach ($cartItems as $item) {
-            $subtotal += $item['subtotal'];
-            $setupTotal += $item['setup_total'];
+            // Cart items from CartService have 'subtotal' which is the total price including setup fee
+            $itemTotal = $item['subtotal'] ?? 0;
+            
+            // Separate the setup fee from the subtotal for display purposes
+            if (isset($item['plan']['setup_fee']) && isset($item['quantity'])) {
+                $itemSetupFee = $item['plan']['setup_fee'] * $item['quantity'];
+                $itemSubtotal = $itemTotal - $itemSetupFee;
+                
+                $subtotal += $itemSubtotal;
+                $setupTotal += $itemSetupFee;
+            } else {
+                // If no setup fee info available, treat entire amount as subtotal
+                $subtotal += $itemTotal;
+            }
         }
 
         $total = $subtotal + $setupTotal;
@@ -512,6 +538,29 @@ class CheckoutController extends Controller
             
             Log::info('🎯 PayPal payment result', ['result' => $result]);
             
+            // Map PayPal response to expected format
+            if ($result['success'] && isset($result['approval_url'])) {
+                $mappedResult = [
+                    'success' => true,
+                    'redirect_url' => $result['approval_url'],
+                    'payment_id' => $result['payment_id'] ?? null,
+                ];
+                
+                Log::info('✅ PayPal response mapped successfully', [
+                    'original' => $result,
+                    'mapped' => $mappedResult,
+                ]);
+                
+                return $mappedResult;
+            }
+            
+            Log::warning('❌ PayPal response mapping failed', [
+                'result' => $result,
+                'has_success' => isset($result['success']),
+                'success_value' => $result['success'] ?? null,
+                'has_approval_url' => isset($result['approval_url']),
+            ]);
+            
             return $result;
         } catch (\Exception $e) {
             Log::error('💥 PayPal payment processing failed', [
@@ -522,5 +571,139 @@ class CheckoutController extends Controller
             
             return ['success' => false, 'message' => 'PayPal payment failed: ' . $e->getMessage()];
         }
+    }
+
+    /**
+     * Handle payment return from gateway.
+     */
+    public function paymentReturn(string $gateway, ShopOrder $order)
+    {
+        Log::info('🔄 Payment return callback', [
+            'gateway' => $gateway,
+            'order_id' => $order->id,
+            'order_uuid' => $order->uuid,
+        ]);
+
+        try {
+            $paymentGateway = $this->paymentManager->gateway($gateway);
+            
+            // Process the return based on the gateway
+            switch ($gateway) {
+                case 'paypal':
+                    return $this->handlePayPalReturn($order);
+                case 'stripe':
+                    return $this->handleStripeReturn($order);
+                default:
+                    return redirect()->route('shop.orders.show', $order->uuid)
+                        ->with('error', 'Unknown payment gateway');
+            }
+        } catch (\Exception $e) {
+            Log::error('💥 Payment return processing failed', [
+                'gateway' => $gateway,
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Payment processing failed');
+        }
+    }
+
+    /**
+     * Handle payment cancellation from gateway.
+     */
+    public function paymentCancel(string $gateway, ShopOrder $order)
+    {
+        Log::info('❌ Payment cancelled', [
+            'gateway' => $gateway,
+            'order_id' => $order->id,
+        ]);
+
+        return redirect()->route('shop.orders.show', $order->uuid)
+            ->with('warning', 'Payment was cancelled');
+    }
+
+    /**
+     * Handle PayPal payment return.
+     */
+    private function handlePayPalReturn(ShopOrder $order)
+    {
+        Log::info('🔄 Processing PayPal return', [
+            'order_id' => $order->id,
+            'order_uuid' => $order->uuid,
+            'current_status' => $order->status,
+        ]);
+
+        // PayPal returns with token parameter
+        $token = request('token');
+        
+        if (!$token) {
+            Log::error('❌ PayPal return missing token', [
+                'order_id' => $order->id,
+                'request_params' => request()->all(),
+            ]);
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Invalid PayPal return');
+        }
+
+        try {
+            // Get PayPal gateway and capture payment
+            $paypalGateway = $this->paymentManager->gateway('paypal');
+            
+            // Capture the PayPal order
+            $result = $paypalGateway->captureOrder($token);
+            
+            if ($result['success']) {
+                // Mark order as paid
+                $this->orderService->markAsPaid($order->id, 'paypal');
+                
+                // Clear the cart since payment was successful
+                $this->cartService->clearCart();
+                
+                Log::info('✅ PayPal payment captured successfully', [
+                    'order_id' => $order->id,
+                    'capture_id' => $result['capture_id'] ?? null,
+                ]);
+                
+                return redirect()->route('shop.orders.show', $order->uuid)
+                    ->with('success', 'Payment completed successfully! Your order is now active.');
+            } else {
+                Log::error('❌ PayPal payment capture failed', [
+                    'order_id' => $order->id,
+                    'result' => $result,
+                ]);
+                
+                return redirect()->route('shop.orders.show', $order->uuid)
+                    ->with('error', 'Payment verification failed. Please contact support.');
+            }
+        } catch (\Exception $e) {
+            Log::error('💥 PayPal return processing error', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Payment processing failed. Please contact support.');
+        }
+    }
+
+    /**
+     * Handle Stripe payment return.
+     */
+    private function handleStripeReturn(ShopOrder $order)
+    {
+        // Stripe returns with session_id parameter
+        $sessionId = request('session_id');
+        
+        if (!$sessionId) {
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Invalid Stripe return');
+        }
+
+        // Here you would verify the Stripe session
+        // For now, just redirect to the order page
+        return redirect()->route('shop.orders.show', $order->uuid)
+            ->with('success', 'Payment completed successfully');
     }
 }

@@ -5,8 +5,11 @@ namespace PterodactylAddons\ShopSystem\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Gate;
 use PterodactylAddons\ShopSystem\Http\Middleware\InjectShopNavigation;
 use PterodactylAddons\ShopSystem\Providers\ShopNavigationServiceProvider;
+use PterodactylAddons\ShopSystem\Models\ShopOrder;
+use PterodactylAddons\ShopSystem\Policies\ShopOrderPolicy;
 
 class ShopServiceProvider extends ServiceProvider
 {
@@ -69,6 +72,9 @@ class ShopServiceProvider extends ServiceProvider
         
         // Register shop configuration view composer
         $this->registerShopConfigComposer();
+        
+        // Register shop policies
+        $this->registerShopPolicies();
     }
     
     /**
@@ -83,6 +89,14 @@ class ShopServiceProvider extends ServiceProvider
             'wallet.*',  // Wallet views
             'client.shop.*'  // Client shop views
         ], \PterodactylAddons\ShopSystem\Http\View\Composers\ShopConfigComposer::class);
+    }
+
+    /**
+     * Register shop policies for authorization
+     */
+    protected function registerShopPolicies()
+    {
+        Gate::policy(ShopOrder::class, ShopOrderPolicy::class);
     }
 
     /**

@@ -70,6 +70,71 @@ class ShopOrderService
     }
 
     /**
+     * Create an order from cart data (used by checkout process).
+     */
+    public function createOrder(array $data): ShopOrder
+    {
+        $user = User::findOrFail($data['user_id']);
+        $cartItems = $data['items'];
+        $totals = $data['totals'];
+        
+        // For now, create a single order for the first item
+        // TODO: Support multiple items or create separate orders for each
+        $firstItem = $cartItems[0];
+        $plan = ShopPlan::findOrFail($firstItem['plan_id']);
+        
+        // Get currency from shop config
+        $shopConfig = app(\PterodactylAddons\ShopSystem\Services\ShopConfigService::class);
+        $currency = $shopConfig->getShopConfig()['currency'] ?? 'USD';
+        
+        $orderData = [
+            'uuid' => Str::uuid()->toString(),
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'status' => ShopOrder::STATUS_PENDING,
+            'billing_cycle' => $firstItem['billing_cycle'] ?? 'monthly',
+            'amount' => $totals['total'],
+            'setup_fee' => $totals['setup_total'] ?? 0,
+            'currency' => $currency,
+            'server_config' => [
+                'memory' => $plan->memory,
+                'swap' => $plan->swap,
+                'disk' => $plan->disk,
+                'io' => $plan->io,
+                'cpu' => $plan->cpu,
+                'databases' => $plan->server_feature_limits['databases'] ?? null,
+                'allocations' => $plan->server_feature_limits['allocations'] ?? null,
+                'backups' => $plan->server_feature_limits['backups'] ?? null,
+            ],
+            'expires_at' => now()->addMonth(), // Default 1 month
+        ];
+
+        $order = $this->repository->create($orderData);
+
+        // Apply coupon if provided
+        if (!empty($data['coupon'])) {
+            $this->applyCoupon($order, $data['coupon']->code);
+        }
+
+        return $order->fresh();
+    }
+
+    /**
+     * Mark an order as paid.
+     */
+    public function markAsPaid(int $orderId, string $paymentMethod = null): bool
+    {
+        $order = ShopOrder::findOrFail($orderId);
+        
+        $order->update([
+            'status' => ShopOrder::STATUS_ACTIVE,
+            'last_renewed_at' => now(),
+        ]);
+
+        return true;
+    }
+
+    /**
      * Apply a coupon to an order.
      */
     public function applyCoupon(ShopOrder $order, string $couponCode): float

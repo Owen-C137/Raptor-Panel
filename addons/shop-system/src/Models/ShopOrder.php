@@ -221,6 +221,30 @@ class ShopOrder extends Model
     }
 
     /**
+     * Check if the order is pending.
+     */
+    public function isPending(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
+    }
+
+    /**
+     * Check if the order is processing.
+     */
+    public function isProcessing(): bool
+    {
+        return $this->status === self::STATUS_PROCESSING;
+    }
+
+    /**
+     * Check if the order is cancelled.
+     */
+    public function isCancelled(): bool
+    {
+        return $this->status === self::STATUS_CANCELLED;
+    }
+
+    /**
      * Check if the order is suspended.
      */
     public function isSuspended(): bool

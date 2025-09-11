@@ -65,6 +65,13 @@ Route::prefix('shop')->name('shop.')->group(function () {
     // Payment webhooks (public endpoints)
     Route::post('/webhooks/stripe', [WebhookController::class, 'stripe'])->name('webhooks.stripe');
     Route::post('/webhooks/paypal', [WebhookController::class, 'paypal'])->name('webhooks.paypal');
+    Route::post('/webhook/{gateway}', [WebhookController::class, 'handle'])->name('webhook');
+    
+    // Payment callback routes (public endpoints for PayPal/Stripe returns)
+    Route::prefix('payment')->name('payment.')->group(function () {
+        Route::get('/{gateway}/return/{order:uuid}', [CheckoutController::class, 'paymentReturn'])->name('return');
+        Route::get('/{gateway}/cancel/{order:uuid}', [CheckoutController::class, 'paymentCancel'])->name('cancel');
+    });
 });
 
 // Authenticated shop routes

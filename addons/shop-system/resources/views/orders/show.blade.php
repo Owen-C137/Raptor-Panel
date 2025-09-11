@@ -22,8 +22,8 @@
                         <i class="fas fa-shopping-bag"></i>
                         Order #{{ $order->id }}
                     </h3>
-                    <span class="badge badge-{{ $order->status_color }}">
-                        {{ ucfirst($order->status) }}
+                    <span class="badge {{ $order->status_class }}">
+                        {{ $order->display_status }}
                     </span>
                 </div>
             </div>
@@ -39,14 +39,14 @@
                             <tr>
                                 <td><strong>Status:</strong></td>
                                 <td>
-                                    <span class="badge badge-{{ $order->status_color }}">
-                                        {{ ucfirst($order->status) }}
+                                    <span class="badge {{ $order->status_class }}">
+                                        {{ $order->display_status }}
                                     </span>
                                 </td>
                             </tr>
                             <tr>
                                 <td><strong>Total:</strong></td>
-                                <td><strong>${{ number_format($order->total, 2) }}</strong></td>
+                                <td><strong>${{ number_format($order->total_amount, 2) }}</strong></td>
                             </tr>
                         </table>
                     </div>
@@ -55,11 +55,11 @@
                         <table class="table table-sm">
                             <tr>
                                 <td><strong>Payment Method:</strong></td>
-                                <td>{{ $order->payment_method ?? 'N/A' }}</td>
+                                <td>{{ $order->payments->isNotEmpty() ? ucfirst($order->payments->first()->gateway) : 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td><strong>Payment Status:</strong></td>
-                                <td>{{ ucfirst($order->payment_status ?? 'pending') }}</td>
+                                <td>{{ $order->isActive() ? 'Paid' : 'Pending' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -78,20 +78,36 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($order->items ?? [] as $item)
                             <tr>
                                 <td>
-                                    <strong>{{ $item->plan->name ?? 'N/A' }}</strong>
-                                    @if($item->plan->description ?? false)
-                                        <br><small class="text-muted">{{ $item->plan->description }}</small>
+                                    <strong>{{ $order->plan->name }}</strong>
+                                    @if($order->plan->description)
+                                        <br><small class="text-muted">{{ $order->plan->description }}</small>
                                     @endif
+                                    <br><small class="text-muted">Billing: {{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</small>
                                 </td>
-                                <td>{{ $item->quantity }}</td>
-                                <td>${{ number_format($item->price, 2) }}</td>
-                                <td>${{ number_format($item->price * $item->quantity, 2) }}</td>
+                                <td>1</td>
+                                <td>${{ number_format($order->amount, 2) }}</td>
+                                <td>${{ number_format($order->amount, 2) }}</td>
                             </tr>
-                            @endforeach
+                            @if($order->setup_fee > 0)
+                            <tr>
+                                <td>
+                                    <strong>Setup Fee</strong>
+                                    <br><small class="text-muted">One-time setup charge</small>
+                                </td>
+                                <td>1</td>
+                                <td>${{ number_format($order->setup_fee, 2) }}</td>
+                                <td>${{ number_format($order->setup_fee, 2) }}</td>
+                            </tr>
+                            @endif
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <th colspan="3" class="text-end">Total:</th>
+                                <th>${{ number_format($order->total_amount, 2) }}</th>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
                 

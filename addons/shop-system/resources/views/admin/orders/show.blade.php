@@ -69,8 +69,8 @@
                     <dt>Plan:</dt>
                     <dd>
                         {{ $order->plan->name ?? 'N/A' }}
-                        @if($order->plan && $order->plan->product)
-                            <br><small class="text-muted">Product: {{ $order->plan->product->name }}</small>
+                        @if($order->plan && $order->plan->category)
+                            <br><small class="text-muted">Category: {{ $order->plan->category->name }}</small>
                         @endif
                     </dd>
                     

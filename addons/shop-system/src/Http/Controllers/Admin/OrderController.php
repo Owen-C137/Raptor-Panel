@@ -29,7 +29,7 @@ class OrderController extends Controller
         $user = $request->get('user');
         
         $orders = ShopOrder::query()
-            ->with(['user', 'product', 'server', 'payments'])
+            ->with(['user', 'plan.category', 'server', 'payments'])
             ->when($search, function ($query, $search) {
                 return $query->whereHas('user', function ($q) use ($search) {
                     $q->where('email', 'like', "%{$search}%")
@@ -56,7 +56,7 @@ class OrderController extends Controller
      */
     public function show(ShopOrder $order)
     {
-        $order->load(['user', 'product', 'server', 'payments.gateway']);
+        $order->load(['user', 'plan.category', 'server', 'payments']);
         
         return view('shop::admin.orders.show', compact('order'));
     }

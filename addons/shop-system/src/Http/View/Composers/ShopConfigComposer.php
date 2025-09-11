@@ -19,11 +19,26 @@ class ShopConfigComposer
      */
     public function compose(View $view): void
     {
-        $view->with([
+        $data = [
             'shopConfig' => $this->shopConfig->getShopConfig(),
             'paymentConfig' => $this->shopConfig->getPaymentConfig(),
             'shopEnabled' => $this->shopConfig->isShopEnabled(),
             'enabledPaymentMethods' => $this->shopConfig->getEnabledPaymentMethods(),
-        ]);
+        ];
+
+        // Add wallet data if user is authenticated
+        if (auth()->check()) {
+            try {
+                $walletService = app(\PterodactylAddons\ShopSystem\Services\WalletService::class);
+                $userWallet = $walletService->getWallet(auth()->id());
+                $data['userWallet'] = $userWallet;
+            } catch (\Exception $e) {
+                $data['userWallet'] = null;
+            }
+        } else {
+            $data['userWallet'] = null;
+        }
+
+        $view->with($data);
     }
 }
