@@ -1,12 +1,12 @@
 @extends('shop::base')
 
-@section('title', config('shop.branding.name', 'Server Shop'))
+@section('title', $shopConfig['shop_name'] ?? 'Server Shop')
 
 @section('assets')
     @parent
         <link rel="stylesheet" href="{{ url('shop/assets/css/shop.css?v=3') }}">
-    @if(config('shop.branding.custom_css'))
-        <style>{{ config('shop.branding.custom_css') }}</style>
+    @if(!empty($shopConfig['custom_css']))
+        <style>{{ $shopConfig['custom_css'] }}</style>
     @endif
 @endsection
 
@@ -23,12 +23,12 @@
             <div class="container-fluid">
                 {{-- Logo/Brand Section --}}
                 <div class="navbar-brand d-flex align-items-center">
-                    @if(config('shop.branding.logo'))
-                        <img src="{{ config('shop.branding.logo') }}" alt="{{ config('shop.branding.name', 'Server Shop') }}" class="shop-logo me-2" style="height: 40px;">
+                    @if(!empty($shopConfig['logo_url']))
+                        <img src="{{ $shopConfig['logo_url'] }}" alt="{{ $shopConfig['shop_name'] ?? 'Server Shop' }}" class="shop-logo me-2" style="height: 40px;">
                     @else
                         <i class="fas fa-store me-2 text-primary" style="font-size: 1.8rem;"></i>
                     @endif
-                    <span class="fw-bold text-dark fs-4">{{ config('shop.branding.name', 'Server Shop') }}</span>
+                    <span class="fw-bold text-dark fs-4">{{ $shopConfig['shop_name'] ?? 'Server Shop' }}</span>
                 </div>
 
                 {{-- Mobile Toggle Button --}}
@@ -52,7 +52,7 @@
                                     My Orders
                                 </a>
                             </li>
-                            @if(config('shop.wallet.enabled'))
+                            @if($shopConfig['wallet_enabled'] ?? true)
                                 <li class="nav-item">
                                     <a class="nav-link {{ request()->routeIs('shop.wallet.*') ? 'active fw-bold' : '' }}" href="{{ route('shop.wallet.index') }}">
                                         <i class="fas fa-wallet me-1"></i>
@@ -76,12 +76,12 @@
                             </a>
 
                             {{-- Wallet Balance (if enabled) --}}
-                            @if(config('shop.wallet.enabled'))
+                            @if($shopConfig['wallet_enabled'] ?? true)
                                 <div class="me-3">
                                     <span class="badge bg-success fs-6">
                                         <i class="fas fa-wallet me-1"></i>
                                         <span class="wallet-balance" data-balance="{{ auth()->user()->wallet->balance ?? 0 }}">
-                                            {{ config('shop.currency.symbol', '$') }}{{ number_format(auth()->user()->wallet->balance ?? 0, 2) }}
+                                            {{ $paymentConfig['currency_symbol'] ?? '$' }}{{ number_format(auth()->user()->wallet->balance ?? 0, 2) }}
                                         </span>
                                     </span>
                                 </div>
@@ -119,7 +119,7 @@
                                             My Orders
                                         </a>
                                     </li>
-                                    @if(config('shop.wallet.enabled'))
+                                    @if($shopConfig['wallet_enabled'] ?? true)
                                         <li>
                                             <a class="dropdown-item" href="{{ route('shop.wallet.index') }}">
                                                 <i class="fas fa-wallet me-2"></i>
@@ -259,7 +259,7 @@
         </div>
         <div class="cart-footer" id="cart-footer" style="display: none;">
             <div class="cart-total">
-                <strong>Total: <span id="cart-total">{{ config('shop.currency.symbol', '$') }}0.00</span></strong>
+                <strong>Total: <span id="cart-total">{{ $paymentConfig['currency_symbol'] ?? '$' }}0.00</span></strong>
             </div>
             <div class="cart-actions mt-3">
                 <a href="{{ route('shop.cart') }}" class="btn btn-outline-primary btn-block">View Cart</a>

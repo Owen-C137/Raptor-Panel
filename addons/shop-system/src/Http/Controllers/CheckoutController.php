@@ -12,6 +12,7 @@ use PterodactylAddons\ShopSystem\Services\ShopOrderService;
 use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
 use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\CartService;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -23,7 +24,8 @@ class CheckoutController extends Controller
         private ShopOrderService $orderService,
         private PaymentGatewayManager $paymentManager,
         private WalletService $walletService,
-        private CartService $cartService
+        private CartService $cartService,
+        private ShopConfigService $shopConfig
     ) {}
 
     /**
@@ -80,8 +82,14 @@ class CheckoutController extends Controller
             return $this->errorResponse('This coupon is no longer valid.');
         }
 
-        $cart = session('shop_cart', []);
-        $cartItems = $this->buildCartItems($cart);
+        // Use database-based cart instead of session
+        $cartSummary = $this->cartService->getCartSummary();
+        
+        if (!$cartSummary['success'] || empty($cartSummary['items'])) {
+            return $this->errorResponse('Your cart is empty.');
+        }
+
+        $cartItems = $cartSummary['items'];
 
         if (!$coupon->isApplicableToCart($cartItems)) {
             return $this->errorResponse('This coupon cannot be applied to your cart.');
@@ -110,8 +118,14 @@ class CheckoutController extends Controller
     {
         session()->forget('applied_coupon');
 
-        $cart = session('shop_cart', []);
-        $cartItems = $this->buildCartItems($cart);
+        // Use database-based cart instead of session
+        $cartSummary = $this->cartService->getCartSummary();
+        
+        if (!$cartSummary['success'] || empty($cartSummary['items'])) {
+            return $this->errorResponse('Your cart is empty.');
+        }
+
+        $cartItems = $cartSummary['items'];
         $totals = $this->calculateTotals($cartItems);
 
         return $this->successResponse([
@@ -195,12 +209,14 @@ class CheckoutController extends Controller
         try {
             DB::beginTransaction();
 
-            $cart = session('shop_cart', []);
-            if (empty($cart)) {
+            // Use database-based cart instead of session
+            $cartSummary = $this->cartService->getCartSummary();
+            
+            if (!$cartSummary['success'] || empty($cartSummary['items'])) {
                 return $this->errorResponse('Your cart is empty.');
             }
 
-            $cartItems = $this->buildCartItems($cart);
+            $cartItems = $cartSummary['items'];
             $coupon = null;
             
             if (session('applied_coupon')) {
@@ -324,9 +340,10 @@ class CheckoutController extends Controller
      */
     private function getAvailablePaymentMethods(): array
     {
+        $settings = $this->shopConfig->getShopConfig();
         $methods = [];
 
-        if (config('shop.payment_gateways.stripe.enabled')) {
+        if ($settings['stripe_enabled'] ?? false) {
             $methods['stripe'] = [
                 'name' => 'Credit Card',
                 'icon' => 'credit-card',
@@ -334,7 +351,7 @@ class CheckoutController extends Controller
             ];
         }
 
-        if (config('shop.payment_gateways.paypal.enabled')) {
+        if ($settings['paypal_enabled'] ?? false) {
             $methods['paypal'] = [
                 'name' => 'PayPal',
                 'icon' => 'paypal',
@@ -342,7 +359,7 @@ class CheckoutController extends Controller
             ];
         }
 
-        if (config('shop.wallet.enabled')) {
+        if ($settings['credits_enabled'] ?? false) {
             $methods['wallet'] = [
                 'name' => 'Wallet Balance',
                 'icon' => 'wallet',

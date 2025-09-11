@@ -66,6 +66,23 @@ class ShopServiceProvider extends ServiceProvider
         
         // Share shop navigation data with views
         $this->shareNavigationData();
+        
+        // Register shop configuration view composer
+        $this->registerShopConfigComposer();
+    }
+    
+    /**
+     * Register shop configuration view composer
+     */
+    protected function registerShopConfigComposer()
+    {
+        View::composer([
+            'shop::*',  // All shop views
+            'catalog.*',  // Legacy catalog views 
+            'checkout.*',  // Checkout views
+            'wallet.*',  // Wallet views
+            'client.shop.*'  // Client shop views
+        ], \PterodactylAddons\ShopSystem\Http\View\Composers\ShopConfigComposer::class);
     }
 
     /**

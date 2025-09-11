@@ -4,6 +4,7 @@ namespace PterodactylAddons\ShopSystem\PaymentGateways;
 
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 use PayPalCheckoutSdk\Core\PayPalHttpClient;
 use PayPalCheckoutSdk\Core\SandboxEnvironment;
 use PayPalCheckoutSdk\Core\ProductionEnvironment;
@@ -15,19 +16,25 @@ use PayPalCheckoutSdk\Payments\CapturesRefundRequest;
 class PayPalPaymentGateway extends AbstractPaymentGateway
 {
     private PayPalHttpClient $client;
+    private ShopConfigService $shopConfig;
 
-    public function __construct(array $config = [])
+    public function __construct(ShopConfigService $shopConfig, array $config = [])
     {
+        $this->shopConfig = $shopConfig;
+        $settings = $this->shopConfig->getShopConfig();
+        
         $this->config = array_merge([
-            'client_id' => config('shop.payments.paypal.client_id'),
-            'client_secret' => config('shop.payments.paypal.client_secret'),
-            'sandbox' => config('shop.payments.paypal.sandbox', true),
-            'fee_percentage' => config('shop.payments.paypal.fee_percentage', 2.9),
-            'fixed_fee' => config('shop.payments.paypal.fixed_fee', 0.30),
+            'client_id' => $settings['paypal_client_id'] ?? '',
+            'client_secret' => $settings['paypal_client_secret'] ?? '',
+            'mode' => $settings['paypal_mode'] ?? 'sandbox',
+            'enabled' => $settings['paypal_enabled'] ?? false,
+            'fee_percentage' => 2.9, // Default PayPal fee
+            'fixed_fee' => 0.30,     // Default PayPal fixed fee
         ], $config);
 
         if ($this->config['client_id'] && $this->config['client_secret']) {
-            $environment = $this->config['sandbox'] 
+            $sandbox = ($this->config['mode'] === 'sandbox');
+            $environment = $sandbox 
                 ? new SandboxEnvironment($this->config['client_id'], $this->config['client_secret'])
                 : new ProductionEnvironment($this->config['client_id'], $this->config['client_secret']);
                 
@@ -49,7 +56,7 @@ class PayPalPaymentGateway extends AbstractPaymentGateway
     {
         return !empty($this->config['client_id']) && 
                !empty($this->config['client_secret']) &&
-               config('shop.payments.paypal.enabled', false);
+               ($this->config['enabled'] ?? false);
     }
 
     public function createPaymentSession(ShopOrder $order, array $metadata = []): array

@@ -171,7 +171,7 @@
                                     <div>
                                         <div class="fw-bold">Account Credit</div>
                                         <small class="text-muted">
-                                            Available: {{ config('shop.currency.symbol', '$') }}{{ number_format(auth()->user()->shopWallet->balance, 2) }}
+                                            Available: {{ $paymentConfig['currency_symbol'] ?? '$' }}{{ number_format(auth()->user()->shopWallet->balance, 2) }}
                                         </small>
                                     </div>
                                 </label>
@@ -308,11 +308,47 @@
 
 <script>
 console.log('🚀 Checkout script starting...');
+
+// Global shop configuration
+window.shopConfig = {
+    currency: '{{ $shopConfig['currency'] ?? 'USD' }}',
+    currencySymbol: '{{ $shopConfig['currency_symbol'] ?? '$' }}',
+    taxRate: {{ $shopConfig['tax_rate'] ?? 0 }},
+    stripeEnabled: {{ ($shopConfig['stripe_enabled'] ?? false) ? 'true' : 'false' }},
+    paypalEnabled: {{ ($shopConfig['paypal_enabled'] ?? false) ? 'true' : 'false' }}
+};
+
+// Shop utility object
+window.Shop = {
+    showNotification: function(type, message) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+        notification.innerHTML = `
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+            <strong>${type.charAt(0).toUpperCase() + type.slice(1)}!</strong> ${message}
+        `;
+        
+        // Add to page
+        const container = document.querySelector('.container') || document.body;
+        container.insertBefore(notification, container.firstChild);
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 150);
+        }, 5000);
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 DOM loaded for checkout page');
     
     // Initialize Stripe
-    const stripe = Stripe('{{ config("shop.payment.stripe.public_key") }}');
+    const stripe = Stripe('{{ $shopConfig['stripe_publishable_key'] ?? '' }}');
     const elements = stripe.elements();
     
     // Create card element
@@ -412,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ${item.quantity > 1 ? `<span class="badge bg-secondary ms-1">×${item.quantity}</span>` : ''}
                         </div>
                         <div class="text-end">
-                            {{ config('shop.currency.symbol', '$') }}${itemTotal.toFixed(2)}
+                            ${window.shopConfig.currencySymbol}${itemTotal.toFixed(2)}
                         </div>
                     </div>
                 </div>

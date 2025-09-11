@@ -7,9 +7,17 @@ use Pterodactyl\Http\Controllers\Controller;
 use PterodactylAddons\ShopSystem\Models\ShopCategory;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 
 class ShopController extends Controller
 {
+    protected $shopConfig;
+    
+    public function __construct(ShopConfigService $shopConfig)
+    {
+        $this->shopConfig = $shopConfig;
+    }
+
     /**
      * Display the main shop page
      */
@@ -44,6 +52,10 @@ class ShopController extends Controller
             ->limit(3)
             ->get();
         
+        // Get shop configuration
+        $shopConfig = $this->shopConfig->getShopConfig();
+        $paymentConfig = $this->shopConfig->getPaymentConfig();
+        
         return view('client.shop.index', compact(
             'categories', 
             'featuredCategories',
@@ -51,7 +63,9 @@ class ShopController extends Controller
             'search', 
             'category', 
             'sort', 
-            'order'
+            'order',
+            'shopConfig',
+            'paymentConfig'
         ));
     }
 
@@ -88,6 +102,10 @@ class ShopController extends Controller
             ->orderBy($sort, $order)
             ->paginate(12);
         
+        // Get shop configuration
+        $shopConfig = $this->shopConfig->getShopConfig();
+        $paymentConfig = $this->shopConfig->getPaymentConfig();
+        
         return view('client.shop.category', compact(
             'category',
             'plans', 
@@ -95,7 +113,9 @@ class ShopController extends Controller
             'wallet', 
             'search', 
             'sort', 
-            'order'
+            'order',
+            'shopConfig',
+            'paymentConfig'
         ));
     }
 

@@ -4,6 +4,7 @@ namespace PterodactylAddons\ShopSystem\PaymentGateways;
 
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 use Stripe\StripeClient;
 use Stripe\Checkout\Session as StripeSession;
 use Stripe\Webhook;
@@ -13,15 +14,21 @@ use Illuminate\Support\Facades\Log;
 class StripePaymentGateway extends AbstractPaymentGateway
 {
     private StripeClient $stripe;
+    private ShopConfigService $shopConfig;
 
-    public function __construct(array $config = [])
+    public function __construct(ShopConfigService $shopConfig, array $config = [])
     {
+        $this->shopConfig = $shopConfig;
+        $settings = $this->shopConfig->getShopConfig();
+        
         $this->config = array_merge([
-            'secret_key' => config('shop.payments.stripe.secret_key'),
-            'publishable_key' => config('shop.payments.stripe.publishable_key'),
-            'webhook_secret' => config('shop.payments.stripe.webhook_secret'),
-            'fee_percentage' => config('shop.payments.stripe.fee_percentage', 2.9),
-            'fixed_fee' => config('shop.payments.stripe.fixed_fee', 0.30),
+            'secret_key' => $settings['stripe_secret_key'] ?? '',
+            'publishable_key' => $settings['stripe_publishable_key'] ?? '',
+            'webhook_secret' => $settings['stripe_webhook_secret'] ?? '',
+            'mode' => $settings['stripe_mode'] ?? 'test',
+            'enabled' => $settings['stripe_enabled'] ?? false,
+            'fee_percentage' => 2.9, // Default Stripe fee
+            'fixed_fee' => 0.30,     // Default Stripe fixed fee
         ], $config);
 
         if ($this->config['secret_key']) {
@@ -43,7 +50,7 @@ class StripePaymentGateway extends AbstractPaymentGateway
     {
         return !empty($this->config['secret_key']) && 
                !empty($this->config['publishable_key']) &&
-               config('shop.payments.stripe.enabled', false);
+               ($this->config['enabled'] ?? false);
     }
 
     public function createPaymentSession(ShopOrder $order, array $metadata = []): array
