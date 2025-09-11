@@ -195,16 +195,44 @@ class CheckoutController extends Controller
      */
     public function process(Request $request): JsonResponse
     {
-        $request->validate([
-            'payment_method' => 'required|string|in:stripe,paypal,wallet',
-            'billing_details' => 'sometimes|array',
-            'billing_details.name' => 'sometimes|string|max:255',
-            'billing_details.email' => 'sometimes|email|max:255',
-            'billing_details.address' => 'sometimes|string|max:255',
-            'billing_details.city' => 'sometimes|string|max:100',
-            'billing_details.country' => 'sometimes|string|size:2',
-            'billing_details.postal_code' => 'sometimes|string|max:20',
+        Log::info('🚀 Checkout process started', [
+            'user_id' => auth()->id(),
+            'payment_gateway' => $request->input('payment_gateway'),
+            'request_data' => $request->all(),
         ]);
+
+        try {
+            $request->validate([
+                'payment_gateway' => 'required|string|in:stripe,paypal,wallet',
+                // Billing details can be either flat fields or nested in billing_details array
+                'billing_details' => 'sometimes|array',
+                'billing_details.name' => 'sometimes|string|max:255',
+                'billing_details.email' => 'sometimes|email|max:255',
+                'billing_details.address' => 'sometimes|string|max:255',
+                'billing_details.city' => 'sometimes|string|max:100',
+                'billing_details.country' => 'sometimes|string|size:2',
+                'billing_details.postal_code' => 'sometimes|string|max:20',
+                // Flat billing fields (for backward compatibility)
+                'first_name' => 'sometimes|string|max:255',
+                'last_name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|max:255',
+                'company' => 'sometimes|string|max:255',
+                'address' => 'sometimes|string|max:255',
+                'address2' => 'sometimes|string|max:255',
+                'city' => 'sometimes|string|max:100',
+                'state' => 'sometimes|string|max:100',
+                'country' => 'sometimes|string|size:2',
+                'postal_code' => 'sometimes|string|max:20',
+            ]);
+            
+            Log::info('✅ Validation passed');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('❌ Validation failed', [
+                'errors' => $e->errors(),
+                'messages' => $e->getMessage(),
+            ]);
+            throw $e;
+        }
 
         try {
             DB::beginTransaction();
@@ -225,18 +253,38 @@ class CheckoutController extends Controller
 
             $totals = $this->calculateTotals($cartItems, $coupon);
 
+            // Extract billing details from either nested array or flat fields
+            $billingDetails = $request->input('billing_details', []);
+            if (empty($billingDetails)) {
+                // Build from flat fields
+                $billingDetails = [
+                    'first_name' => $request->input('first_name'),
+                    'last_name' => $request->input('last_name'),
+                    'email' => $request->input('email'),
+                    'company' => $request->input('company'),
+                    'address' => $request->input('address'),
+                    'address2' => $request->input('address2'),
+                    'city' => $request->input('city'),
+                    'state' => $request->input('state'),
+                    'country' => $request->input('country'),
+                    'postal_code' => $request->input('postal_code'),
+                ];
+                // Remove empty values
+                $billingDetails = array_filter($billingDetails);
+            }
+
             // Create the order
             $order = $this->orderService->createOrder([
                 'user_id' => auth()->id(),
                 'items' => $cartItems,
                 'totals' => $totals,
                 'coupon' => $coupon,
-                'billing_details' => $request->input('billing_details', []),
-                'payment_method' => $request->payment_method,
+                'billing_details' => $billingDetails,
+                'payment_method' => $request->payment_gateway,
             ]);
 
             // Process payment
-            $paymentResult = $this->processPayment($order, $request->payment_method, $request->all());
+            $paymentResult = $this->processPayment($order, $request->payment_gateway, $request->all());
 
             if ($paymentResult['success']) {
                 // Clear cart and coupon
@@ -247,7 +295,7 @@ class CheckoutController extends Controller
                 $this->logActivity('Order created and payment processed', $order, [
                     'order_id' => $order->id,
                     'total' => $totals['total'],
-                    'payment_method' => $request->payment_method,
+                    'payment_method' => $request->payment_gateway,
                 ]);
 
                 return $this->successResponse([
@@ -426,12 +474,9 @@ class CheckoutController extends Controller
      */
     private function processStripePayment($order, array $paymentData): array
     {
-        $gateway = $this->paymentManager->getGateway('stripe');
+        $gateway = $this->paymentManager->gateway('stripe');
         
-        return $gateway->createPayment([
-            'amount' => $order->amount,
-            'currency' => $order->currency,
-            'description' => "Order #{$order->id}",
+        return $gateway->createPaymentSession($order, [
             'metadata' => [
                 'order_id' => $order->id,
                 'user_id' => $order->user_id,
@@ -445,18 +490,37 @@ class CheckoutController extends Controller
      */
     private function processPayPalPayment($order, array $paymentData): array
     {
-        $gateway = $this->paymentManager->getGateway('paypal');
-        
-        return $gateway->createPayment([
+        Log::info('🏦 Starting PayPal payment processing', [
+            'order_id' => $order->id,
             'amount' => $order->amount,
             'currency' => $order->currency,
-            'description' => "Order #{$order->id}",
-            'return_url' => route('shop.orders.show', $order->uuid),
-            'cancel_url' => route('shop.cart'),
-            'metadata' => [
-                'order_id' => $order->id,
-                'user_id' => $order->user_id,
-            ],
         ]);
+        
+        try {
+            $gateway = $this->paymentManager->gateway('paypal');
+            
+            Log::info('✅ PayPal gateway loaded successfully');
+            
+            $result = $gateway->createPaymentSession($order, [
+                'return_url' => route('shop.orders.show', $order->uuid),
+                'cancel_url' => route('shop.cart'),
+                'metadata' => [
+                    'order_id' => $order->id,
+                    'user_id' => $order->user_id,
+                ],
+            ]);
+            
+            Log::info('🎯 PayPal payment result', ['result' => $result]);
+            
+            return $result;
+        } catch (\Exception $e) {
+            Log::error('💥 PayPal payment processing failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return ['success' => false, 'message' => 'PayPal payment failed: ' . $e->getMessage()];
+        }
     }
 }

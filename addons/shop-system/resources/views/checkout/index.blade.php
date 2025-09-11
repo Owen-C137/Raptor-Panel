@@ -139,9 +139,13 @@
                                     <div class="payment-icon me-3">
                                         <i class="fab fa-cc-stripe fa-2x text-primary"></i>
                                     </div>
-                                    <div>
+                                    <div class="flex-grow-1">
                                         <div class="fw-bold">Credit/Debit Card</div>
                                         <small class="text-muted">Visa, Mastercard, American Express</small>
+                                        <br>
+                                        <span class="badge badge-{{ ($shopConfig['stripe_mode'] ?? 'test') === 'live' ? 'success' : 'warning' }} badge-sm">
+                                            {{ strtoupper($shopConfig['stripe_mode'] ?? 'test') }} MODE
+                                        </span>
                                     </div>
                                 </label>
                             </div>
@@ -153,14 +157,18 @@
                                     <div class="payment-icon me-3">
                                         <i class="fab fa-paypal fa-2x text-primary"></i>
                                     </div>
-                                    <div>
+                                    <div class="flex-grow-1">
                                         <div class="fw-bold">PayPal</div>
                                         <small class="text-muted">Pay with your PayPal account</small>
+                                        <br>
+                                        <span class="badge badge-{{ ($shopConfig['paypal_mode'] ?? 'sandbox') === 'live' ? 'success' : 'warning' }} badge-sm">
+                                            {{ strtoupper($shopConfig['paypal_mode'] ?? 'sandbox') }} MODE
+                                        </span>
                                     </div>
                                 </label>
                             </div>
                             
-                            @if(auth()->user()->shopWallet && auth()->user()->shopWallet->balance > 0)
+                            @if(isset($paymentMethods['wallet']) && $userWallet && $userWallet->balance > 0)
                             <div class="form-check payment-method-option">
                                 <input class="form-check-input" type="radio" name="payment_gateway" 
                                        id="wallet" value="wallet">
@@ -171,7 +179,7 @@
                                     <div>
                                         <div class="fw-bold">Account Credit</div>
                                         <small class="text-muted">
-                                            Available: {{ $paymentConfig['currency_symbol'] ?? '$' }}{{ number_format(auth()->user()->shopWallet->balance, 2) }}
+                                            Available: {{ $shopConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance, 2) }}
                                         </small>
                                     </div>
                                 </label>
@@ -196,11 +204,11 @@
                         </div>
                         
                         {{-- Wallet Payment Form --}}
-                        @if(auth()->user()->shopWallet && auth()->user()->shopWallet->balance > 0)
+                        @if($userWallet && $userWallet->balance > 0)
                         <div id="wallet-payment-form" class="payment-form" style="display: none;">
                             <div class="alert alert-success">
                                 <i class="fas fa-wallet"></i>
-                                <strong>Available Credit: {{ config('shop.currency.symbol', '$') }}{{ number_format(auth()->user()->shopWallet->balance, 2) }}</strong>
+                                <strong>Available Credit: {{ $shopConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance, 2) }}</strong>
                             </div>
                             
                             <div id="wallet-insufficient" class="alert alert-warning" style="display: none;">
@@ -389,6 +397,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (selectedForm) {
                 selectedForm.style.display = 'block';
             }
+
+            // Show mode notice for payment gateways
+            let modeMessage = '';
+            if (this.value === 'stripe') {
+                const stripeMode = @json(($shopConfig['stripe_mode'] ?? 'test') === 'test' ? 'TEST' : 'LIVE');
+                modeMessage = `🔧 Stripe is running in ${stripeMode} mode`;
+                Shop.showNotification('info', modeMessage);
+            } else if (this.value === 'paypal') {
+                const paypalMode = @json(($shopConfig['paypal_mode'] ?? 'sandbox') === 'sandbox' ? 'SANDBOX' : 'LIVE');
+                modeMessage = `🔧 PayPal is running in ${paypalMode} mode`;
+                Shop.showNotification('info', modeMessage);
+            } else if (this.value === 'wallet') {
+                Shop.notification('info', '💰 Using wallet balance for payment');
+            }
             
             updateOrderButton();
         });
@@ -507,8 +529,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check wallet sufficiency
     function checkWalletSufficiency(total) {
-        @if(auth()->user()->shopWallet)
-        const walletBalance = {{ auth()->user()->shopWallet->balance }};
+        @if($userWallet)
+        const walletBalance = {{ $userWallet->balance }};
         const insufficient = document.getElementById('wallet-insufficient');
         
         if (walletBalance < total && insufficient) {
