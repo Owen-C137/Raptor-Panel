@@ -130,18 +130,35 @@ function addToCart(planId, billingCycle = 'monthly') {
             quantity: 1
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            // User not authenticated, redirect to login
+            showNotification('Please login to add items to cart', 'info');
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 1500);
+            return;
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.success) {
+        if (data && data.success) {
             updateCartCount();
             showNotification('Item added to cart!', 'success');
-        } else {
+        } else if (data) {
             showNotification(data.message || 'Failed to add item to cart', 'error');
         }
     })
     .catch(error => {
         console.error('Error adding to cart:', error);
-        showNotification('Error adding item to cart', 'error');
+        if (error.message && error.message.includes('401')) {
+            showNotification('Please login to add items to cart', 'info');
+            setTimeout(() => {
+                window.location.href = '/auth/login';
+            }, 1500);
+        } else {
+            showNotification('Error adding item to cart', 'error');
+        }
     });
 }
 
@@ -175,16 +192,35 @@ function updateCartQuantity(itemId, action) {
 
 function updateCartCount() {
     fetch('/shop/cart/summary')
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 401 || response.status === 403) {
+                // User not authenticated, hide cart count
+                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+                cartCountElements.forEach(element => {
+                    element.textContent = 0;
+                    element.style.display = 'none';
+                });
+                return;
+            }
+            return response.json();
+        })
         .then(data => {
-            const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
-            cartCountElements.forEach(element => {
-                element.textContent = data.item_count || 0;
-                element.style.display = data.item_count > 0 ? 'inline' : 'none';
-            });
+            if (data) {
+                const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+                cartCountElements.forEach(element => {
+                    element.textContent = data.cart_count || 0;
+                    element.style.display = (data.cart_count && data.cart_count > 0) ? 'inline' : 'none';
+                });
+            }
         })
         .catch(error => {
             console.error('Error updating cart count:', error);
+            // Hide cart count on error
+            const cartCountElements = document.querySelectorAll('.cart-count, #cart-count');
+            cartCountElements.forEach(element => {
+                element.textContent = 0;
+                element.style.display = 'none';
+            });
         });
 }
 

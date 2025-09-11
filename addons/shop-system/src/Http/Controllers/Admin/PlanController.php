@@ -247,10 +247,22 @@ class PlanController extends Controller
     private function processBillingCycles($cycles)
     {
         if (is_string($cycles)) {
-            return json_decode($cycles, true) ?? [];
+            $cycles = json_decode($cycles, true) ?? [];
         }
         
-        return $cycles ?? [];
+        if (!is_array($cycles)) {
+            return [];
+        }
+        
+        // Filter out empty cycles and reindex to ensure sequential keys
+        $processed = array_values(array_filter($cycles, function($cycle) {
+            return is_array($cycle) && 
+                   !empty($cycle['cycle']) && 
+                   isset($cycle['price']) && 
+                   is_numeric($cycle['price']);
+        }));
+        
+        return $processed;
     }
 
     /**

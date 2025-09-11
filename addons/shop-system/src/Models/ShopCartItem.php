@@ -17,11 +17,11 @@ class ShopCartItem extends Model
      */
     protected $fillable = [
         'cart_id',
-        'product_id',
+        'plan_id',
         'quantity',
         'unit_price',
         'total_price',
-        'product_options',
+        'plan_options',
         'server_config',
     ];
 
@@ -32,7 +32,7 @@ class ShopCartItem extends Model
         'quantity' => 'integer',
         'unit_price' => 'decimal:2',
         'total_price' => 'decimal:2',
-        'product_options' => 'array',
+        'plan_options' => 'array',
         'server_config' => 'array',
     ];
 
@@ -44,7 +44,13 @@ class ShopCartItem extends Model
         return $this->belongsTo(ShopCart::class, 'cart_id');
     }
 
-    // Product relationship removed since we now use plans directly
+    /**
+     * Get the plan for this cart item.
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(ShopPlan::class, 'plan_id');
+    }
 
     /**
      * Calculate total price based on quantity and unit price.

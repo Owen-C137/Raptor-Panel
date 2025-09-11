@@ -61,16 +61,6 @@ Route::prefix('shop')->name('shop.')->group(function () {
     
     // Legacy product routes (for backward compatibility)
     Route::get('/product/{product}', [ShopController::class, 'showProduct'])->name('product');
-
-    // Cart management (session-based, no auth required)
-    Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
-    Route::post('/cart/add', [ShopController::class, 'addToCart'])->name('cart.add');
-    Route::delete('/cart/remove', [ShopController::class, 'removeFromCart'])->name('cart.remove');
-    Route::put('/cart/update', [ShopController::class, 'updateCartQuantity'])->name('cart.update');
-    Route::delete('/cart/clear', [ShopController::class, 'clearCart'])->name('cart.clear');
-    Route::get('/cart/summary', [ShopController::class, 'getCartSummary'])->name('cart.summary');
-    Route::post('/cart/promo/apply', [ShopController::class, 'applyPromoCode'])->name('cart.promo.apply');
-    Route::delete('/cart/promo/remove', [ShopController::class, 'removePromoCode'])->name('cart.promo.remove');
     
     // Payment webhooks (public endpoints)
     Route::post('/webhooks/stripe', [WebhookController::class, 'stripe'])->name('webhooks.stripe');
@@ -79,6 +69,16 @@ Route::prefix('shop')->name('shop.')->group(function () {
 
 // Authenticated shop routes
 Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->group(function () {
+    
+    // Cart management (database-based, auth required)
+    Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
+    Route::post('/cart/add', [ShopController::class, 'addToCart'])->name('cart.add');
+    Route::delete('/cart/remove', [ShopController::class, 'removeFromCart'])->name('cart.remove');
+    Route::put('/cart/update', [ShopController::class, 'updateCartQuantity'])->name('cart.update');
+    Route::delete('/cart/clear', [ShopController::class, 'clearCart'])->name('cart.clear');
+    Route::get('/cart/summary', [ShopController::class, 'getCartSummary'])->name('cart.summary');
+    Route::post('/cart/promo/apply', [ShopController::class, 'applyPromoCode'])->name('cart.promo.apply');
+    Route::delete('/cart/promo/remove', [ShopController::class, 'removePromoCode'])->name('cart.promo.remove');
     
     // Checkout process
     Route::prefix('checkout')->name('checkout.')->group(function () {

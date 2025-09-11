@@ -104,17 +104,45 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    let cart = [];
+    console.log('Cart script starting...');
     
-    // Load cart items
+    // Create Shop object if it doesn't exist to bridge with global functions
+    if (typeof Shop === 'undefined') {
+        window.Shop = {
+            showNotification: function(type, message) {
+                if (typeof showNotification === 'function') {
+                    showNotification(message, type);
+                } else {
+                    console.log('Notification:', type, message);
+                }
+            },
+            updateCartCount: function(count) {
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                } else {
+                    console.log('Update cart count:', count);
+                }
+            }
+        };
+    }
+    
     function loadCart() {
+        console.log('Loading cart...');
+        document.getElementById('cart-items').innerHTML = '<div class="text-center py-5"><div class="spinner-border" role="status"><span class="visually-hidden">Loading cart items...</span></div></div>';
+        document.getElementById('cart-summary-content').innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Calculating...</span></div></div>';
+
         fetch('{{ route("shop.cart.summary") }}')
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
             .then(data => {
-                cart = data.items || [];
-                renderCart();
-                renderSummary();
+                console.log('Cart data received:', data);
+                if (data.success) {
+                    renderCart(data);
+                } else {
+                    showEmptyCart();
+                }
             })
             .catch(error => {
                 console.error('Error loading cart:', error);
@@ -123,379 +151,171 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
     
-    // Render cart items
-    function renderCart() {
-        const cartContainer = document.getElementById('cart-items');
-        const loadingElement = document.getElementById('cart-loading');
+    function renderCart(data) {
+        console.log('Rendering cart with data:', data);
         
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
-        }
-        
-        if (cart.length === 0) {
+        if (!data.items || data.items.length === 0) {
             showEmptyCart();
             return;
         }
         
+        // Show cart content and hide empty cart
         document.getElementById('cart-container').style.display = 'block';
         document.getElementById('empty-cart').style.display = 'none';
         
-        let html = '';
-        
-        cart.forEach((item, index) => {
-            const plan = item.plan;
-            const subtotal = (plan.price + plan.setup_fee) * item.quantity;
-            
-            html += `
-                <div class="card mb-3 cart-item" data-index="${index}">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="cart-item-info">
-                                    <h6 class="mb-1">${plan.product_name}</h6>
-                                    <p class="mb-1 text-primary">${plan.name}</p>
-                                    <small class="text-muted">${plan.billing_cycle} billing</small>
+        // Build cart items HTML
+        let cartItemsHtml = '';
+        data.items.forEach((item, index) => {
+            cartItemsHtml += `
+                <div class="cart-item mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="cart-item-info">
+                                        <h6 class="mb-1">${item.plan.name}</h6>
+                                        <p class="text-muted mb-1">${item.plan.description || ''}</p>
+                                        <small class="text-primary">
+                                            <strong>Billing:</strong> ${item.billing_cycle}
+                                        </small>
+                                    </div>
                                 </div>
-                            </div>
-                            
-                            <div class="col-md-2 text-center">
-                                <div class="quantity-controls">
-                                    <div class="input-group input-group-sm">
-                                        <button type="button" class="btn btn-outline-secondary quantity-btn" 
-                                                data-action="decrease" data-index="${index}">
-                                            <i class="fas fa-minus"></i>
-                                        </button>
-                                        <input type="number" class="form-control text-center quantity-input" 
-                                               value="${item.quantity}" min="1" max="10" 
-                                               data-index="${index}">
-                                        <button type="button" class="btn btn-outline-secondary quantity-btn" 
-                                                data-action="increase" data-index="${index}">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
+                                <div class="col-md-2">
+                                    <div class="quantity-controls">
+                                        <div class="input-group">
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateQuantity(${item.plan_id}, ${item.quantity - 1})">-</button>
+                                            <input type="text" class="form-control form-control-sm text-center" value="${item.quantity}" readonly>
+                                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateQuantity(${item.plan_id}, ${item.quantity + 1})">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="item-pricing">
+                                        <div class="item-price">$${item.plan.price}</div>
+                                        ${item.plan.setup_fee > 0 ? `<small class="text-muted">+$${item.plan.setup_fee} setup</small>` : ''}
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="text-center">
+                                        <strong>$${item.subtotal.toFixed(2)}</strong>
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div class="col-md-2 text-center">
-                                <div class="item-pricing">
-                                    <div class="item-price">
-                                        {{ config('shop.currency.symbol', '$') }}${(plan.price).toFixed(2)}
-                                    </div>
-                                    ${plan.setup_fee > 0 ? `
-                                    <small class="text-muted">
-                                        +{{ config('shop.currency.symbol', '$') }}${(plan.setup_fee).toFixed(2)} setup
-                                    </small>
-                                    ` : ''}
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-2 text-end">
-                                <div class="item-total">
-                                    <strong>{{ config('shop.currency.symbol', '$') }}${subtotal.toFixed(2)}</strong>
-                                    <div class="item-actions mt-2">
-                                        <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn" 
-                                                data-index="${index}">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
+                            <div class="row mt-2">
+                                <div class="col-12 text-end">
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${item.plan_id})">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
                                 </div>
                             </div>
                         </div>
-                        
-                        ${plan.description ? `
-                        <div class="row mt-2">
-                            <div class="col-12">
-                                <small class="text-muted">${plan.description}</small>
-                            </div>
-                        </div>
-                        ` : ''}
                     </div>
                 </div>
             `;
         });
         
-        cartContainer.innerHTML = html;
-        attachCartEvents();
+        document.getElementById('cart-items').innerHTML = cartItemsHtml;
+        
+        // Update cart summary
+        let summaryHtml = `
+            <div class="summary-line">
+                <span>Subtotal (${data.cart_count} items):</span>
+                <span>${data.formatted_total}</span>
+            </div>
+            <hr>
+            <div class="summary-line total">
+                <strong>Total: ${data.formatted_total}</strong>
+            </div>
+            <div class="d-grid gap-2 mt-3">
+                <a href="{{ route('shop.checkout.index') }}" class="btn btn-success btn-lg">
+                    <i class="fas fa-credit-card"></i>
+                    Proceed to Checkout
+                </a>
+            </div>
+        `;
+        
+        document.getElementById('cart-summary-content').innerHTML = summaryHtml;
+        
+        // Update cart count if function exists
+        if (typeof updateCartCount === 'function') {
+            updateCartCount(data.cart_count);
+        }
     }
     
-    // Render order summary
-    function renderSummary() {
-        const summaryContainer = document.getElementById('cart-summary-content');
-        const loadingElement = document.getElementById('summary-loading');
+    function showEmptyCart() {
+        console.log('Showing empty cart');
+        document.getElementById('cart-container').style.display = 'none';
+        document.getElementById('empty-cart').style.display = 'block';
         
-        if (loadingElement) {
-            loadingElement.style.display = 'none';
+        // Update cart count to 0
+        if (typeof updateCartCount === 'function') {
+            updateCartCount(0);
         }
-        
-        if (cart.length === 0) {
-            summaryContainer.innerHTML = `
-                <div class="text-center text-muted">
-                    <i class="fas fa-shopping-cart"></i>
-                    <p class="mb-0">No items in cart</p>
-                </div>
-            `;
+    }
+    
+    function updateQuantity(planId, newQuantity) {
+        if (newQuantity < 1) {
+            removeFromCart(planId);
             return;
         }
         
-        let subtotal = 0;
-        let setupTotal = 0;
-        let itemCount = 0;
-        
-        cart.forEach(item => {
-            const planCost = item.plan.price * item.quantity;
-            const setupCost = item.plan.setup_fee * item.quantity;
-            subtotal += planCost;
-            setupTotal += setupCost;
-            itemCount += item.quantity;
-        });
-        
-        const total = subtotal + setupTotal;
-        
-        let html = `
-            <div class="summary-line">
-                <span>Items (${itemCount}):</span>
-                <span>{{ config('shop.currency.symbol', '$') }}${subtotal.toFixed(2)}</span>
-            </div>
-        `;
-        
-        if (setupTotal > 0) {
-            html += `
-                <div class="summary-line">
-                    <span>Setup Fees:</span>
-                    <span>{{ config('shop.currency.symbol', '$') }}${setupTotal.toFixed(2)}</span>
-                </div>
-            `;
-        }
-        
-        html += `
-            <hr>
-            <div class="summary-line total">
-                <strong>
-                    <span>Total:</span>
-                    <span>{{ config('shop.currency.symbol', '$') }}${total.toFixed(2)}</span>
-                </strong>
-            </div>
-            
-            <div class="d-grid gap-2 mt-3">
-                <a href="{{ route('shop.checkout.index') }}" class="btn btn-success btn-lg">
-                    <i class="fas fa-lock"></i>
-                    Proceed to Checkout
-                </a>
-                <button type="button" class="btn btn-outline-danger" id="clear-cart-btn">
-                    <i class="fas fa-trash"></i>
-                    Clear Cart
-                </button>
-            </div>
-        `;
-        
-        summaryContainer.innerHTML = html;
-        
-        // Attach clear cart event
-        document.getElementById('clear-cart-btn').addEventListener('click', function() {
-            if (confirm('Are you sure you want to clear your cart?')) {
-                clearCart();
-            }
-        });
-    }
-    
-    // Attach cart event listeners
-    function attachCartEvents() {
-        // Quantity buttons
-        document.querySelectorAll('.quantity-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.dataset.index);
-                const action = this.dataset.action;
-                const input = document.querySelector(`input[data-index="${index}"]`);
-                let quantity = parseInt(input.value);
-                
-                if (action === 'increase' && quantity < 10) {
-                    quantity++;
-                } else if (action === 'decrease' && quantity > 1) {
-                    quantity--;
-                }
-                
-                input.value = quantity;
-                updateCartItem(index, quantity);
-            });
-        });
-        
-        // Quantity inputs
-        document.querySelectorAll('.quantity-input').forEach(input => {
-            input.addEventListener('change', function() {
-                const index = parseInt(this.dataset.index);
-                const quantity = Math.max(1, Math.min(10, parseInt(this.value) || 1));
-                this.value = quantity;
-                updateCartItem(index, quantity);
-            });
-        });
-        
-        // Remove item buttons
-        document.querySelectorAll('.remove-item-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const index = parseInt(this.dataset.index);
-                if (confirm('Remove this item from your cart?')) {
-                    removeCartItem(index);
-                }
-            });
-        });
-    }
-    
-    // Update cart item quantity
-    function updateCartItem(index, quantity) {
-        const formData = new FormData();
-        formData.append('index', index);
-        formData.append('quantity', quantity);
-        
         fetch('{{ route("shop.cart.update") }}', {
-            method: 'POST',
-            body: formData,
+            method: 'PUT',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                plan_id: planId,
+                quantity: newQuantity
+            })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                cart = data.cart.items || [];
-                renderSummary();
-                Shop.updateCartCount(data.cart.count);
+                loadCart(); // Reload cart
+                Shop.showNotification('success', 'Cart updated successfully.');
             } else {
-                Shop.showNotification('error', data.message);
-                loadCart(); // Reload cart on error
+                Shop.showNotification('error', data.message || 'Failed to update cart.');
             }
         })
         .catch(error => {
             console.error('Error updating cart:', error);
             Shop.showNotification('error', 'Failed to update cart.');
-            loadCart(); // Reload cart on error
         });
     }
     
-    // Remove cart item
-    function removeCartItem(index) {
-        const formData = new FormData();
-        formData.append('index', index);
-        
+    function removeFromCart(planId) {
         fetch('{{ route("shop.cart.remove") }}', {
-            method: 'POST',
-            body: formData,
+            method: 'DELETE',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                plan_id: planId
+            })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                loadCart(); // Reload cart
                 Shop.showNotification('success', 'Item removed from cart.');
-                loadCart();
-                Shop.updateCartCount(data.cart.count);
             } else {
-                Shop.showNotification('error', data.message);
+                Shop.showNotification('error', data.message || 'Failed to remove item.');
             }
         })
         .catch(error => {
-            console.error('Error removing item:', error);
+            console.error('Error removing from cart:', error);
             Shop.showNotification('error', 'Failed to remove item.');
         });
     }
     
-    // Clear entire cart
-    function clearCart() {
-        fetch('{{ route("shop.cart.clear") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Shop.showNotification('success', 'Cart cleared.');
-                cart = [];
-                showEmptyCart();
-                Shop.updateCartCount(0);
-            } else {
-                Shop.showNotification('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error clearing cart:', error);
-            Shop.showNotification('error', 'Failed to clear cart.');
-        });
-    }
-    
-    // Show empty cart state
-    function showEmptyCart() {
-        document.getElementById('cart-container').style.display = 'none';
-        document.getElementById('empty-cart').style.display = 'block';
-    }
-    
-    // Promo code handling
-    document.getElementById('promo-code-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const code = document.getElementById('promo-code-input').value.trim();
-        if (!code) return;
-        
-        const formData = new FormData();
-        formData.append('code', code);
-        
-        const btn = document.getElementById('apply-promo-btn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        
-        fetch('{{ route("shop.cart.promo.apply") }}', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Shop.showNotification('success', 'Promo code applied!');
-                document.getElementById('promo-code-display').textContent = code;
-                document.getElementById('applied-promo').style.display = 'block';
-                document.getElementById('promo-code-input').value = '';
-                renderSummary(); // Refresh summary with discount
-            } else {
-                Shop.showNotification('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error applying promo code:', error);
-            Shop.showNotification('error', 'Failed to apply promo code.');
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = 'Apply';
-        });
+    // Load cart when page is ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded, starting cart load...');
+        loadCart();
     });
-    
-    // Remove promo code
-    document.getElementById('remove-promo-btn').addEventListener('click', function() {
-        fetch('{{ route("shop.cart.promo.remove") }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Shop.showNotification('success', 'Promo code removed.');
-                document.getElementById('applied-promo').style.display = 'none';
-                renderSummary(); // Refresh summary without discount
-            } else {
-                Shop.showNotification('error', data.message);
-            }
-        });
-    });
-    
-    // Initialize
-    loadCart();
-});
 </script>
 @endpush
 

@@ -10,13 +10,15 @@ use PterodactylAddons\ShopSystem\Models\ShopPlan;
 use PterodactylAddons\ShopSystem\Repositories\ShopCategoryRepository;
 use PterodactylAddons\ShopSystem\Repositories\ShopPlanRepository;
 use PterodactylAddons\ShopSystem\Services\ShopOrderService;
+use PterodactylAddons\ShopSystem\Services\CartService;
 
 class ShopController extends Controller
 {
     public function __construct(
         private ShopCategoryRepository $categoryRepository,
         private ShopPlanRepository $planRepository,
-        private ShopOrderService $orderService
+        private ShopOrderService $orderService,
+        private CartService $cartService
     ) {}
 
     /**
@@ -153,25 +155,8 @@ class ShopController extends Controller
      */
     public function cart(): View
     {
-        $cart = session('shop_cart', []);
-        $cartItems = [];
-        $total = 0;
-
-        foreach ($cart as $item) {
-            $plan = $this->planRepository->find($item['plan_id']);
-            if ($plan && $plan->isAvailable()) {
-                $cartItem = [
-                    'plan' => $plan,
-                    'quantity' => $item['quantity'],
-                    'subtotal' => $plan->price * $item['quantity'],
-                    'setup_fee' => $plan->setup_fee * $item['quantity'],
-                ];
-                $cartItems[] = $cartItem;
-                $total += $cartItem['subtotal'] + $cartItem['setup_fee'];
-            }
-        }
-
-        return view('shop::cart.index', compact('cartItems', 'total'));
+        $cartData = $this->cartService->getCartSummary();
+        return view('shop::cart.index', $cartData);
     }
 
     /**
@@ -182,42 +167,28 @@ class ShopController extends Controller
         $request->validate([
             'plan_id' => 'required|exists:shop_plans,id',
             'quantity' => 'integer|min:1|max:10',
+            'billing_cycle' => 'string|in:monthly,quarterly,semi-annually,annually',
         ]);
 
-        $plan = $this->planRepository->find($request->plan_id);
-        
-        if (!$plan || !$plan->isAvailable()) {
+        $success = $this->cartService->addItem(
+            $request->plan_id,
+            $request->integer('quantity', 1),
+            $request->string('billing_cycle', 'monthly')
+        );
+
+        if (!$success) {
             return response()->json([
                 'success' => false,
                 'message' => 'This plan is not available.',
             ], 400);
         }
 
-        $cart = session('shop_cart', []);
-        $planId = $request->plan_id;
-        $quantity = $request->integer('quantity', 1);
-
-        // Check if item already in cart
-        $existingIndex = collect($cart)->search(function ($item) use ($planId) {
-            return $item['plan_id'] == $planId;
-        });
-
-        if ($existingIndex !== false) {
-            $cart[$existingIndex]['quantity'] += $quantity;
-        } else {
-            $cart[] = [
-                'plan_id' => $planId,
-                'quantity' => $quantity,
-                'added_at' => now()->timestamp,
-            ];
-        }
-
-        session(['shop_cart' => $cart]);
+        $cartData = $this->cartService->getCartSummary();
 
         return response()->json([
             'success' => true,
             'message' => 'Item added to cart successfully.',
-            'cart_count' => collect($cart)->sum('quantity'),
+            'cart_count' => $cartData['cart_count'],
         ]);
     }
 
@@ -230,61 +201,63 @@ class ShopController extends Controller
             'plan_id' => 'required|exists:shop_plans,id',
         ]);
 
-        $cart = session('shop_cart', []);
-        $planId = $request->plan_id;
+        $success = $this->cartService->removeItem($request->plan_id);
 
-        $cart = collect($cart)->filter(function ($item) use ($planId) {
-            return $item['plan_id'] != $planId;
-        })->values()->all();
+        if (!$success) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Item not found in cart.',
+            ], 404);
+        }
 
-        session(['shop_cart' => $cart]);
+        $cartData = $this->cartService->getCartSummary();
 
         return response()->json([
             'success' => true,
             'message' => 'Item removed from cart.',
-            'cart_count' => collect($cart)->sum('quantity'),
+            'cart_count' => $cartData['cart_count'],
         ]);
     }
 
-    /**
+        /**
      * Update cart item quantity.
      */
     public function updateCartQuantity(Request $request): JsonResponse
     {
         $request->validate([
             'plan_id' => 'required|exists:shop_plans,id',
-            'quantity' => 'required|integer|min:1|max:10',
+            'quantity' => 'required|integer|min:0|max:10',
         ]);
 
-        $cart = session('shop_cart', []);
-        $planId = $request->plan_id;
-        $quantity = $request->quantity;
+        $success = $this->cartService->updateQuantity($request->plan_id, $request->quantity);
 
-        foreach ($cart as &$item) {
-            if ($item['plan_id'] == $planId) {
-                $item['quantity'] = $quantity;
-                break;
-            }
+        if (!$success) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update cart item.',
+            ], 400);
         }
 
-        session(['shop_cart' => $cart]);
+        $cartData = $this->cartService->getCartSummary();
 
         return response()->json([
             'success' => true,
             'message' => 'Cart updated successfully.',
+            'cart_count' => $cartData['cart_count'],
         ]);
     }
 
     /**
-     * Clear entire cart.
+     * Clear all items from cart.
      */
     public function clearCart(): JsonResponse
     {
-        session()->forget('shop_cart');
+        $this->cartService->clearCart();
 
         return response()->json([
             'success' => true,
             'message' => 'Cart cleared successfully.',
+            'cart_count' => 0,
         ]);
     }
 
@@ -293,23 +266,7 @@ class ShopController extends Controller
      */
     public function getCartSummary(): JsonResponse
     {
-        $cart = session('shop_cart', []);
-        $itemCount = collect($cart)->sum('quantity');
-        
-        $total = 0;
-        foreach ($cart as $item) {
-            $plan = $this->planRepository->find($item['plan_id']);
-            if ($plan) {
-                $total += ($plan->price + $plan->setup_fee) * $item['quantity'];
-            }
-        }
-
-        return response()->json([
-            'success' => true,
-            'cart_count' => $itemCount,
-            'total' => $total,
-            'formatted_total' => '$' . number_format($total, 2),
-        ]);
+        return response()->json($this->cartService->getCartSummary());
     }
 
     /**
