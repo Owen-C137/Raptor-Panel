@@ -1,0 +1,291 @@
+/* Shop System CSS - Corrected for Actual HTML Classes */
+
+.shop-container {
+    margin-top: 20px;
+}
+
+.shop-logo {
+    max-height: 40px;
+}
+
+/* Product cards - targeting actual classes used in HTML */
+.product-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #e3e6f0;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: white;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* Product images - targeting actual classes */
+.product-image {
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+}
+
+/* Keep backward compatibility with old class names */
+.category-card, .plan-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #e3e6f0;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: white;
+}
+
+.category-card:hover, .plan-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.plan-card .card-header {
+    background: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 15px 20px;
+}
+
+.plan-price {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #5a5c69;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+}
+
+.plan-features li {
+    padding: 8px 0;
+    border-bottom: 1px solid #f8f9fc;
+}
+
+.plan-features li:last-child {
+    border-bottom: none;
+}
+
+.cart-summary {
+    background: #f8f9fc;
+    border: 1px solid #e3e6f0;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.shop-navigation .nav-link {
+    color: #5a5c69;
+    font-weight: 500;
+}
+
+.shop-navigation .nav-link:hover {
+    color: #4e73df;
+}
+
+.shop-navigation .nav-link.active {
+    color: #4e73df;
+    font-weight: 600;
+}
+
+.badge-cart {
+    background-color: #e74a3b;
+    color: white;
+    font-size: 0.75em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    position: relative;
+    top: -2px;
+}
+
+.resource-info {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.billing-cycle-selector {
+    margin: 15px 0;
+}
+
+.order-status {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: 500;
+}
+
+.order-status.active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.order-status.pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.order-status.suspended {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.wallet-balance {
+    font-size: 1.25em;
+    font-weight: bold;
+    color: #28a745;
+}
+
+@media (max-width: 768px) {
+    .category-card {
+        margin-bottom: 15px;
+        padding: 15px;
+    }
+    
+    .plan-card {
+        margin-bottom: 15px;
+    }
+}
+
+/* Missing plan-specific classes */
+.plan-filters {
+    background: #f8f9fc;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e3e6f0;
+}
+
+.plan-item {
+    transition: transform 0.2s ease;
+}
+
+.plan-item:hover {
+    transform: translateY(-2px);
+}
+
+.plan-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-bottom: none;
+}
+
+.plan-name {
+    color: white;
+    font-weight: 600;
+}
+
+.plan-description {
+    font-size: 0.95em;
+    line-height: 1.5;
+}
+
+.plan-pricing {
+    border: 1px solid #e3e6f0;
+    border-radius: 6px;
+    padding: 12px;
+    background: #f8f9fc;
+}
+
+.plan-resources {
+    margin-top: 15px;
+}
+
+.plan-resources .resource-item {
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.plan-resources .resource-item:last-child {
+    border-bottom: none;
+}
+
+/* Shopping Cart Sidebar */
+.shop-cart-sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Hidden by default */
+    width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 1050;
+    overflow-y: auto;
+}
+
+.shop-cart-sidebar.active {
+    right: 0; /* Show when active */
+}
+
+.cart-header {
+    padding: 20px;
+    border-bottom: 1px solid #e3e6f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fc;
+}
+
+.cart-header h5 {
+    margin: 0;
+    color: #5a5c69;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    color: #858796;
+}
+
+.btn-close:hover {
+    color: #5a5c69;
+}
+
+.cart-content {
+    padding: 20px;
+}
+
+.cart-empty {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.cart-items .cart-item {
+    border-bottom: 1px solid #e3e6f0;
+    padding: 15px 0;
+}
+
+.cart-items .cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-footer {
+    border-top: 1px solid #e3e6f0;
+    padding-top: 20px;
+    margin-top: 20px;
+}
+
+.cart-backdrop, .shop-cart-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 1040;
+    display: none;
+}
+
+.cart-backdrop.active, .shop-cart-backdrop.active {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .shop-cart-sidebar {
+        width: 300px;
+        right: -300px;
+    }
+}

@@ -1,0 +1,563 @@
+@extends('shop::layout')
+
+@section('shop-title', 'Shopping Cart')
+
+@section('shop-content')
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <h1>
+                <i class="fas fa-shopping-cart"></i>
+                Shopping Cart
+            </h1>
+            
+            <div class="cart-actions">
+                <a href="{{ route('shop.index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i>
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" id="cart-container">
+    {{-- Cart Items --}}
+    <div class="col-lg-8">
+        <div class="cart-items" id="cart-items">
+            @if(count($cartItems) > 0)
+                @foreach($cartItems as $index => $item)
+                <div class="card mb-3 cart-item">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="cart-item-info">
+                                    <h6 class="mb-1">{{ $item['plan']->name }}</h6>
+                                    <p class="text-muted mb-1">{{ $item['plan']->category->name ?? 'Game Hosting' }}</p>
+                                    <small class="text-primary">
+                                        <i class="fas fa-microchip me-1"></i>{{ $item['plan']->cpu ?? 'N/A' }} CPU | 
+                                        <i class="fas fa-memory me-1"></i>{{ $item['plan']->memory ?? 'N/A' }}MB RAM | 
+                                        <i class="fas fa-hdd me-1"></i>{{ $item['plan']->storage ?? 'N/A' }}GB Storage
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="quantity-controls">
+                                    <div class="input-group input-group-sm">
+                                        <button class="btn btn-outline-secondary quantity-decrease" 
+                                                type="button" 
+                                                data-index="{{ $index }}" 
+                                                data-quantity="{{ max(1, $item['quantity'] - 1) }}">-</button>
+                                        <input type="text" class="form-control text-center" value="{{ $item['quantity'] }}" readonly>
+                                        <button class="btn btn-outline-secondary quantity-increase" 
+                                                type="button" 
+                                                data-index="{{ $index }}" 
+                                                data-quantity="{{ min(10, $item['quantity'] + 1) }}">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="item-pricing">
+                                    <div class="item-price">${{ number_format($item['plan']->getCheapestCycle()->price ?? 0, 2) }}/{{ $item['plan']->getCheapestCycle()->cycle_period ?? 'month' }}</div>
+                                    @if($item['setup_fee'] > 0)
+                                        <small class="text-muted">Setup: ${{ number_format($item['setup_fee'], 2) }}</small>
+                                    @endif
+                                    <div class="fw-bold">Total: ${{ number_format($item['subtotal'] + $item['setup_fee'], 2) }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <button class="btn btn-outline-danger btn-sm remove-item-btn" 
+                                        data-index="{{ $index }}" 
+                                        data-plan-name="{{ $item['plan']->name }}"
+                                        title="Remove item">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            @else
+                <div class="text-center py-5" id="empty-cart">
+                    <div class="card">
+                        <div class="card-body">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h5>Your cart is empty</h5>
+                            <p class="text-muted">Browse our game hosting plans and add some to your cart!</p>
+                            <a href="{{ route('shop.index') }}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left me-2"></i>Browse Plans
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    </div>
+    
+    {{-- Cart Summary --}}
+    <div class="col-lg-4">
+        <div class="card sticky-top" style="top: 20px;">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-calculator"></i>
+                    Order Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="cart-summary-content">
+                    @if(count($cartItems) > 0)
+                        @php
+                            $subtotal = collect($cartItems)->sum('subtotal');
+                            $setupFees = collect($cartItems)->sum('setup_fee');
+                            $totalItems = collect($cartItems)->sum('quantity');
+                        @endphp
+                        <div class="summary-line">
+                            <span>Items ({{ $totalItems }})</span>
+                            <span>${{ number_format($subtotal, 2) }}</span>
+                        </div>
+                        @if($setupFees > 0)
+                        <div class="summary-line">
+                            <span>Setup Fees</span>
+                            <span>${{ number_format($setupFees, 2) }}</span>
+                        </div>
+                        @endif
+                        <hr>
+                        <div class="summary-line total">
+                            <strong>Total</strong>
+                            <strong>${{ number_format($total, 2) }}</strong>
+                        </div>
+                        <div class="d-grid mt-3">
+                            <a href="{{ route('shop.checkout.index') }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                            </a>
+                        </div>
+                    @else
+                        <p class="text-muted text-center">No items in cart</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        
+        {{-- Promo Code --}}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-ticket-alt"></i>
+                    Promo Code
+                </h6>
+            </div>
+            <div class="card-body">
+                <form id="promo-code-form">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="promo-code-input" 
+                               placeholder="Enter promo code">
+                        <button type="submit" class="btn btn-outline-primary" id="apply-promo-btn">
+                            Apply
+                        </button>
+                    </div>
+                </form>
+                <div id="applied-promo" class="mt-2" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="badge bg-success" id="promo-code-display"></span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" id="remove-promo-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Empty Cart State --}}
+<div class="row" id="empty-cart" style="display: none;">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-shopping-cart fa-4x text-muted mb-4"></i>
+                <h3>Your Cart is Empty</h3>
+                <p class="text-muted">Browse our products and add items to your cart.</p>
+                <a href="{{ route('shop.index') }}" class="btn btn-primary">
+                    <i class="fas fa-store"></i>
+                    Start Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Remove Item Confirmation Modal --}}
+<div class="modal fade" id="removeItemModal" tabindex="-1" aria-labelledby="removeItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removeItemModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Confirm Removal
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to remove this item from your cart?</p>
+                <div class="mt-3 p-3 bg-light rounded" id="remove-item-details">
+                    <!-- Item details will be inserted here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmRemoveBtn">
+                    <i class="fas fa-trash"></i>
+                    Remove Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Clear Cart Confirmation Modal --}}
+<div class="modal fade" id="clearCartModal" tabindex="-1" aria-labelledby="clearCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="clearCartModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Clear Cart
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to remove all items from your cart?</p>
+                <p class="text-muted mt-2"><small>This action cannot be undone.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmClearBtn">
+                    <i class="fas fa-trash"></i>
+                    Clear Cart
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cart functionality using server-side rendering
+
+    
+    // Attach clear cart event (for server-side rendered summary)
+    function attachClearCartEvent() {
+        const clearBtn = document.getElementById('clear-cart-btn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear your entire cart?')) {
+                    clearCart();
+                }
+            });
+        }
+    }
+    
+    // Attach cart event listeners
+    function attachCartEvents() {
+        // Quantity increase buttons
+        document.querySelectorAll('.quantity-increase').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                const quantity = parseInt(this.dataset.quantity);
+                updateCartItem(index, quantity);
+            });
+        });
+        
+        // Quantity decrease buttons
+        document.querySelectorAll('.quantity-decrease').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                const quantity = parseInt(this.dataset.quantity);
+                updateCartItem(index, quantity);
+            });
+        });
+        
+        // Remove item buttons - direct confirmation
+        document.querySelectorAll('.remove-item-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                const planName = this.dataset.planName || 'this item';
+                
+                if (confirm(`Are you sure you want to remove "${planName}" from your cart?`)) {
+                    removeCartItem(index);
+                }
+            });
+        });
+    }
+
+    
+    // Update cart item quantity
+    function updateCartItem(index, quantity) {
+        // Create a form and submit to refresh the page
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("shop.cart.update") }}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').content;
+        
+        // Add method spoofing for PUT request
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'PUT';
+        
+        const indexInput = document.createElement('input');
+        indexInput.type = 'hidden';
+        indexInput.name = 'index';
+        indexInput.value = index;
+        
+        const quantityInput = document.createElement('input');
+        quantityInput.type = 'hidden';
+        quantityInput.name = 'quantity';
+        quantityInput.value = quantity;
+        
+        form.appendChild(csrfInput);
+        form.appendChild(methodInput);
+        form.appendChild(indexInput);
+        form.appendChild(quantityInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Remove cart item
+    function removeCartItem(index) {
+        // Create a form and submit to refresh the page
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("shop.cart.remove") }}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').content;
+        
+        const methodInput = document.createElement('input');
+        methodInput.type = 'hidden';
+        methodInput.name = '_method';
+        methodInput.value = 'DELETE';
+        
+        const indexInput = document.createElement('input');
+        indexInput.type = 'hidden';
+        indexInput.name = 'index';
+        indexInput.value = index;
+        
+        form.appendChild(csrfInput);
+        form.appendChild(methodInput);
+        form.appendChild(indexInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+    // Clear entire cart
+    function clearCart() {
+        // Create a form and submit to refresh the page
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ route("shop.cart.clear") }}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = '_token';
+        csrfInput.value = document.querySelector('meta[name="csrf-token"]').content;
+        
+        form.appendChild(csrfInput);
+        document.body.appendChild(form);
+        form.submit();
+    }
+    
+
+    
+    // Promo code handling
+    console.log('Promo code form found:', document.getElementById('promo-code-form'));
+    if (document.getElementById('promo-code-form')) {
+        document.getElementById('promo-code-form').addEventListener('submit', function(e) {
+            console.log('Promo code form submitted');
+            e.preventDefault();
+            
+            const code = document.getElementById('promo-code-input').value.trim();
+            console.log('Promo code:', code);
+            if (!code) return;
+            
+            const formData = new FormData();
+            formData.append('code', code);
+            
+            const btn = document.getElementById('apply-promo-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+            
+            fetch('{{ route("shop.checkout.coupon.apply") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', data.message || 'Promo code applied successfully!');
+                    document.getElementById('promo-code-display').textContent = code;
+                    document.getElementById('applied-promo').style.display = 'block';
+                    document.getElementById('promo-code-input').value = '';
+                    document.getElementById('promo-code-form').style.display = 'none';
+                    
+                    // Refresh the page to show updated totals
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message || 'Invalid promo code');
+                }
+            })
+            .catch(error => {
+                console.error('Error applying promo code:', error);
+                showAlert('error', 'Failed to apply promo code. Please try again.');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerHTML = 'Apply';
+            });
+        });
+    }
+    
+    // Remove promo code
+    if (document.getElementById('remove-promo-btn')) {
+        document.getElementById('remove-promo-btn').addEventListener('click', function() {
+            fetch('{{ route("shop.checkout.coupon.remove") }}', {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Promo code removed.');
+                    document.getElementById('applied-promo').style.display = 'none';
+                    document.getElementById('promo-code-form').style.display = 'block';
+                    
+                    // Refresh the page to show updated totals
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showAlert('error', data.message || 'Failed to remove promo code');
+                }
+            })
+            .catch(error => {
+                console.error('Error removing promo code:', error);
+                showAlert('error', 'Failed to remove promo code.');
+            });
+        });
+    }
+    
+    // Show alert function
+    function showAlert(type, message) {
+        // Remove any existing alerts
+        const existingAlert = document.querySelector('.shop-alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+        
+        // Create new alert
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show shop-alert`;
+        alertDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            if (alertDiv && alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+    
+    // Initialize cart events (no loading needed since we use server-side rendering)
+    attachCartEvents();
+    attachClearCartEvent();
+});
+</script>
+@endpush
+
+@push('styles')
+<style>
+.cart-item {
+    transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.quantity-controls .input-group {
+    width: 120px;
+}
+
+.item-pricing {
+    text-align: center;
+}
+
+.item-price {
+    font-weight: 600;
+    color: #28a745;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.summary-line.total {
+    font-size: 1.1em;
+    margin-top: 10px;
+}
+
+.cart-item-info h6 {
+    color: #495057;
+}
+
+.cart-item-info .text-primary {
+    font-weight: 500;
+}
+
+#empty-cart .card-body {
+    padding: 3rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+    .cart-item .row > div {
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+    
+    .quantity-controls .input-group {
+        width: 100px;
+        margin: 0 auto;
+    }
+}
+</style>
+@endpush
