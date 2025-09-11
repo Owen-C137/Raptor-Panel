@@ -174,12 +174,28 @@ class ShopConfigService
     }
     
     /**
-     * Check if shop is enabled and not in maintenance mode
+     * Check if shop is enabled and available
      */
-    public function isShopEnabled(): bool
+    public function isShopAvailable(): bool
     {
         $config = $this->getShopConfig();
         return ($config['shop_enabled'] ?? true) && !($config['maintenance_mode'] ?? false);
+    }
+    
+    /**
+     * Check if shop is enabled (alias for isShopAvailable for backward compatibility)
+     */
+    public function isShopEnabled(): bool
+    {
+        return $this->isShopAvailable();
+    }
+    
+    /**
+     * Check if automatic server setup is enabled
+     */
+    public function isAutoSetupEnabled(): bool
+    {
+        return $this->getSetting('auto_setup', true);
     }
     
     /**
