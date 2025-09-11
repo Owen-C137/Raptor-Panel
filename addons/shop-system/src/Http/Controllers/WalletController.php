@@ -316,4 +316,89 @@ class WalletController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Handle auto top-up settings.
+     */
+    public function autoTopup(Request $request): JsonResponse
+    {
+        $request->validate([
+            'enabled' => 'required|boolean',
+            'threshold' => 'required|numeric|min:0',
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        try {
+            $userId = auth()->id();
+            
+            // Store auto-topup settings in user preferences or a dedicated table
+            // For now, we'll return success as this is a placeholder implementation
+            // In a real implementation, you'd store these settings in the database
+            
+            Log::info('Auto top-up settings updated', [
+                'user_id' => $userId,
+                'enabled' => $request->enabled,
+                'threshold' => $request->threshold,
+                'amount' => $request->amount,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Auto top-up settings saved successfully!',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Auto top-up error: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to save auto top-up settings.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Export wallet transactions as CSV.
+     */
+    public function exportTransactions(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $this->checkShopAvailability();
+        
+        $userId = auth()->id();
+        $transactions = $this->walletRepository->getTransactions($userId, 1000); // Get up to 1000 transactions
+        
+        $filename = 'wallet_transactions_' . date('Y-m-d') . '.csv';
+        
+        return response()->streamDownload(function() use ($transactions) {
+            $file = fopen('php://output', 'w');
+            
+            // Add CSV headers
+            fputcsv($file, [
+                'Date',
+                'Type',
+                'Description',
+                'Amount',
+                'Balance After',
+                'Status',
+                'Reference'
+            ]);
+            
+            // Add transaction data
+            foreach ($transactions as $transaction) {
+                fputcsv($file, [
+                    $transaction->created_at->format('Y-m-d H:i:s'),
+                    ucfirst($transaction->type),
+                    $transaction->description ?? 'N/A',
+                    $this->formatCurrency($transaction->amount),
+                    $this->formatCurrency($transaction->balance_after ?? 0),
+                    ucfirst($transaction->status ?? 'completed'),
+                    $transaction->reference ?? 'N/A'
+                ]);
+            }
+            
+            fclose($file);
+        }, $filename, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
 }

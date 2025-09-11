@@ -1,5 +1,18 @@
 # 🛠️ **PTERODACTYL ADDON DEVELOPMENT GUIDELINES**
 
+IMPORTANT: we have set up a repo you can use this to push changes when i ask to:
+
+# 1. Stage all changes
+git add .
+
+# 2. Commit them with a message
+git commit -m "Describe what you changed here"
+
+# 3. Push to GitHub
+git push origin main
+
+give a short description on whats changed where it says: Describe what you changed here
+
 *Comprehensive instructions for creating and maintaining self-contained Pterodactyl Panel addons*
 
 THIS IS OUR PLAN / ROADMAP UPDATED_SHOP_ROADMAP_2025.md ALWAYS KEEP THIS UPDATED AND NEVER CREATE A FRESH ONE.

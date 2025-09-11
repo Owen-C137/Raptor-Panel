@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.disabled = true;
         this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
         
-        fetch('{{ route("shop.wallet.deposit") }}', {
+        fetch('{{ route("shop.wallet.add-funds.process") }}', {
             method: 'POST',
             body: formData,
             headers: {

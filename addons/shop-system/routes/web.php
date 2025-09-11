@@ -111,6 +111,8 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
         Route::post('/add-funds', [WalletController::class, 'processAddFunds'])->name('add-funds.process');
         Route::get('/balance', [WalletController::class, 'getBalance'])->name('balance');
         Route::get('/transactions', [WalletController::class, 'getTransactions'])->name('transactions');
+        Route::post('/auto-topup', [WalletController::class, 'autoTopup'])->name('auto-topup');
+        Route::get('/export', [WalletController::class, 'exportTransactions'])->name('export');
         
         // Optional wallet transfer feature
         Route::middleware('shop.transfers_enabled')->group(function () {
