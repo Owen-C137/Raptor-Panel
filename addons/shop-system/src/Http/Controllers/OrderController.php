@@ -349,4 +349,78 @@ class OrderController extends Controller
                "Status: " . ucfirst($order->status) . "\n" .
                "Next Due: " . ($order->next_due_at ? $order->next_due_at->format('M j, Y') : 'N/A');
     }
+
+    /**
+     * Create server with user-provided variables.
+     */
+    public function createServer(Request $request, ShopOrder $order): RedirectResponse
+    {
+        Gate::authorize('view', $order);
+
+        // Validate that this order can have a server created
+        if ($order->status !== 'processing') {
+            return redirect()
+                ->route('shop.orders.show', $order)
+                ->with('error', 'This order is not in a state where a server can be created.');
+        }
+
+        if (!$order->requiresVariableInput()) {
+            return redirect()
+                ->route('shop.orders.show', $order)
+                ->with('error', 'This order does not require variable input.');
+        }
+
+        if ($order->server_id) {
+            return redirect()
+                ->route('shop.orders.show', $order)
+                ->with('error', 'A server has already been created for this order.');
+        }
+
+        // Validate the variables
+        $requiredVariables = $order->getRequiredVariables();
+        $userVariables = $request->input('variables', []);
+
+        $request->validate([
+            'variables' => 'required|array',
+        ]);
+
+        // Validate required variables are provided
+        foreach ($requiredVariables as $variable) {
+            if ($variable['type'] === 'steam_token' && empty($userVariables[$variable['env_variable']])) {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->withErrors(['variables.' . $variable['env_variable'] => $variable['user_friendly_name'] . ' is required.']);
+            }
+        }
+
+        try {
+            // Store user variables in the order
+            $config = is_string($order->server_config) ? json_decode($order->server_config, true) : $order->server_config;
+            $config['user_variables'] = $userVariables;
+            $order->update(['server_config' => json_encode($config)]);
+
+            // Create the server with user variables
+            $server = $this->orderService->createServerWithVariables($order, $userVariables);
+
+            if ($server) {
+                return redirect()
+                    ->route('shop.orders.show', $order)
+                    ->with('success', 'Server created successfully! Your server is now being set up.');
+            } else {
+                return redirect()
+                    ->back()
+                    ->withInput()
+                    ->with('error', 'Failed to create server. Please try again or contact support.');
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to create server for order ' . $order->id . ': ' . $e->getMessage());
+            
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'An error occurred while creating your server. Please try again or contact support.');
+        }
+    }
 }

@@ -226,18 +226,64 @@ class ShopOrderService
         $requiredVariables = [];
         
         foreach ($variables as $variable) {
-            $requiredVariables[] = [
-                'name' => $variable->name,
-                'env_variable' => $variable->env_variable,
-                'description' => $variable->description,
-                'rules' => $variable->rules,
-                'type' => $this->determineVariableType($variable),
-                'user_friendly_name' => $this->getUserFriendlyName($variable),
-                'help_text' => $this->getHelpText($variable),
-            ];
+            // Only include variables that are truly required
+            if ($this->isVariableTrulyRequired($variable)) {
+                $requiredVariables[] = [
+                    'name' => $variable->name,
+                    'env_variable' => $variable->env_variable,
+                    'description' => $variable->description,
+                    'rules' => $variable->rules,
+                    'type' => $this->determineVariableType($variable),
+                    'user_friendly_name' => $this->getUserFriendlyName($variable),
+                    'help_text' => $this->getHelpText($variable),
+                ];
+            }
         }
 
         return $requiredVariables;
+    }
+
+    /**
+     * Determine if a variable is truly required for server functionality
+     */
+    protected function isVariableTrulyRequired(EggVariable $variable): bool
+    {
+        $rules = strtolower($variable->rules ?? '');
+        $envVar = strtolower($variable->env_variable);
+        $name = strtolower($variable->name);
+
+        // Variables that are explicitly marked as required in rules
+        if (str_contains($rules, 'required')) {
+            return true;
+        }
+
+        // Critical authentication variables
+        $criticalVariables = [
+            'rcon_pass', 'rcon_password', 'admin_password', 'server_password',
+            'steam_acc', 'steam_user', 'steam_pass', 'api_key', 'token',
+            'srcds_appid', 'srcds_game', 'app_id', 'game_id'
+        ];
+
+        foreach ($criticalVariables as $critical) {
+            if (str_contains($envVar, $critical) || str_contains($name, $critical)) {
+                return true;
+            }
+        }
+
+        // Variables that typically break server functionality if missing
+        $functionalVariables = [
+            'jarfile', 'server_jar', 'executable', 'binary', 'mod_version',
+            'game_version', 'build_number'
+        ];
+
+        foreach ($functionalVariables as $functional) {
+            if (str_contains($envVar, $functional) || str_contains($name, $functional)) {
+                return true;
+            }
+        }
+
+        // All other variables are considered optional
+        return false;
     }
 
     /**
@@ -309,6 +355,150 @@ class ShopOrderService
         ];
 
         return $helpTexts[$variable->env_variable] ?? $variable->description;
+    }
+
+    /**
+     * Create server with user-provided variables
+     */
+    public function createServerWithVariables(ShopOrder $order, array $userVariables): ?Server
+    {
+        \Log::info("Creating server with user variables for order {$order->id}", [
+            'variables' => array_keys($userVariables)
+        ]);
+
+        // Check if plan has an egg configured
+        $order->load(['plan', 'plan.egg']);
+        
+        if (!$order->plan || !$order->plan->egg) {
+            \Log::error("Cannot create server for order {$order->id}: No egg configured");
+            return null;
+        }
+
+        try {
+            // Create the server with user variables
+            $server = $this->createServerWithCustomVariables($order, $userVariables);
+            
+            if (!$server) {
+                \Log::error("createServerWithCustomVariables returned null for order {$order->id}");
+                return null;
+            }
+            
+            // Update order with server details and mark as active
+            $order->update([
+                'server_id' => $server->id,
+                'status' => ShopOrder::STATUS_ACTIVE,
+            ]);
+
+            \Log::info("Server created successfully with user variables for order {$order->id}", [
+                'server_id' => $server->id
+            ]);
+            
+            return $server;
+
+        } catch (\Exception $e) {
+            \Log::error("Server creation with variables failed for order {$order->id}: " . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Create server with custom user variables
+     */
+    protected function createServerWithCustomVariables(ShopOrder $order, array $userVariables): ?Server
+    {
+        \Log::info("🚀 Creating server with custom variables for order {$order->id}");
+        
+        // Load dependencies
+        $order->load(['user', 'plan', 'plan.egg']);
+        $plan = $order->plan;
+        $egg = $plan->egg;
+        $user = $order->user;
+
+        \Log::info("📦 Dependencies loaded for custom variables", [
+            'plan_name' => $plan->name,
+            'egg_name' => $egg->name,
+            'user_email' => $user->email,
+            'user_variables_count' => count($userVariables)
+        ]);
+
+        // Get a simple node and allocation
+        $nodeId = 1; // Use the first available node
+        $allocationId = 3; // Use a predefined allocation
+
+        // Merge user variables with default egg variables
+        $environment = $this->mergeEnvironmentVariables($egg, $userVariables);
+
+        \Log::info("🔧 Environment variables prepared", [
+            'total_variables' => count($environment),
+            'user_provided' => array_keys($userVariables),
+            'environment' => $environment
+        ]);
+
+        // Simple server configuration with user variables
+        $serverData = [
+            'name' => 'srv-' . strtolower($user->username) . '-' . Str::random(8) . '-' . time(),
+            'description' => "Server for {$plan->name} plan with custom configuration",
+            'owner_id' => $user->id,
+            'egg_id' => $egg->id,
+            'nest_id' => $egg->nest_id,
+            'node_id' => $nodeId,
+            'allocation_id' => $allocationId,
+            'memory' => $plan->memory,
+            'swap' => $plan->swap,
+            'disk' => $plan->disk,
+            'io' => $plan->io,
+            'cpu' => $plan->cpu,
+            'threads' => null,
+            'oom_disabled' => false,
+            'allocation_additional' => [],
+            'database_limit' => $plan->databases,
+            'backup_limit' => $plan->backups,
+            'allocation_limit' => $plan->allocations,
+            'startup' => $egg->startup,
+            'image' => $this->getDefaultDockerImage($egg),
+            'environment' => $environment,
+            'skip_scripts' => false,
+            'start_on_completion' => false,
+        ];
+
+        \Log::info("⚙️ Server configuration with custom variables", [
+            'name' => $serverData['name'],
+            'node_id' => $serverData['node_id'],
+            'allocation_id' => $serverData['allocation_id'],
+            'image' => $serverData['image'],
+            'environment_count' => count($serverData['environment'])
+        ]);
+
+        // Create the server
+        $server = $this->serverCreationService->handle($serverData);
+
+        \Log::info("✅ Server created successfully with custom variables", [
+            'server_id' => $server->id,
+            'server_uuid' => $server->uuid
+        ]);
+
+        return $server;
+    }
+
+    /**
+     * Merge user variables with default egg variables
+     */
+    protected function mergeEnvironmentVariables($egg, array $userVariables): array
+    {
+        $environment = [];
+        
+        // Start with all egg variables
+        foreach ($egg->variables as $variable) {
+            if (isset($userVariables[$variable->env_variable])) {
+                // Use user-provided value
+                $environment[$variable->env_variable] = $userVariables[$variable->env_variable];
+            } else {
+                // Use default value
+                $environment[$variable->env_variable] = $variable->default_value ?? '';
+            }
+        }
+        
+        return $environment;
     }
 
     /**
@@ -678,5 +868,43 @@ class ShopOrderService
             substr($order->uuid, 0, 8),
             $timestamp
         );
+    }
+
+    /**
+     * Get the default Docker image for an egg.
+     */
+    protected function getDefaultDockerImage($egg): string
+    {
+        \Log::info("Getting docker image for egg {$egg->id}", [
+            'docker_image' => $egg->docker_image,
+            'docker_images' => $egg->docker_images
+        ]);
+
+        // If egg has specific docker images defined, prefer Java 17
+        if (is_array($egg->docker_images) && !empty($egg->docker_images)) {
+            // Try to find Java 17 first (most stable)
+            foreach ($egg->docker_images as $tag => $image) {
+                if (str_contains(strtolower($tag), 'java 17')) {
+                    \Log::info("Using preferred Java 17 image: {$image}");
+                    return $image;
+                }
+            }
+            
+            // Fall back to first available image
+            $defaultImage = array_values($egg->docker_images)[0];
+            \Log::info("Using first available image: {$defaultImage}");
+            return $defaultImage;
+        }
+
+        // Use the egg's default docker_image if available
+        if (!empty($egg->docker_image)) {
+            \Log::info("Using egg default image: {$egg->docker_image}");
+            return $egg->docker_image;
+        }
+
+        // Ultimate fallback - use a generic image
+        $fallbackImage = 'ghcr.io/pterodactyl/yolks:java_17';
+        \Log::info("Using fallback image: {$fallbackImage}");
+        return $fallbackImage;
     }
 }

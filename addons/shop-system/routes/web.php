@@ -104,6 +104,7 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
         Route::post('/{order:uuid}/renew', [OrderController::class, 'renew'])->name('renew');
         Route::post('/{order:uuid}/payment', [OrderController::class, 'processPayment'])->name('payment');
         Route::get('/{order:uuid}/invoice', [OrderController::class, 'downloadInvoice'])->name('invoice');
+        Route::post('/{order:uuid}/create-server', [OrderController::class, 'createServer'])->name('create-server');
         
         // Admin-only order management routes
         Route::middleware('admin')->group(function () {

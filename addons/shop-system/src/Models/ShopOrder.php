@@ -446,4 +446,52 @@ class ShopOrder extends Model
                !empty($this->billing_details['first_name']) && 
                !empty($this->billing_details['last_name']);
     }
+
+    /**
+     * Check if this order requires variable input from the user.
+     */
+    public function requiresVariableInput(): bool
+    {
+        $config = is_string($this->server_config) ? json_decode($this->server_config, true) : $this->server_config;
+        return is_array($config) && 
+               isset($config['requires_variables']) && 
+               $config['requires_variables'] === true;
+    }
+
+    /**
+     * Get the required variables for this order.
+     */
+    public function getRequiredVariables(): array
+    {
+        $config = is_string($this->server_config) ? json_decode($this->server_config, true) : $this->server_config;
+        
+        if (!is_array($config) || !isset($config['required_variables'])) {
+            return [];
+        }
+        
+        return $config['required_variables'];
+    }
+
+    /**
+     * Check if user has provided all required variables.
+     */
+    public function hasProvidedVariables(): bool
+    {
+        $config = is_string($this->server_config) ? json_decode($this->server_config, true) : $this->server_config;
+        return is_array($config) && isset($config['user_variables']);
+    }
+
+    /**
+     * Get user-provided variables.
+     */
+    public function getUserVariables(): array
+    {
+        $config = is_string($this->server_config) ? json_decode($this->server_config, true) : $this->server_config;
+        
+        if (!is_array($config) || !isset($config['user_variables'])) {
+            return [];
+        }
+        
+        return $config['user_variables'];
+    }
 }

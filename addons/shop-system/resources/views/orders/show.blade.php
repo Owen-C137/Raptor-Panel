@@ -141,7 +141,121 @@
                     </div>
                 @endif
                 
-                <div class="text-end">
+                {{-- Server Variable Input Section --}}
+                @if($order->status === 'processing' && $order->requiresVariableInput())
+                    <hr>
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-cogs"></i> Server Configuration Required</h5>
+                        <p class="mb-0">Your order requires some additional configuration before we can create your server. Please provide the required information below:</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Server Variables</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="server-variables-form" method="POST" action="{{ route('shop.orders.create-server', $order) }}">
+                                @csrf
+                                
+                                @foreach($order->getRequiredVariables() as $variable)
+                                    <div class="mb-3">
+                                        <label for="var_{{ $variable['env_variable'] }}" class="form-label">
+                                            <strong>{{ $variable['user_friendly_name'] }}</strong>
+                                            @if($variable['type'] === 'steam_token')
+                                                <span class="text-danger">*</span>
+                                            @endif
+                                        </label>
+                                        
+                                        @if($variable['type'] === 'password')
+                                            <input type="password" 
+                                                   class="form-control" 
+                                                   name="variables[{{ $variable['env_variable'] }}]" 
+                                                   id="var_{{ $variable['env_variable'] }}"
+                                                   placeholder="Enter {{ strtolower($variable['user_friendly_name']) }}"
+                                                   {{ $variable['type'] === 'steam_token' ? 'required' : '' }}>
+                                        @elseif($variable['type'] === 'boolean')
+                                            <select class="form-control" 
+                                                    name="variables[{{ $variable['env_variable'] }}]" 
+                                                    id="var_{{ $variable['env_variable'] }}">
+                                                <option value="1">Yes</option>
+                                                <option value="0">No</option>
+                                            </select>
+                                        @elseif($variable['type'] === 'number')
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   name="variables[{{ $variable['env_variable'] }}]" 
+                                                   id="var_{{ $variable['env_variable'] }}"
+                                                   placeholder="Enter {{ strtolower($variable['user_friendly_name']) }}"
+                                                   {{ $variable['type'] === 'steam_token' ? 'required' : '' }}>
+                                        @else
+                                            <input type="text" 
+                                                   class="form-control" 
+                                                   name="variables[{{ $variable['env_variable'] }}]" 
+                                                   id="var_{{ $variable['env_variable'] }}"
+                                                   placeholder="Enter {{ strtolower($variable['user_friendly_name']) }}"
+                                                   {{ $variable['type'] === 'steam_token' ? 'required' : '' }}>
+                                        @endif
+                                        
+                                        @if($variable['help_text'])
+                                            <div class="form-text">{{ $variable['help_text'] }}</div>
+                                        @endif
+                                    </div>
+                                @endforeach
+                                
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-success" id="create-server-btn">
+                                        <i class="fas fa-server"></i>
+                                        Create Server
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @endif
+                
+                {{-- Server Information (if server exists) --}}
+                @if($order->server_id)
+                    <hr>
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-server"></i> Server Created</h5>
+                        <p class="mb-0">Your server has been created successfully!</p>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Server Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Server ID:</strong> {{ $order->server_id }}</p>
+                                    <p><strong>Status:</strong> 
+                                        <span class="badge badge-info">{{ $order->server->status ?? 'Installing' }}</span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    @if($order->server)
+                                        <p><strong>Name:</strong> {{ $order->server->name }}</p>
+                                        @if($order->server->allocation)
+                                            <p><strong>Connection:</strong> {{ $order->server->allocation->ip }}:{{ $order->server->allocation->port }}</p>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+                            
+                            @if($order->server)
+                                <div class="text-end">
+                                    <a href="{{ route('server.index', $order->server->uuidShort) }}" class="btn btn-primary">
+                                        <i class="fas fa-external-link-alt"></i>
+                                        Manage Server
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+                
+                <div class="text-end mt-3">
                     <a href="{{ route('shop.orders.index') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i>
                         Back to Orders
