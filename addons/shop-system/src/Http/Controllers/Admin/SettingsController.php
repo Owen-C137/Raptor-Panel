@@ -4,9 +4,10 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Pterodactyl\Http\Controllers\Controller;
 use PterodactylAddons\ShopSystem\Models\ShopSettings;
-use Pterodactyl\Http\Requests\Admin\Shop\SettingsUpdateRequest;
+use PterodactylAddons\ShopSystem\Http\Requests\Admin\SettingsUpdateRequest;
 
 class SettingsController extends Controller
 {
@@ -37,7 +38,7 @@ class SettingsController extends Controller
         // Clear settings cache if exists
         cache()->forget('shop.settings');
         
-        return redirect()->route('admin.shop.settings')
+        return redirect()->route('admin.shop.settings.index')
             ->with('success', 'Shop settings updated successfully.');
     }
 
@@ -58,7 +59,9 @@ class SettingsController extends Controller
             
             foreach ($booleanSettings as $key) {
                 if (isset($settings[$key])) {
-                    $settings[$key] = filter_var($settings[$key], FILTER_VALIDATE_BOOLEAN);
+                    // Explicit boolean conversion - treat "1", "true", 1, true as true, everything else as false
+                    $value = $settings[$key];
+                    $settings[$key] = ((string) $value === '1' || (string) $value === 'true' || $value === true || $value === 1);
                 }
             }
             
@@ -206,31 +209,92 @@ class SettingsController extends Controller
     /**
      * Update payment gateways settings
      */
-    public function updatePaymentGateways(SettingsUpdateRequest $request): RedirectResponse
+    public function updatePaymentGateways(SettingsUpdateRequest $request): RedirectResponse|JsonResponse
     {
-        $data = $request->validate([
-            'stripe_enabled' => 'boolean',
-            'stripe_public_key' => 'nullable|string',
-            'stripe_secret_key' => 'nullable|string',
-            'stripe_webhook_secret' => 'nullable|string',
-            'paypal_enabled' => 'boolean',
-            'paypal_client_id' => 'nullable|string',
-            'paypal_client_secret' => 'nullable|string',
-            'paypal_mode' => 'nullable|in:sandbox,live',
-        ]);
+        try {
+            $data = $request->validated();
 
-        foreach ($data as $key => $value) {
-            ShopSettings::updateOrCreate(
-                ['key' => $key],
-                ['value' => $value ?? '']
-            );
+            \Log::info('Payment gateway settings received:', $data);
+
+            // Map form field names to setting keys
+            $settingMappings = [
+                'stripe_enabled' => 'stripe_enabled',
+                'stripe_mode' => 'stripe_mode',
+                'stripe_publishable_key' => 'stripe_publishable_key',
+                'stripe_secret_key' => 'stripe_secret_key',
+                'stripe_webhook_secret' => 'stripe_webhook_secret',
+                'paypal_enabled' => 'paypal_enabled',
+                'paypal_mode' => 'paypal_mode',
+                'paypal_client_id' => 'paypal_client_id',
+                'paypal_client_secret' => 'paypal_client_secret',
+                'currency' => 'currency',
+                'tax_rate' => 'tax_rate',
+                'payment_terms' => 'payment_terms',
+            ];
+
+            foreach ($settingMappings as $formField => $settingKey) {
+                if (array_key_exists($formField, $data)) {
+                    $value = $data[$formField];
+                    
+                    // Convert checkbox values to proper booleans
+                    if (in_array($formField, ['stripe_enabled', 'paypal_enabled'])) {
+                        // Explicit boolean conversion for checkboxes
+                        $value = (bool) ((string) $value === '1' || (string) $value === 'true' || $value === true);
+                        \Log::info("Converting {$formField} to boolean:", [
+                            'original' => $data[$formField], 
+                            'converted' => $value,
+                            'original_type' => gettype($data[$formField]),
+                            'converted_type' => gettype($value)
+                        ]);
+                    }
+                    
+                    \Log::info("Saving setting {$settingKey}:", ['value' => $value, 'type' => gettype($value)]);
+                    
+                    ShopSettings::updateOrCreate(
+                        ['key' => $settingKey],
+                        [
+                            'value' => $value ? '1' : '0', // Store as string for consistency
+                            'type' => $this->getSettingType($value),
+                            'group' => 'payment',
+                            'is_public' => in_array($settingKey, ['currency']) // Only currency is public
+                        ]
+                    );
+                }
+            }
+
+            // Clear settings cache
+            cache()->forget('shop.settings');
+
+            $message = 'Payment gateway settings updated successfully.';
+
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message
+                ]);
+            }
+
+            // Return redirect for regular form submissions
+            return redirect()->route('admin.shop.settings.payment-gateways')
+                ->with('success', $message);
+                
+        } catch (\Exception $e) {
+            $errorMessage = 'Failed to update payment gateway settings. Please try again.';
+            
+            // Return JSON error response for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'error' => config('app.debug') ? $e->getMessage() : null
+                ], 500);
+            }
+
+            // Return redirect with error for regular form submissions
+            return redirect()->route('admin.shop.settings.payment-gateways')
+                ->with('error', $errorMessage);
         }
-
-        // Clear settings cache
-        cache()->forget('shop.settings');
-
-        return redirect()->route('admin.shop.settings.payment-gateways')
-            ->with('success', 'Payment gateway settings updated successfully.');
     }
 
     /**
@@ -244,9 +308,51 @@ class SettingsController extends Controller
     /**
      * Update general settings
      */
-    public function updateGeneral(SettingsUpdateRequest $request): RedirectResponse
+    public function updateGeneral(SettingsUpdateRequest $request): RedirectResponse|JsonResponse
     {
-        return $this->update($request);
+        try {
+            $data = $request->validated();
+
+            foreach ($data as $key => $value) {
+                ShopSettings::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
+
+            // Clear settings cache
+            cache()->forget('shop.settings');
+
+            $message = 'General settings updated successfully.';
+
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message
+                ]);
+            }
+
+            // Return redirect for regular form submissions
+            return redirect()->route('admin.shop.settings.index')
+                ->with('success', $message);
+                
+        } catch (\Exception $e) {
+            $errorMessage = 'Failed to update general settings. Please try again.';
+            
+            // Return JSON error response for AJAX requests
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $errorMessage,
+                    'error' => $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->with('error', $errorMessage)
+                ->withInput();
+        }
     }
 
     /**
@@ -386,5 +492,25 @@ class SettingsController extends Controller
         // This would trigger job processing
         // For now, just return a success message
         return redirect()->back()->with('success', 'Jobs processing triggered successfully.');
+    }
+
+    /**
+     * Determine the setting type based on the value
+     */
+    private function getSettingType($value): string
+    {
+        if (is_bool($value)) {
+            return 'boolean';
+        }
+        
+        if (is_numeric($value)) {
+            return 'number';
+        }
+        
+        if (is_string($value) && strlen($value) > 255) {
+            return 'text';
+        }
+        
+        return 'string';
     }
 }

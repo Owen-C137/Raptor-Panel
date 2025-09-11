@@ -301,12 +301,16 @@
 </div>
 @endsection
 
-@push('scripts')
+@section('scripts')
+@parent
 {{-- Stripe.js --}}
 <script src="https://js.stripe.com/v3/"></script>
 
 <script>
+console.log('🚀 Checkout script starting...');
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🎯 DOM loaded for checkout page');
+    
     // Initialize Stripe
     const stripe = Stripe('{{ config("shop.payment.stripe.public_key") }}');
     const elements = stripe.elements();
@@ -356,19 +360,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load order summary
     function loadOrderSummary() {
-        fetch('{{ route("shop.checkout.summary") }}')
-            .then(response => response.json())
+        console.log('🔄 Loading checkout summary...');
+        console.log('📍 Summary URL:', '{{ route("shop.checkout.summary") }}');
+        
+        fetch('{{ route("shop.checkout.summary") }}', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+            .then(response => {
+                console.log('📡 Summary response status:', response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log('✅ Summary data received:', data);
                 if (data.success) {
+                    console.log('🎯 Rendering order summary with:', data.summary);
                     renderOrderSummary(data.summary);
                     checkWalletSufficiency(data.summary.total);
                 } else {
+                    console.error('❌ Summary API returned failure:', data);
                     document.getElementById('checkout-summary').innerHTML = 
                         '<div class="alert alert-danger">Failed to load order summary</div>';
                 }
             })
             .catch(error => {
-                console.error('Error loading summary:', error);
+                console.error('❌ Error loading summary:', error);
                 document.getElementById('checkout-summary').innerHTML = 
                     '<div class="alert alert-danger">Error loading order details</div>';
             });
@@ -615,13 +635,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Initialize
+    console.log('🔧 About to call loadOrderSummary...');
     loadOrderSummary();
+    console.log('🔧 About to call updateOrderButton...');
     updateOrderButton();
 });
 </script>
-@endpush
+@endsection
 
-@push('styles')
+@section('styles')
+@parent
 <style>
 .checkout-steps {
     display: flex;
@@ -725,4 +748,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 </style>
-@endpush
+@endsection

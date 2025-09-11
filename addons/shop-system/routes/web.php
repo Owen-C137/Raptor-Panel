@@ -83,6 +83,7 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
     // Checkout process
     Route::prefix('checkout')->name('checkout.')->group(function () {
         Route::get('/', [CheckoutController::class, 'index'])->name('index');
+        Route::get('/summary', [CheckoutController::class, 'getSummary'])->name('summary');
         Route::post('/process', [CheckoutController::class, 'process'])->name('process');
         Route::post('/coupon/apply', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
         Route::delete('/coupon/remove', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');

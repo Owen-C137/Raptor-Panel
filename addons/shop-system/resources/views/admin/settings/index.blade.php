@@ -14,9 +14,12 @@
 @endsection
 
 @section('content')
+{{-- Alert Container --}}
+<div id="alert-container"></div>
+
 <div class="row">
     <div class="col-md-8">
-        <form method="POST" action="{{ route('admin.shop.settings.general.update') }}">
+        <form id="general-settings-form" method="POST" action="{{ route('admin.shop.settings.general.update') }}">
             @csrf
             @method('PUT')
             
@@ -217,8 +220,9 @@
             
             <div class="box">
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-save"></i> Save Settings
+                    <button type="submit" class="btn btn-success" id="save-general-settings-btn">
+                        <i class="fa fa-save"></i> <span id="save-general-btn-text">Save Settings</span>
+                        <i class="fa fa-spinner fa-spin" id="save-general-spinner" style="display: none;"></i>
                     </button>
                     <button type="button" class="btn btn-warning" onclick="resetToDefaults()">
                         <i class="fa fa-refresh"></i> Reset to Defaults
@@ -416,6 +420,114 @@
         function resetToDefaults() {
             if (confirm('Reset all settings to default values? This will overwrite your current configuration.')) {
                 window.location.href = '{{ route('admin.shop.settings.index') }}';
+            }
+        }
+
+        // AJAX form handling for general settings
+        const generalForm = document.getElementById('general-settings-form');
+        const generalSaveBtn = document.getElementById('save-general-settings-btn');
+        const generalSaveBtnText = document.getElementById('save-general-btn-text');
+        const generalSaveSpinner = document.getElementById('save-general-spinner');
+        const generalAlertContainer = document.getElementById('alert-container');
+
+        generalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            generalSaveBtn.disabled = true;
+            generalSaveBtnText.textContent = 'Saving...';
+            generalSaveSpinner.style.display = 'inline-block';
+            
+            // Clear any existing alerts
+            generalAlertContainer.innerHTML = '';
+            
+            // Prepare form data
+            const formData = new FormData(generalForm);
+            
+            // Add CSRF token
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('_method', 'PUT');
+            
+            // Make AJAX request
+            fetch(generalForm.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                // Handle validation errors
+                if (response.status === 422) {
+                    return response.json().then(data => {
+                        throw new ValidationError(data);
+                    });
+                }
+                throw new Error('Network response was not ok');
+            })
+            .then(data => {
+                // Success
+                showGeneralAlert('success', data.message || 'Settings saved successfully!');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                
+                if (error instanceof ValidationError) {
+                    // Handle validation errors
+                    const validationErrors = error.data.errors || {};
+                    const errorMessages = Object.values(validationErrors).flat();
+                    const errorMessage = errorMessages.length > 0 
+                        ? errorMessages.join('<br>') 
+                        : 'Please check your input and try again.';
+                    showGeneralAlert('danger', errorMessage);
+                } else {
+                    showGeneralAlert('danger', 'Failed to save settings. Please try again.');
+                }
+            })
+            .finally(() => {
+                // Reset button state
+                generalSaveBtn.disabled = false;
+                generalSaveBtnText.textContent = 'Save Settings';
+                generalSaveSpinner.style.display = 'none';
+            });
+        });
+        
+        function showGeneralAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade in" role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <strong>${type === 'success' ? 'Success!' : 'Error!'}</strong> ${message}
+                </div>
+            `;
+            
+            generalAlertContainer.innerHTML = alertHtml;
+            
+            // Auto-hide success alerts after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    const alert = generalAlertContainer.querySelector('.alert');
+                    if (alert) {
+                        alert.classList.remove('in');
+                        setTimeout(() => alert.remove(), 150);
+                    }
+                }, 5000);
+            }
+            
+            // Scroll to top to show the alert
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Custom ValidationError class
+        class ValidationError extends Error {
+            constructor(data) {
+                super('Validation failed');
+                this.data = data;
             }
         }
     </script>

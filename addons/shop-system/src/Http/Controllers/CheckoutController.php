@@ -11,6 +11,7 @@ use PterodactylAddons\ShopSystem\Repositories\ShopCouponRepository;
 use PterodactylAddons\ShopSystem\Services\ShopOrderService;
 use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
 use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CartService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -21,7 +22,8 @@ class CheckoutController extends Controller
         private ShopCouponRepository $couponRepository,
         private ShopOrderService $orderService,
         private PaymentGatewayManager $paymentManager,
-        private WalletService $walletService
+        private WalletService $walletService,
+        private CartService $cartService
     ) {}
 
     /**
@@ -36,22 +38,24 @@ class CheckoutController extends Controller
                 ->with('error', 'Please login to continue with checkout.');
         }
 
-        $cart = session('shop_cart', []);
+        // Use database-based cart instead of session
+        $cartSummary = $this->cartService->getCartSummary();
         
-        if (empty($cart)) {
-            return redirect()->route('shop.index')
-                ->with('error', 'Your cart is empty.');
+        if (!$cartSummary['success'] || empty($cartSummary['items'])) {
+            return redirect()->route('shop.cart')
+                ->with('error', 'Your cart is empty. Please add items before checkout.');
         }
 
-        $cartItems = $this->buildCartItems($cart);
-        $totals = $this->calculateTotals($cartItems);
+        // Get cart data for the view
+        $cartItems = $cartSummary['items'];
+        $total = $cartSummary['total'];
         
         $paymentMethods = $this->getAvailablePaymentMethods();
         $userWallet = $this->walletService->getWallet(auth()->id());
 
         return view('shop::checkout.index', compact(
             'cartItems',
-            'totals', 
+            'total', 
             'paymentMethods',
             'userWallet'
         ));
@@ -113,6 +117,63 @@ class CheckoutController extends Controller
         return $this->successResponse([
             'totals' => $totals,
         ], 'Coupon removed.');
+    }
+
+    /**
+     * Get checkout summary with cart items and totals.
+     */
+    public function getSummary(): JsonResponse
+    {
+        \Log::info('🔄 Checkout getSummary called', [
+            'user_id' => auth()->id(),
+            'user_authenticated' => auth()->check(),
+            'request_headers' => request()->headers->all(),
+        ]);
+        
+        $summary = $this->cartService->getCartSummary();
+        
+        \Log::info('📊 Cart summary result', $summary);
+        
+        if (!$summary['success']) {
+            \Log::warning('⚠️ Cart summary failed', $summary);
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load checkout summary.'
+            ], 400);
+        }
+
+        // Calculate breakdown for checkout
+        $subtotal = 0;
+        $setupTotal = 0;
+        
+        foreach ($summary['items'] as $item) {
+            $plan = $item['plan'];
+            $quantity = $item['quantity'];
+            
+            $subtotal += $plan['price'] * $quantity;
+            $setupTotal += $plan['setup_fee'] * $quantity;
+        }
+        
+        $discount = 0; // TODO: Add coupon/discount logic
+        $tax = 0; // TODO: Add tax calculation if needed
+        $total = $subtotal + $setupTotal - $discount + $tax;
+
+        $response = [
+            'success' => true,
+            'summary' => [
+                'items' => $summary['items'],
+                'subtotal' => $subtotal,
+                'setup_total' => $setupTotal,
+                'discount' => $discount,
+                'tax' => $tax,
+                'total' => $total
+            ]
+        ];
+        
+        \Log::info('✅ Checkout summary response', $response);
+
+        // Return the structure expected by the frontend
+        return response()->json($response);
     }
 
     /**

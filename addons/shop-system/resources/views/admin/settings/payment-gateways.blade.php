@@ -15,9 +15,12 @@
 @endsection
 
 @section('content')
+{{-- Alert Container --}}
+<div id="alert-container"></div>
+
 <div class="row">
     <div class="col-xs-12">
-        <form method="POST" action="{{ route('admin.shop.settings.payment-gateways.update') }}">
+        <form id="payment-settings-form" method="POST" action="{{ route('admin.shop.settings.payment-gateways.update') }}">
             @csrf
             @method('PUT')
             
@@ -31,6 +34,7 @@
                             <div class="form-group">
                                 <label for="stripe_enabled" class="control-label">Enable Stripe</label>
                                 <div>
+                                    <input type="hidden" name="stripe_enabled" value="0">
                                     <input type="checkbox" id="stripe_enabled" name="stripe_enabled" value="1" 
                                            {{ ($settings['stripe_enabled'] ?? false) ? 'checked' : '' }}>
                                     <label for="stripe_enabled" class="checkbox-label">Enable Stripe payments</label>
@@ -89,6 +93,7 @@
                             <div class="form-group">
                                 <label for="paypal_enabled" class="control-label">Enable PayPal</label>
                                 <div>
+                                    <input type="hidden" name="paypal_enabled" value="0">
                                     <input type="checkbox" id="paypal_enabled" name="paypal_enabled" value="1" 
                                            {{ ($settings['paypal_enabled'] ?? false) ? 'checked' : '' }}>
                                     <label for="paypal_enabled" class="checkbox-label">Enable PayPal payments</label>
@@ -168,8 +173,9 @@
 
             <div class="box">
                 <div class="box-footer">
-                    <button type="submit" class="btn btn-success btn-sm">
-                        <i class="fa fa-save"></i> Save Payment Settings
+                    <button type="submit" class="btn btn-success btn-sm" id="save-settings-btn">
+                        <i class="fa fa-save"></i> <span id="save-btn-text">Save Payment Settings</span>
+                        <i class="fa fa-spinner fa-spin" id="save-spinner" style="display: none;"></i>
                     </button>
                     <a href="{{ route('admin.shop.settings.index') }}" class="btn btn-default btn-sm">
                         <i class="fa fa-arrow-left"></i> Back to Settings
@@ -179,6 +185,118 @@
         </form>
     </div>
 </div>
+
+{{-- AJAX JavaScript --}}
+<script>
+// Custom error class for validation errors
+class ValidationError extends Error {
+    constructor(data) {
+        super('Validation Error');
+        this.data = data;
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('payment-settings-form');
+    const saveBtn = document.getElementById('save-settings-btn');
+    const saveBtnText = document.getElementById('save-btn-text');
+    const saveSpinner = document.getElementById('save-spinner');
+    const alertContainer = document.getElementById('alert-container');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtnText.textContent = 'Saving...';
+        saveSpinner.style.display = 'inline-block';
+        
+        // Clear any existing alerts
+        alertContainer.innerHTML = '';
+        
+        // Prepare form data
+        const formData = new FormData(form);
+        
+        // Add CSRF token
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PUT');
+        
+        // Make AJAX request
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            // Handle validation errors
+            if (response.status === 422) {
+                return response.json().then(data => {
+                    throw new ValidationError(data);
+                });
+            }
+            throw new Error('Network response was not ok');
+        })
+        .then(data => {
+            // Success
+            showAlert('success', data.message || 'Payment settings saved successfully!');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            
+            if (error instanceof ValidationError) {
+                // Handle validation errors
+                const validationErrors = error.data.errors || {};
+                const errorMessages = Object.values(validationErrors).flat();
+                const errorMessage = errorMessages.length > 0 
+                    ? errorMessages.join('<br>') 
+                    : 'Please check your input and try again.';
+                showAlert('danger', errorMessage);
+            } else {
+                showAlert('danger', 'Failed to save settings. Please try again.');
+            }
+        })
+        .finally(() => {
+            // Reset button state
+            saveBtn.disabled = false;
+            saveBtnText.textContent = 'Save Payment Settings';
+            saveSpinner.style.display = 'none';
+        });
+    });
+    
+    function showAlert(type, message) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade in" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <strong>${type === 'success' ? 'Success!' : 'Error!'}</strong> ${message}
+            </div>
+        `;
+        
+        alertContainer.innerHTML = alertHtml;
+        
+        // Auto-hide success alerts after 5 seconds
+        if (type === 'success') {
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.classList.remove('in');
+                    setTimeout(() => alert.remove(), 150);
+                }
+            }, 5000);
+        }
+        
+        // Scroll to top to show the alert
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+});
+</script>
 
 <style>
 .checkbox-label {
