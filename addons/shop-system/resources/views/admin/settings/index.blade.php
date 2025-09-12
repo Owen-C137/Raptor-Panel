@@ -31,13 +31,11 @@
                 <div class="box-body">
                     <div class="form-group">
                         <label for="shop_enabled">Shop Status</label>
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="shop_enabled" value="0">
-                                <input type="checkbox" name="shop_enabled" id="shop_enabled" value="1" 
-                                       {{ old('shop_enabled', $settings['shop_enabled'] ?? true) ? 'checked' : '' }}>
-                                Enable Shop System
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="shop_enabled" value="0">
+                            <input type="checkbox" name="shop_enabled" id="shop_enabled" value="1" 
+                                   {{ old('shop_enabled', $settings['shop_enabled'] ?? true) ? 'checked' : '' }}>
+                            <label for="shop_enabled" class="strong">Enable Shop System</label>
                         </div>
                         <small class="form-text text-muted">
                             Disable to put the shop in maintenance mode.
@@ -74,13 +72,11 @@
                 <div class="box-body">
                     <div class="form-group">
                         <label for="auto_setup">Automatic Server Setup</label>
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="auto_setup" value="0">
-                                <input type="checkbox" name="auto_setup" id="auto_setup" value="1" 
-                                       {{ old('auto_setup', $settings['auto_setup'] ?? true) ? 'checked' : '' }}>
-                                Automatically create servers after payment
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="auto_setup" value="0">
+                            <input type="checkbox" name="auto_setup" id="auto_setup" value="1" 
+                                   {{ old('auto_setup', $settings['auto_setup'] ?? true) ? 'checked' : '' }}>
+                            <label for="auto_setup" class="strong">Automatically create servers after payment</label>
                         </div>
                         <small class="form-text text-muted">
                             If disabled, servers must be created manually for each order.
@@ -92,13 +88,11 @@
                     
                     <div class="form-group">
                         <label for="require_email_verification">Email Verification</label>
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="require_email_verification" value="0">
-                                <input type="checkbox" name="require_email_verification" id="require_email_verification" value="1" 
-                                       {{ old('require_email_verification', $settings['require_email_verification'] ?? false) ? 'checked' : '' }}>
-                                Require email verification before purchase
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="require_email_verification" value="0">
+                            <input type="checkbox" name="require_email_verification" id="require_email_verification" value="1" 
+                                   {{ old('require_email_verification', $settings['require_email_verification'] ?? false) ? 'checked' : '' }}>
+                            <label for="require_email_verification" class="strong">Require email verification before purchase</label>
                         </div>
                         @error('require_email_verification')
                             <span class="text-danger">{{ $message }}</span>
@@ -127,13 +121,11 @@
                 <div class="box-body">
                     <div class="form-group">
                         <label for="credits_enabled">Enable Credits</label>
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="credits_enabled" value="0">
-                                <input type="checkbox" name="credits_enabled" id="credits_enabled" value="1" 
-                                       {{ old('credits_enabled', $settings['credits_enabled'] ?? true) ? 'checked' : '' }}>
-                                Allow users to purchase and use credits
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="credits_enabled" value="0">
+                            <input type="checkbox" name="credits_enabled" id="credits_enabled" value="1" 
+                                   {{ old('credits_enabled', $settings['credits_enabled'] ?? true) ? 'checked' : '' }}>
+                            <label for="credits_enabled" class="strong">Allow users to purchase and use credits</label>
                         </div>
                         @error('credits_enabled')
                             <span class="text-danger">{{ $message }}</span>
@@ -187,32 +179,26 @@
                     </div>
                     
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="notify_new_orders" value="1" 
-                                       {{ old('notify_new_orders', $settings['notify_new_orders'] ?? true) ? 'checked' : '' }}>
-                                Notify admin of new orders
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" name="notify_new_orders" id="notify_new_orders" value="1" 
+                                   {{ old('notify_new_orders', $settings['notify_new_orders'] ?? true) ? 'checked' : '' }}>
+                            <label for="notify_new_orders" class="strong">Notify admin of new orders</label>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="notify_failed_payments" value="1" 
-                                       {{ old('notify_failed_payments', $settings['notify_failed_payments'] ?? true) ? 'checked' : '' }}>
-                                Notify admin of failed payments
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" name="notify_failed_payments" id="notify_failed_payments" value="1" 
+                                   {{ old('notify_failed_payments', $settings['notify_failed_payments'] ?? true) ? 'checked' : '' }}>
+                            <label for="notify_failed_payments" class="strong">Notify admin of failed payments</label>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="send_order_confirmations" value="1" 
-                                       {{ old('send_order_confirmations', $settings['send_order_confirmations'] ?? true) ? 'checked' : '' }}>
-                                Send order confirmations to customers
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" name="send_order_confirmations" id="send_order_confirmations" value="1" 
+                                   {{ old('send_order_confirmations', $settings['send_order_confirmations'] ?? true) ? 'checked' : '' }}>
+                            <label for="send_order_confirmations" class="strong">Send order confirmations to customers</label>
                         </div>
                     </div>
                 </div>
@@ -343,12 +329,12 @@
             }
         }
         
-        // Initialize checkbox functionality
+        // Initialize checkbox functionality  
         $(document).ready(function() {
-            // Add visual feedback for checkbox interactions
+            // Add visual feedback for checkbox interactions (now works with proper AdminLTE structure)
             $('input[type="checkbox"]').on('change', function() {
                 var checkbox = $(this);
-                var label = checkbox.closest('label');
+                var label = checkbox.next('label'); // Label is now next sibling
                 
                 if (checkbox.is(':checked')) {
                     label.addClass('text-success');
@@ -367,7 +353,7 @@
             // Initialize checkbox states on page load
             $('input[type="checkbox"]').each(function() {
                 var checkbox = $(this);
-                var label = checkbox.closest('label');
+                var label = checkbox.next('label');
                 
                 if (checkbox.is(':checked')) {
                     label.addClass('text-success');
@@ -535,20 +521,10 @@
 
 @push('styles')
 <style>
-    /* Enhanced checkbox styling */
-    .checkbox label {
-        font-weight: normal !important;
-        margin-bottom: 5px;
-    }
-    
+    /* Enhanced checkbox styling - works with AdminLTE checkbox-primary */
     .checkbox label.text-success {
         color: #28a745 !important;
-        font-weight: 500 !important;
-    }
-    
-    .checkbox input[type="checkbox"] {
-        margin-right: 8px;
-        transform: scale(1.2);
+        font-weight: 600 !important;
     }
     
     .save-indicator {
@@ -557,22 +533,9 @@
         font-style: italic;
     }
     
+    /* Additional spacing for form groups with checkboxes */
     .form-group .checkbox {
         margin-bottom: 10px;
-    }
-    
-    /* Make sure checkboxes are visible and functional */
-    input[type="checkbox"] {
-        opacity: 1 !important;
-        position: relative !important;
-        width: auto !important;
-        height: auto !important;
-    }
-    
-    /* Override AdminLTE checkbox hiding */
-    .checkbox input[type="checkbox"] {
-        margin-left: 0 !important;
-        margin-top: 0 !important;
     }
 </style>
 @endpush

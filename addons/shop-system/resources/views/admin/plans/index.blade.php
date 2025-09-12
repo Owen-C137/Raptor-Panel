@@ -41,6 +41,33 @@
     .popover-content div:last-child {
         margin-bottom: 0;
     }
+    
+    /* Server link styling */
+    .server-link {
+        display: inline-block;
+        padding: 2px 6px;
+        margin: 1px 0;
+        background-color: #f5f5f5;
+        border-radius: 3px;
+        color: #337ab7;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .server-link:hover {
+        background-color: #337ab7;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .server-link:focus {
+        color: white;
+        text-decoration: none;
+    }
+    
+    .server-link i {
+        margin-right: 4px;
+    }
 </style>
 @endpush
 
@@ -107,6 +134,7 @@
                             <tr>
                                 <th>Name</th>
                                 <th>Category</th>
+                                <th>Server(s)</th>
                                 <th>Pricing</th>
                                 <th>Resources</th>
                                 <th>Status</th>
@@ -128,6 +156,28 @@
                                             <span class="label label-primary">{{ $plan->category->name }}</span>
                                         @else
                                             <span class="text-muted">No Category</span>
+                                        @endif
+                                    </td>
+                                    <td class="server-links">
+                                        @if($plan->associatedServers && $plan->associatedServers->count() > 0)
+                                            @foreach($plan->associatedServers->take(3) as $server)
+                                                <div style="margin-bottom: 2px;">
+                                                    <a href="{{ route('admin.servers.view', $server->id) }}" 
+                                                       class="server-link" 
+                                                       title="View server: {{ $server->name }}">
+                                                        <i class="fa fa-server"></i>{{ Str::limit($server->name, 18) }}
+                                                    </a>
+                                                </div>
+                                            @endforeach
+                                            @if($plan->associatedServers->count() > 3)
+                                                <small class="text-muted">
+                                                    <i class="fa fa-plus-circle"></i> {{ $plan->associatedServers->count() - 3 }} more
+                                                </small>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">
+                                                <i class="fa fa-server"></i> No servers
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
@@ -295,6 +345,27 @@
                 <div class="alert alert-warning">
                     <i class="fa fa-warning"></i> <strong>Warning:</strong> Plans with existing orders cannot be deleted.
                 </div>
+                
+                <!-- Server Deletion Section -->
+                <div id="serverDeletionSection" style="display: none;">
+                    <hr>
+                    <div class="alert alert-info">
+                        <i class="fa fa-server"></i> <strong>Connected Servers:</strong>
+                        <span id="serverCount">0 servers</span> are currently connected to this plan.
+                    </div>
+                    
+                    <div class="checkbox checkbox-primary no-margin-bottom">
+                        <input type="checkbox" id="deleteServers" name="delete_servers" value="1" checked>
+                        <label for="deleteServers" class="strong">
+                            <i class="fa fa-trash text-danger"></i> Also delete all connected servers
+                        </label>
+                    </div>
+                    <p class="help-block text-muted">
+                        <i class="fa fa-exclamation-triangle text-warning"></i> 
+                        <strong>Warning:</strong> This will permanently delete all servers and their data. 
+                        Server backups will be preserved if configured.
+                    </p>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default btn-sm pull-left" data-dismiss="modal">Cancel</button>
@@ -378,6 +449,11 @@
             $('#confirmDuplicate').on('click', function() {
                 duplicatePlan(currentPlanId);
             });
+            
+            // Update delete button text when checkbox changes
+            $('#deleteServers').on('change', function() {
+                updateDeleteButtonText();
+            });
         });
 
         function showToggleModal(planId, status, planName) {
@@ -399,7 +475,42 @@
         function showDeleteModal(planId, planName) {
             currentPlanId = planId;
             $('#deleteModalMessage').html(`Are you sure you want to delete the plan <code>${planName}</code>?`);
+            
+            // Get server information for this plan from the table data
+            const planRow = $('tr[data-plan-id="' + planId + '"]');
+            const serverCell = planRow.find('.server-links');
+            const serverLinks = serverCell.find('a.server-link');
+            const serverCount = serverLinks.length;
+            
+            if (serverCount > 0) {
+                $('#serverCount').text(serverCount + (serverCount === 1 ? ' server' : ' servers'));
+                $('#serverDeletionSection').show();
+                
+                // Update the delete button text to reflect server deletion
+                updateDeleteButtonText();
+            } else {
+                $('#serverDeletionSection').hide();
+            }
+            
             $('#deletePlanModal').modal('show');
+        }
+
+        function updateDeleteButtonText() {
+            const deleteServers = $('#deleteServers').is(':checked');
+            const serverCount = $('#serverCount').text();
+            
+            if ($('#serverDeletionSection').is(':visible')) {
+                if (deleteServers) {
+                    $('#confirmDelete').html('<i class="fa fa-trash"></i> Delete Plan & Servers');
+                    $('#confirmDelete').removeClass('btn-danger').addClass('btn-danger'); // Keep danger style
+                } else {
+                    $('#confirmDelete').html('<i class="fa fa-trash"></i> Delete Plan Only');
+                    $('#confirmDelete').removeClass('btn-danger').addClass('btn-warning'); // Change to warning
+                }
+            } else {
+                $('#confirmDelete').html('<i class="fa fa-trash"></i> Delete Plan');
+                $('#confirmDelete').removeClass('btn-warning').addClass('btn-danger'); // Reset to danger
+            }
         }
 
         function showDuplicateModal(planId, planName) {
@@ -450,6 +561,9 @@
         function deletePlan(planId) {
             showLoadingState('#confirmDelete', true);
             
+            // Check if we should also delete servers
+            const deleteServers = $('#deleteServers').is(':checked');
+            
             $.ajax({
                 url: '{{ url('admin/shop/plans') }}/' + planId,
                 type: 'DELETE',
@@ -458,14 +572,20 @@
                     'Accept': 'application/json'
                 },
                 data: {
-                    _token: '{{ csrf_token() }}'
+                    _token: '{{ csrf_token() }}',
+                    delete_servers: deleteServers ? 1 : 0
                 },
                 success: function(response) {
                     $('#deletePlanModal').modal('hide');
                     showLoadingState('#confirmDelete', false);
                     
                     if (response.success) {
-                        showAlert('success', 'Plan deleted successfully!');
+                        let message = 'Plan deleted successfully!';
+                        if (response.servers_deleted && response.servers_deleted > 0) {
+                            message += ` ${response.servers_deleted} server(s) were also deleted.`;
+                        }
+                        showAlert('success', message);
+                        
                         // Remove the row from table with animation
                         $('tr[data-plan-id="' + planId + '"]').addClass('pulse-danger').fadeOut(500, function() {
                             $(this).remove();

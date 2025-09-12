@@ -5,6 +5,7 @@ namespace PterodactylAddons\ShopSystem\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 use Illuminate\Support\Carbon;
@@ -183,6 +184,54 @@ class ShopPlan extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(ShopOrder::class, 'plan_id');
+    }
+
+    /**
+     * Get all active orders for this plan.
+     */
+    public function activeOrders(): HasMany
+    {
+        return $this->hasMany(ShopOrder::class, 'plan_id')
+                    ->whereIn('status', ['active', 'processing']);
+    }
+
+    /**
+     * Get servers associated with this plan through active orders.
+     */
+    public function servers()
+    {
+        return $this->hasManyThrough(
+            \Pterodactyl\Models\Server::class,
+            ShopOrder::class,
+            'plan_id',   // Foreign key on ShopOrder table
+            'id',        // Foreign key on Server table  
+            'id',        // Local key on ShopPlan table
+            'server_id'  // Local key on ShopOrder table
+        )->select('servers.id', 'servers.name', 'servers.uuid')
+         ->whereIn('shop_orders.status', ['active', 'processing'])
+         ->whereNotNull('shop_orders.server_id');
+    }
+
+    /**
+     * Get servers associated with this plan (alternative method using joins).
+     */
+    public function getAssociatedServers()
+    {
+        return \Pterodactyl\Models\Server::whereIn('id', function ($query) {
+            $query->select('server_id')
+                  ->from('shop_orders')
+                  ->where('plan_id', $this->id)
+                  ->whereIn('status', ['active', 'processing'])
+                  ->whereNotNull('server_id');
+        })->select('id', 'name', 'uuid')->get();
+    }
+
+    /**
+     * Get the count of active servers for this plan.
+     */
+    public function getActiveServersCountAttribute()
+    {
+        return $this->servers()->count();
     }
 
     /**

@@ -28,13 +28,11 @@
                 
                 <div class="box-body">
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="recaptcha_enabled" value="0">
-                                <input type="checkbox" name="recaptcha_enabled" value="1" 
-                                       {{ ($settings['recaptcha_enabled'] ?? false) ? 'checked' : '' }}>
-                                <strong>Enable reCAPTCHA</strong>
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="recaptcha_enabled" value="0">
+                            <input type="checkbox" name="recaptcha_enabled" id="recaptcha_enabled" value="1" 
+                                   {{ ($settings['recaptcha_enabled'] ?? false) ? 'checked' : '' }}>
+                            <label for="recaptcha_enabled" class="strong">Enable reCAPTCHA</label>
                         </div>
                         <p class="help-block">Protect forms from spam and automated attacks</p>
                     </div>
@@ -68,25 +66,21 @@
                 
                 <div class="box-body">
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="csrf_protection" value="0">
-                                <input type="checkbox" name="csrf_protection" value="1" 
-                                       {{ ($settings['csrf_protection'] ?? true) ? 'checked' : '' }}>
-                                <strong>CSRF Protection</strong>
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="csrf_protection" value="0">
+                            <input type="checkbox" name="csrf_protection" id="csrf_protection" value="1" 
+                                   {{ ($settings['csrf_protection'] ?? true) ? 'checked' : '' }}>
+                            <label for="csrf_protection" class="strong">CSRF Protection</label>
                         </div>
                         <p class="help-block">Protect against Cross-Site Request Forgery attacks</p>
                     </div>
 
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="rate_limiting" value="0">
-                                <input type="checkbox" name="rate_limiting" value="1" 
-                                       {{ ($settings['rate_limiting'] ?? true) ? 'checked' : '' }}>
-                                <strong>Rate Limiting</strong>
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="rate_limiting" value="0">
+                            <input type="checkbox" name="rate_limiting" id="rate_limiting" value="1" 
+                                   {{ ($settings['rate_limiting'] ?? true) ? 'checked' : '' }}>
+                            <label for="rate_limiting" class="strong">Rate Limiting</label>
                         </div>
                         <p class="help-block">Limit the number of requests per user to prevent abuse</p>
                     </div>

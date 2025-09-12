@@ -280,12 +280,11 @@
                 
                 <div class="box-body">
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="active" value="1" 
-                                       {{ old('active', true) ? 'checked' : '' }}>
-                                Active
-                            </label>
+                        <label for="active">Coupon Status</label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" name="active" id="active" value="1" 
+                                   {{ old('active', true) ? 'checked' : '' }}>
+                            <label for="active" class="strong">Active</label>
                         </div>
                         <small class="form-text text-muted">
                             Inactive coupons cannot be used by customers.

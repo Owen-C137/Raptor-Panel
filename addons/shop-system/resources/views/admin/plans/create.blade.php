@@ -355,7 +355,7 @@
                         <div class="checkbox checkbox-primary no-margin-bottom">
                             <input type="checkbox" id="visible" name="visible" value="1" 
                                    {{ old('visible', true) ? 'checked' : '' }}>
-                            <label for="visible">Visible to Customers</label>
+                            <label for="visible" class="strong">Visible to Customers</label>
                         </div>
                         <small class="form-text text-muted">
                             Hidden plans are not shown in the shop but existing orders remain active.

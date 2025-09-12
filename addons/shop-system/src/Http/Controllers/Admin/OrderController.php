@@ -4,25 +4,30 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Pterodactyl\Http\Controllers\Controller;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use Pterodactyl\Models\User;
+use Pterodactyl\Models\Server;
 use PterodactylAddons\ShopSystem\Services\OrderService;
+use Pterodactyl\Services\Servers\ServerDeletionService;
 
 class OrderController extends Controller
 {
     protected OrderService $orderService;
+    protected ServerDeletionService $serverDeletionService;
 
-    public function __construct(OrderService $orderService)
+    public function __construct(OrderService $orderService, ServerDeletionService $serverDeletionService)
     {
         $this->orderService = $orderService;
+        $this->serverDeletionService = $serverDeletionService;
     }
 
     /**
      * Display a listing of orders
      */
-    public function index(Request $request)
+    public function index(Request $request): View
     {
         $search = $request->get('search');
         $status = $request->get('status');
@@ -54,7 +59,7 @@ class OrderController extends Controller
     /**
      * Show the specified order
      */
-    public function show(ShopOrder $order)
+    public function show(ShopOrder $order): View
     {
         $order->load(['user', 'plan.category', 'server', 'payments']);
         
@@ -189,5 +194,36 @@ class OrderController extends Controller
         };
         
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Delete an order and optionally its associated server
+     */
+    public function destroy(Request $request, ShopOrder $order): RedirectResponse
+    {
+        try {
+            $deleteServer = $request->boolean('delete_server', false);
+            $orderDescription = "Order #{$order->id} for {$order->user->username}";
+
+            // Delete associated server if requested and exists
+            if ($deleteServer && $order->server_id) {
+                $server = Server::find($order->server_id);
+                if ($server) {
+                    $this->serverDeletionService->handle($server);
+                    
+                    $orderDescription .= " (including server: {$server->name})";
+                }
+            }
+
+            // Delete the order
+            $order->delete();
+
+            return redirect()->route('admin.shop.orders.index')
+                ->with('success', "Successfully deleted {$orderDescription}.");
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Failed to delete order: ' . $e->getMessage());
+        }
     }
 }

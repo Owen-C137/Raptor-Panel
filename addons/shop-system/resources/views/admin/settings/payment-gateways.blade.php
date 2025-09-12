@@ -33,11 +33,11 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="stripe_enabled" class="control-label">Enable Stripe</label>
-                                <div>
+                                <div class="checkbox checkbox-primary no-margin-bottom">
                                     <input type="hidden" name="stripe_enabled" value="0">
                                     <input type="checkbox" id="stripe_enabled" name="stripe_enabled" value="1" 
                                            {{ ($settings['stripe_enabled'] ?? false) ? 'checked' : '' }}>
-                                    <label for="stripe_enabled" class="checkbox-label">Enable Stripe payments</label>
+                                    <label for="stripe_enabled" class="strong">Enable Stripe payments</label>
                                 </div>
                             </div>
                         </div>
@@ -92,11 +92,11 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label for="paypal_enabled" class="control-label">Enable PayPal</label>
-                                <div>
+                                <div class="checkbox checkbox-primary no-margin-bottom">
                                     <input type="hidden" name="paypal_enabled" value="0">
                                     <input type="checkbox" id="paypal_enabled" name="paypal_enabled" value="1" 
                                            {{ ($settings['paypal_enabled'] ?? false) ? 'checked' : '' }}>
-                                    <label for="paypal_enabled" class="checkbox-label">Enable PayPal payments</label>
+                                    <label for="paypal_enabled" class="strong">Enable PayPal payments</label>
                                 </div>
                             </div>
                         </div>

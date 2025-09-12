@@ -4,6 +4,7 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 use Pterodactyl\Http\Controllers\Controller;
 use PterodactylAddons\ShopSystem\Models\ShopPlan;
 use PterodactylAddons\ShopSystem\Models\ShopCategory;
@@ -12,43 +13,36 @@ use PterodactylAddons\ShopSystem\Http\Requests\PlanUpdateRequest;
 use Pterodactyl\Models\Node;
 use Pterodactyl\Models\Location;
 use Pterodactyl\Models\Egg;
+use Pterodactyl\Models\Server;
+use Pterodactyl\Services\Servers\ServerDeletionService;
 
 class PlanController extends Controller
 {
     /**
      * Display a listing of plans
      */
-    public function index(Request $request)
+    public function index(): View
     {
-        $search = $request->get('search');
-        $category = $request->get('category');
-        $status = $request->get('status');
-        
-        $plans = ShopPlan::query()
-            ->with(['category'])
-            ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
-            })
-            ->when($category, function ($query, $category) {
-                return $query->where('category_id', $category);
-            })
-            ->when($status !== null, function ($query) use ($status) {
-                return $query->where('status', $status);
-            })
+        $plans = ShopPlan::with(['category', 'egg'])
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->paginate(20);
-        
-        $categories = ShopCategory::where('active', true)->orderBy('name')->get();
-        
+            ->paginate(25);
+
+        // Load associated servers for each plan using the alternative method
+        foreach ($plans as $plan) {
+            $plan->associatedServers = $plan->getAssociatedServers();
+        }
+
+        // Get categories for the filter dropdown
+        $categories = ShopCategory::orderBy('name')->get();
+
         return view('shop::admin.plans.index', compact('plans', 'categories'));
     }
 
     /**
      * Show the form for creating a new plan
      */
-    public function create()
+    public function create(): View
     {
         $categories = ShopCategory::where('active', true)->orderBy('name')->get();
         $nodes = Node::orderBy('name')->get();
@@ -92,7 +86,7 @@ class PlanController extends Controller
     /**
      * Display the specified plan
      */
-    public function show(ShopPlan $plan)
+    public function show(ShopPlan $plan): View
     {
         $plan->load(['category', 'orders.user']);
         
@@ -102,7 +96,7 @@ class PlanController extends Controller
     /**
      * Show the form for editing a plan
      */
-    public function edit(ShopPlan $plan)
+    public function edit(ShopPlan $plan): View
     {
         $categories = ShopCategory::where('active', true)->orderBy('name')->get();
         $nodes = Node::orderBy('name')->get();
@@ -148,30 +142,63 @@ class PlanController extends Controller
     public function destroy(Request $request, ShopPlan $plan)
     {
         try {
-            // Check if plan has any orders
-            if ($plan->orders()->exists()) {
+            $deletedServers = 0;
+            
+            // Check if we should delete connected servers
+            $deleteServers = $request->boolean('delete_servers', false);
+            
+            // Get associated servers before deleting the plan
+            $associatedServers = collect();
+            if ($deleteServers) {
+                $associatedServers = $plan->getAssociatedServers();
+            }
+            
+            // Check if plan has any orders (unless we're force deleting)
+            if ($plan->orders()->exists() && !$deleteServers) {
                 if ($request->expectsJson()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Cannot delete plan that has existing orders.'
+                        'message' => 'Cannot delete plan that has existing orders. Consider deleting connected servers first.'
                     ], 400);
                 }
                 
                 return redirect()->back()
-                    ->with('error', 'Cannot delete plan that has existing orders.');
+                    ->with('error', 'Cannot delete plan that has existing orders. Consider deleting connected servers first.');
             }
             
+            // Delete associated servers if requested
+            if ($deleteServers && $associatedServers->isNotEmpty()) {
+                $serverDeletionService = app(ServerDeletionService::class);
+                
+                foreach ($associatedServers as $server) {
+                    try {
+                        $serverDeletionService->handle($server);
+                        $deletedServers++;
+                    } catch (\Exception $e) {
+                        // Log the error but continue with other servers
+                        \Log::warning("Failed to delete server {$server->id}: " . $e->getMessage());
+                    }
+                }
+            }
+            
+            // Delete the plan
             $plan->delete();
             
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Plan deleted successfully.'
+                    'message' => 'Plan deleted successfully.',
+                    'servers_deleted' => $deletedServers
                 ]);
             }
             
+            $message = 'Plan deleted successfully.';
+            if ($deletedServers > 0) {
+                $message .= " {$deletedServers} server(s) were also deleted.";
+            }
+            
             return redirect()->route('admin.shop.plans.index')
-                ->with('success', 'Plan deleted successfully.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             if ($request->expectsJson()) {
                 return response()->json([

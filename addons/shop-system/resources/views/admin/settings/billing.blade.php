@@ -52,13 +52,11 @@
                     </div>
 
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="tax_inclusive" value="0">
-                                <input type="checkbox" name="tax_inclusive" value="1" 
-                                       {{ ($settings['tax_inclusive'] ?? false) ? 'checked' : '' }}>
-                                <strong>Tax Inclusive Pricing</strong>
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="tax_inclusive" value="0">
+                            <input type="checkbox" name="tax_inclusive" id="tax_inclusive" value="1" 
+                                   {{ ($settings['tax_inclusive'] ?? false) ? 'checked' : '' }}>
+                            <label for="tax_inclusive" class="strong">Tax Inclusive Pricing</label>
                         </div>
                         <p class="help-block">When enabled, displayed prices include tax</p>
                     </div>
@@ -90,13 +88,11 @@
                 
                 <div class="box-body">
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="hidden" name="auto_suspend_overdue" value="0">
-                                <input type="checkbox" name="auto_suspend_overdue" value="1" 
-                                       {{ ($settings['auto_suspend_overdue'] ?? false) ? 'checked' : '' }}>
-                                <strong>Auto-suspend Overdue Services</strong>
-                            </label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="hidden" name="auto_suspend_overdue" value="0">
+                            <input type="checkbox" name="auto_suspend_overdue" id="auto_suspend_overdue" value="1" 
+                                   {{ ($settings['auto_suspend_overdue'] ?? false) ? 'checked' : '' }}>
+                            <label for="auto_suspend_overdue" class="strong">Auto-suspend Overdue Services</label>
                         </div>
                         <p class="help-block">Automatically suspend services when payments are overdue</p>
                     </div>

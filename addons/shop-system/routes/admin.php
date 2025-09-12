@@ -70,6 +70,7 @@ Route::name('admin.shop.')->middleware(['auth', 'admin'])->group(function () {
     Route::prefix('orders')->name('orders.')->group(function () {
         Route::get('/', [OrderController::class, 'index'])->name('index');
         Route::get('/{order}', [OrderController::class, 'show'])->name('show');
+        Route::delete('/{order}', [OrderController::class, 'destroy'])->name('destroy');
         Route::post('/{order}/suspend', [OrderController::class, 'suspend'])->name('suspend');
         Route::post('/{order}/unsuspend', [OrderController::class, 'unsuspend'])->name('unsuspend');
         Route::post('/{order}/terminate', [OrderController::class, 'terminate'])->name('terminate');

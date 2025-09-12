@@ -78,6 +78,7 @@
                                 <th>Order ID</th>
                                 <th>User</th>
                                 <th>Plan</th>
+                                <th>Server</th>
                                 <th>Amount</th>
                                 <th>Status</th>
                                 <th>Billing Cycle</th>
@@ -102,6 +103,20 @@
                                         {{ $order->plan->name ?? 'N/A' }}
                                         @if($order->plan && $order->plan->category)
                                             <br><small class="text-muted">{{ $order->plan->category->name }}</small>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($order->server)
+                                            <div class="server-links-container">
+                                                <a href="{{ route('admin.servers.view', $order->server->id) }}" 
+                                                   class="btn btn-xs btn-info server-link" 
+                                                   title="Manage Server">
+                                                    <i class="fa fa-server"></i> {{ $order->server->name }}
+                                                </a>
+                                                <br><small class="text-muted">{{ $order->server->uuid }}</small>
+                                            </div>
+                                        @else
+                                            <span class="text-muted">No server</span>
                                         @endif
                                     </td>
                                     <td>
@@ -156,12 +171,12 @@
                                            class="btn btn-xs btn-primary">
                                             <i class="fa fa-eye"></i> View
                                         </a>
-                                        @if($order->server_id)
-                                            <a href="{{ route('admin.servers.view', $order->server_id) }}" 
-                                               class="btn btn-xs btn-info">
-                                                <i class="fa fa-server"></i> Server
-                                            </a>
-                                        @endif
+                                        <button type="button" 
+                                                class="btn btn-xs btn-danger"
+                                                onclick="showDeleteOrderModal({{ $order->id }}, '{{ addslashes($order->user->username) }}', {{ $order->server ? 'true' : 'false' }}, '{{ $order->server ? addslashes($order->server->name) : '' }}')"
+                                                data-server-count="{{ $order->server ? 1 : 0 }}">
+                                            <i class="fa fa-trash"></i> Delete
+                                        </button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -184,4 +199,137 @@
         </div>
     </div>
 </div>
+
+<!-- Delete Order Modal -->
+<div class="modal fade" id="deleteOrderModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">
+                    <i class="fa fa-trash text-danger"></i> Delete Order
+                </h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Are you sure you want to delete this order?</strong></p>
+                <p>Order: <span id="delete-order-details"></span></p>
+                
+                <div id="server-deletion-section" style="display: none;">
+                    <hr>
+                    <div class="alert alert-warning">
+                        <h5><i class="fa fa-server"></i> Server Connected</h5>
+                        <p>This order has an associated server: <strong id="delete-server-name"></strong></p>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" id="delete-server-checkbox" name="delete_server" value="1" checked>
+                            <label for="delete-server-checkbox" class="strong">Also delete the associated server</label>
+                        </div>
+                        <small class="text-muted">
+                            <i class="fa fa-warning"></i> 
+                            If unchecked, the server will remain but will no longer be linked to this order.
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="alert alert-danger">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-order-btn">
+                    <i class="fa fa-trash"></i> <span id="delete-order-btn-text">Delete Order</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
+
+@section('footer-scripts')
+    @parent
+    <script>
+        let currentOrderId = null;
+
+        function showDeleteOrderModal(orderId, username, hasServer, serverName) {
+            currentOrderId = orderId;
+            
+            $('#delete-order-details').text('Order #' + orderId + ' for ' + username);
+            
+            if (hasServer) {
+                $('#delete-server-name').text(serverName);
+                $('#server-deletion-section').show();
+            } else {
+                $('#server-deletion-section').hide();
+            }
+            
+            // Update button text based on initial checkbox state
+            updateDeleteOrderButtonText();
+            
+            $('#deleteOrderModal').modal('show');
+        }
+
+        function updateDeleteOrderButtonText() {
+            const deleteServerChecked = $('#delete-server-checkbox').is(':checked');
+            const hasServer = $('#server-deletion-section').is(':visible');
+            
+            let buttonText = 'Delete Order';
+            if (hasServer && deleteServerChecked) {
+                buttonText = 'Delete Order & Server';
+            }
+            
+            $('#delete-order-btn-text').text(buttonText);
+        }
+
+        $(document).ready(function() {
+            // Update button text when checkbox changes
+            $('#delete-server-checkbox').on('change', function() {
+                updateDeleteOrderButtonText();
+            });
+
+            // Handle delete confirmation
+            $('#confirm-delete-order-btn').on('click', function() {
+                if (!currentOrderId) return;
+                
+                const deleteServer = $('#delete-server-checkbox').is(':checked');
+                
+                // Create form and submit
+                const form = $('<form>')
+                    .attr('method', 'POST')
+                    .attr('action', `/admin/shop/orders/${currentOrderId}`)
+                    .append($('<input>').attr('type', 'hidden').attr('name', '_token').val('{{ csrf_token() }}'))
+                    .append($('<input>').attr('type', 'hidden').attr('name', '_method').val('DELETE'));
+                
+                if (deleteServer) {
+                    form.append($('<input>').attr('type', 'hidden').attr('name', 'delete_server').val('1'));
+                }
+                
+                $('body').append(form);
+                form.submit();
+            });
+        });
+    </script>
+@endsection
+
+@push('styles')
+<style>
+    .server-links-container .server-link {
+        text-decoration: none;
+        color: #fff;
+        transition: all 0.2s ease;
+    }
+    
+    .server-links-container .server-link:hover {
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .server-links-container .server-link:focus {
+        text-decoration: none;
+        color: #fff;
+    }
+</style>
+@endpush

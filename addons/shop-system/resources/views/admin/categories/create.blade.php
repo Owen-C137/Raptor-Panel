@@ -92,12 +92,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="is_active" value="1" 
-                                       {{ old('is_active', true) ? 'checked' : '' }}>
-                                Active
-                            </label>
+                        <label for="is_active">Category Status</label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" name="is_active" id="is_active" value="1" 
+                                   {{ old('is_active', true) ? 'checked' : '' }}>
+                            <label for="is_active" class="strong">Active</label>
                         </div>
                         <small class="form-text text-muted">
                             Inactive categories are hidden from customers.
@@ -108,12 +107,11 @@
                     </div>
                     
                     <div class="form-group">
-                        <div class="checkbox">
-                            <label>
-                                <input type="checkbox" name="is_featured" value="1" 
-                                       {{ old('is_featured') ? 'checked' : '' }}>
-                                Featured Category
-                            </label>
+                        <label for="is_featured">Featured Options</label>
+                        <div class="checkbox checkbox-primary no-margin-bottom">
+                            <input type="checkbox" name="is_featured" id="is_featured" value="1" 
+                                   {{ old('is_featured') ? 'checked' : '' }}>
+                            <label for="is_featured" class="strong">Featured Category</label>
                         </div>
                         <small class="form-text text-muted">
                             Featured categories appear prominently in the shop.
