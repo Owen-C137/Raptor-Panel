@@ -223,6 +223,27 @@
             color: #28a745;
         }
         
+        /* Status Panels */
+        .panel.success {
+            border-left: 4px solid #28a745;
+            background-color: #f8fff9;
+        }
+        
+        .panel.info {
+            border-left: 4px solid #007bff;
+            background-color: #f8f9ff;
+        }
+        
+        .panel.warning {
+            border-left: 4px solid #ffc107;
+            background-color: #fffdf8;
+        }
+        
+        .panel.error {
+            border-left: 4px solid #dc3545;
+            background-color: #fff8f8;
+        }
+        
         /* Responsive */
         @media only screen and (max-width: 600px) {
             .email-body_inner,

@@ -8,12 +8,14 @@ use PterodactylAddons\ShopSystem\Models\ShopCoupon;
 use PterodactylAddons\ShopSystem\Models\ShopCouponUsage;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use PterodactylAddons\ShopSystem\Repositories\ShopOrderRepository;
+use PterodactylAddons\ShopSystem\Mail\PurchaseConfirmationMail;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\EggVariable;
 use Pterodactyl\Services\Servers\ServerCreationService;
 use Pterodactyl\Services\Allocations\AssignmentService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class ShopOrderService
@@ -171,6 +173,9 @@ class ShopOrderService
                 // $order->update(['status' => ShopOrder::STATUS_PROCESSING]);
             }
         }
+        
+        // Always send purchase confirmation email after successful payment
+        $this->sendPurchaseConfirmationEmail($order);
 
         return true;
     }
@@ -587,6 +592,7 @@ class ShopOrderService
             });
 
             \Log::info("Server creation completed successfully for order {$order->id}");
+            
             return $server;
         } catch (\Exception $e) {
             // Log the error but don't fail the payment
@@ -1000,5 +1006,42 @@ class ShopOrderService
             'node_id' => $node->id,
             'ip' => $ip
         ]);
+    }
+
+    /**
+     * Send purchase confirmation email after successful server creation.
+     */
+    protected function sendPurchaseConfirmationEmail(ShopOrder $order): void
+    {
+        try {
+            // Check if email notifications are enabled
+            if (!config('shop.notifications.email.enabled', true)) {
+                \Log::info("Email notifications disabled, skipping purchase confirmation for order {$order->id}");
+                return;
+            }
+
+            // Load relationships needed for email
+            $order->load(['user', 'plan', 'plan.category', 'server', 'payments']);
+
+            // Get the user's email (preference order: order email, user email)
+            $recipientEmail = $order->email ?? $order->user->email;
+            
+            if (!$recipientEmail) {
+                \Log::warning("No email address found for order {$order->id}, skipping purchase confirmation");
+                return;
+            }
+
+            \Log::info("Sending purchase confirmation email for order {$order->id} to {$recipientEmail}");
+
+            // Send the email
+            Mail::to($recipientEmail)->send(new PurchaseConfirmationMail($order));
+
+            \Log::info("✅ Purchase confirmation email sent successfully for order {$order->id}");
+
+        } catch (\Exception $e) {
+            // Log error but don't fail the order process
+            \Log::error("Failed to send purchase confirmation email for order {$order->id}: " . $e->getMessage());
+            \Log::error("Email error stack trace: " . $e->getTraceAsString());
+        }
     }
 }
