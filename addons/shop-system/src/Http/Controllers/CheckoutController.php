@@ -14,8 +14,10 @@ use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\CartService;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
+use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class CheckoutController extends Controller
 {
@@ -481,20 +483,57 @@ class CheckoutController extends Controller
      */
     private function processWalletPayment($order): array
     {
-        $result = $this->walletService->debit(
-            userId: $order->user_id,
-            amount: $order->amount,
-            description: "Order #{$order->id} payment",
-            relatedType: get_class($order),
-            relatedId: $order->id
+        // Get the user's wallet
+        $wallet = $this->walletService->getWallet($order->user_id);
+        
+        // Check if user has sufficient funds
+        if (!$wallet->hasSufficientFunds($order->amount)) {
+            return ['success' => false, 'message' => 'Insufficient wallet balance.'];
+        }
+        
+        // Create payment record first
+        $payment = ShopPayment::create([
+            'uuid' => \Illuminate\Support\Str::uuid()->toString(),
+            'user_id' => $order->user_id,
+            'order_id' => $order->id,
+            'type' => 'order_payment',
+            'status' => ShopPayment::STATUS_PENDING,
+            'amount' => $order->amount,
+            'currency' => $order->currency,
+            'gateway' => 'wallet',
+        ]);
+        
+        // Deduct funds from wallet
+        $transaction = $this->walletService->deductFunds(
+            $wallet,
+            $order->amount,
+            "Order #{$order->id} payment"
         );
 
-        if ($result) {
-            $this->orderService->markAsPaid($order->id, 'wallet');
-            return ['success' => true];
+        if ($transaction) {
+            // Update payment record to completed
+            $payment->update([
+                'status' => ShopPayment::STATUS_COMPLETED,
+                'processed_at' => now(),
+            ]);
+            
+            // Store completion flag for deferred processing (like PayPal)
+            $order->update(['payment_method' => 'wallet']);
+            
+            // Return redirect URL for deferred completion (matching PayPal pattern)
+            return [
+                'success' => true,
+                'redirect_url' => route('shop.checkout.wallet.complete', ['order' => $order->uuid])
+            ];
         }
 
-        return ['success' => false, 'message' => 'Insufficient wallet balance.'];
+        // Update payment record to failed
+        $payment->update([
+            'status' => ShopPayment::STATUS_FAILED,
+            'failed_at' => now(),
+        ]);
+
+        return ['success' => false, 'message' => 'Failed to process wallet payment.'];
     }
 
     /**
@@ -708,8 +747,80 @@ class CheckoutController extends Controller
         }
 
         // Here you would verify the Stripe session
-        // For now, just redirect to the order page
+        // For now, just mark as paid
+        $this->orderService->markAsPaid($order->id, 'stripe');
+        
         return redirect()->route('shop.orders.show', $order->uuid)
-            ->with('success', 'Payment completed successfully');
+            ->with('success', 'Payment completed successfully!');
+    }
+
+    /**
+     * Complete wallet payment with deferred server creation (matching PayPal pattern).
+     */
+    public function completeWalletPayment(ShopOrder $order)
+    {
+        Log::info('🔄 Processing wallet payment completion', [
+            'order_id' => $order->id,
+            'order_uuid' => $order->uuid,
+            'current_status' => $order->status,
+        ]);
+
+        // Ensure this is the order owner
+        if ($order->user_id !== auth()->id()) {
+            Log::warning('❌ Unauthorized wallet completion attempt', [
+                'order_id' => $order->id,
+                'auth_user_id' => auth()->id(),
+                'order_user_id' => $order->user_id,
+            ]);
+            abort(403, 'Unauthorized access to order');
+        }
+
+        // Verify payment method and that funds were already deducted
+        if ($order->payment_method !== 'wallet') {
+            Log::error('❌ Wallet completion for non-wallet order', [
+                'order_id' => $order->id,
+                'payment_method' => $order->payment_method,
+            ]);
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Invalid payment completion');
+        }
+
+        // Check if payment was successful (funds already deducted)
+        $payment = $order->payments()->where('gateway', 'wallet')->where('status', ShopPayment::STATUS_COMPLETED)->first();
+        
+        if (!$payment) {
+            Log::error('❌ No completed wallet payment found', [
+                'order_id' => $order->id,
+                'payments' => $order->payments()->get()->toArray(),
+            ]);
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Payment not found or incomplete');
+        }
+
+        try {
+            // Mark order as paid (this triggers server creation)
+            $this->orderService->markAsPaid($order->id, 'wallet');
+            
+            // Clear the cart since payment was successful
+            $this->cartService->clearCart();
+            
+            Log::info('✅ Wallet payment completed successfully', [
+                'order_id' => $order->id,
+                'payment_id' => $payment->id,
+            ]);
+            
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('success', 'Payment completed successfully! Your order is now active.');
+                
+        } catch (\Exception $e) {
+            Log::error('💥 Wallet completion processing error', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Payment completion failed. Please contact support.');
+        }
     }
 }

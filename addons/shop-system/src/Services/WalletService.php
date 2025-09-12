@@ -5,6 +5,7 @@ namespace PterodactylAddons\ShopSystem\Services;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
 use PterodactylAddons\ShopSystem\Models\WalletTransaction;
 use Pterodactyl\Models\User;
+use Pterodactyl\Facades\Activity;
 use Illuminate\Support\Facades\DB;
 
 class WalletService
@@ -40,15 +41,14 @@ class WalletService
             $transaction = $wallet->addFunds($amount, $description, $type);
             
             // Log activity
-            activity()
-                ->performedOn($wallet)
-                ->causedBy($wallet->user)
-                ->withProperties([
-                    'amount' => $amount,
-                    'new_balance' => $wallet->fresh()->balance,
-                    'transaction_id' => $transaction->id,
-                ])
-                ->log("Wallet credited: {$description}");
+            Activity::event('shop:wallet.credit')
+                ->subject($wallet)
+                ->actor($wallet->user)
+                ->property('amount', $amount)
+                ->property('new_balance', $wallet->fresh()->balance)
+                ->property('transaction_id', $transaction->id)
+                ->property('description', $description)
+                ->log();
 
             return $transaction;
         });
@@ -64,15 +64,14 @@ class WalletService
             
             if ($transaction) {
                 // Log activity
-                activity()
-                    ->performedOn($wallet)
-                    ->causedBy($wallet->user)
-                    ->withProperties([
-                        'amount' => $amount,
-                        'new_balance' => $wallet->fresh()->balance,
-                        'transaction_id' => $transaction->id,
-                    ])
-                    ->log("Wallet debited: {$description}");
+                Activity::event('shop:wallet.debit')
+                    ->subject($wallet)
+                    ->actor($wallet->user)
+                    ->property('amount', $amount)
+                    ->property('new_balance', $wallet->fresh()->balance)
+                    ->property('transaction_id', $transaction->id)
+                    ->property('description', $description)
+                    ->log();
             }
 
             return $transaction;

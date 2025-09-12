@@ -94,6 +94,9 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
         Route::post('/process', [CheckoutController::class, 'process'])->name('process');
         Route::post('/coupon/apply', [CheckoutController::class, 'applyCoupon'])->name('coupon.apply');
         Route::delete('/coupon/remove', [CheckoutController::class, 'removeCoupon'])->name('coupon.remove');
+        
+        // Wallet payment completion (deferred processing like PayPal)
+        Route::get('/wallet/complete/{order:uuid}', [CheckoutController::class, 'completeWalletPayment'])->name('wallet.complete');
     });
     
     // Order management
