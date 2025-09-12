@@ -52,9 +52,12 @@ class SettingsController extends Controller
             
             // Convert string values to proper types
             $booleanSettings = [
-                'shop_enabled', 'auto_setup', 'require_email_verification', 'credits_enabled', 
-                'auto_delivery', 'require_verification', 'allow_refunds', 'stripe_enabled', 
-                'paypal_enabled', 'discord_webhook_enabled', 'email_notifications', 'maintenance_mode'
+                'shop_enabled', 'shop_maintenance_mode', 'auto_setup', 'require_email_verification', 
+                'credits_enabled', 'auto_delivery', 'require_verification', 'allow_refunds', 
+                'stripe_enabled', 'paypal_enabled', 'discord_webhook_enabled', 'email_notifications', 
+                'maintenance_mode', 'notify_new_orders', 'notify_failed_payments', 'send_order_confirmations',
+                'admin_notifications', 'customer_notifications', 'billing_enabled', 'billing_address_required',
+                'fraud_protection'
             ];
             
             foreach ($booleanSettings as $key) {
@@ -250,10 +253,15 @@ class SettingsController extends Controller
                     
                     \Log::info("Saving setting {$settingKey}:", ['value' => $value, 'type' => gettype($value)]);
                     
+                    // Store boolean fields as '1' or '0', other fields as their actual values
+                    $storedValue = in_array($formField, ['stripe_enabled', 'paypal_enabled']) 
+                        ? ($value ? '1' : '0') 
+                        : $value;
+                    
                     ShopSettings::updateOrCreate(
                         ['key' => $settingKey],
                         [
-                            'value' => $value ? '1' : '0', // Store as string for consistency
+                            'value' => $storedValue,
                             'type' => $this->getSettingType($value),
                             'group' => 'payment',
                             'is_public' => in_array($settingKey, ['currency']) // Only currency is public
@@ -311,9 +319,27 @@ class SettingsController extends Controller
     public function updateGeneral(SettingsUpdateRequest $request): RedirectResponse|JsonResponse
     {
         try {
+            // Log incoming request data for debugging
+            \Log::info('Settings update request data:', $request->all());
+            
             $data = $request->validated();
+            
+            \Log::info('Validated data:', $data);
+
+            // Define boolean settings that need special handling
+            $booleanSettings = [
+                'shop_enabled', 'shop_maintenance_mode', 'auto_setup', 'require_email_verification', 
+                'credits_enabled', 'notify_new_orders', 'notify_failed_payments', 'send_order_confirmations',
+                'admin_notifications', 'customer_notifications', 'billing_enabled', 'billing_address_required',
+                'fraud_protection'
+            ];
 
             foreach ($data as $key => $value) {
+                // Convert boolean values to "1" or "0" for database storage
+                if (in_array($key, $booleanSettings)) {
+                    $value = $value ? '1' : '0';
+                }
+                
                 ShopSettings::updateOrCreate(
                     ['key' => $key],
                     ['value' => $value]

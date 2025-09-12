@@ -236,6 +236,9 @@
 - ✅ **Email Import Fix** - Added missing WalletFundsAddedMail import to WalletController
 - ✅ **Balance Before Fix** - Added proper balance_before tracking in wallet transactions
 - ✅ **Payment Method Display** - Store payment method and reference in transaction metadata for email display
+- ✅ **Shop Settings Validation** - Fixed missing validation rules for credits_enabled and other form fields
+- ✅ **Boolean Settings Handling** - Proper boolean conversion and storage for all checkbox settings
+- ✅ **Settings Cache Management** - Added proper cache clearing and boolean type conversion
 
 #### **Required for Completion:**
 - [ ] Create Admin WalletManagementController
