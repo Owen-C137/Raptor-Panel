@@ -186,9 +186,9 @@ class ShopPlan extends Model
     }
 
     /**
-     * Get the allowed nodes for this plan.
+     * Get the allowed nodes for this plan as an accessor.
      */
-    public function allowedNodeModels()
+    public function getAllowedNodeModelsAttribute()
     {
         if (empty($this->allowed_nodes)) {
             return collect();
@@ -198,9 +198,33 @@ class ShopPlan extends Model
     }
 
     /**
-     * Get the allowed locations for this plan.
+     * Get the allowed nodes for this plan (method version).
      */
-    public function allowedLocationModels()
+    public function getAllowedNodes()
+    {
+        if (empty($this->allowed_nodes)) {
+            return collect();
+        }
+
+        return Node::whereIn('id', $this->allowed_nodes)->get();
+    }
+
+    /**
+     * Get the allowed locations for this plan as an accessor.
+     */
+    public function getAllowedLocationModelsAttribute()
+    {
+        if (empty($this->allowed_locations)) {
+            return collect();
+        }
+
+        return Location::whereIn('id', $this->allowed_locations)->get();
+    }
+
+    /**
+     * Get the allowed locations for this plan (method version).
+     */
+    public function getAllowedLocations()
     {
         if (empty($this->allowed_locations)) {
             return collect();

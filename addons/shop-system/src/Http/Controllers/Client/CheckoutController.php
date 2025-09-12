@@ -11,17 +11,20 @@ use PterodactylAddons\ShopSystem\Models\ShopCoupon;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
 use PterodactylAddons\ShopSystem\Services\OrderService;
 use PterodactylAddons\ShopSystem\Services\PaymentService;
+use PterodactylAddons\ShopSystem\Services\CartService;
 use Carbon\Carbon;
 
 class CheckoutController extends Controller
 {
     protected OrderService $orderService;
     protected PaymentService $paymentService;
+    protected CartService $cartService;
 
-    public function __construct(OrderService $orderService, PaymentService $paymentService)
+    public function __construct(OrderService $orderService, PaymentService $paymentService, CartService $cartService)
     {
         $this->orderService = $orderService;
         $this->paymentService = $paymentService;
+        $this->cartService = $cartService;
     }
 
     /**
@@ -43,14 +46,8 @@ class CheckoutController extends Controller
             ['balance' => 0]
         );
         
-        // Calculate totals
-        $subtotal = $cartItems->sum(function ($item) {
-            return $item->quantity * $item->price;
-        });
-        
-        $taxRate = config('shop.tax_rate', 0);
-        $tax = $subtotal * ($taxRate / 100);
-        $total = $subtotal + $tax;
+        // Get cart summary with applied coupons from CartService
+        $cartSummary = $this->cartService->getCartSummary();
         
         // Get available payment methods
         $paymentMethods = $this->getAvailablePaymentMethods();
@@ -58,10 +55,7 @@ class CheckoutController extends Controller
         return view('client.shop.checkout', compact(
             'cartItems', 
             'wallet', 
-            'subtotal', 
-            'tax', 
-            'total',
-            'taxRate',
+            'cartSummary',
             'paymentMethods'
         ));
     }
@@ -177,6 +171,27 @@ class CheckoutController extends Controller
     public function cancel(Request $request)
     {
         return view('client.shop.checkout.cancel');
+    }
+
+    /**
+     * Get checkout summary with cart totals and applied coupons
+     */
+    public function getSummary()
+    {
+        try {
+            $cartSummary = $this->cartService->getCartSummary();
+            
+            return response()->json([
+                'success' => true,
+                'summary' => $cartSummary
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load checkout summary',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

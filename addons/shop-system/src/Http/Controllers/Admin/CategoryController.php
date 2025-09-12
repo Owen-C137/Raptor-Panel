@@ -61,10 +61,23 @@ class CategoryController extends Controller
     }
 
     /**
+     * Display the specified category
+     */
+    public function show(ShopCategory $category)
+    {
+        $category->load(['plans', 'children.plans']);
+        
+        return view('shop::admin.categories.show', compact('category'));
+    }
+
+    /**
      * Show the form for editing a category
      */
     public function edit(ShopCategory $category)
     {
+        // Load required relationships for the view
+        $category->load(['plans', 'children.plans']);
+        
         // Get all categories except the current one as potential parents
         $parentCategories = ShopCategory::where('id', '!=', $category->id)->orderBy('name')->get();
         

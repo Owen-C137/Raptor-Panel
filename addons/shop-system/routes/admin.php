@@ -36,6 +36,7 @@ Route::name('admin.shop.')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');
         Route::get('/create', [CategoryController::class, 'create'])->name('create');
         Route::post('/', [CategoryController::class, 'store'])->name('store');
+        Route::get('/{category}', [CategoryController::class, 'show'])->name('show');
         Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('edit');
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
@@ -62,7 +63,7 @@ Route::name('admin.shop.')->middleware(['auth', 'admin'])->group(function () {
         Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
         Route::delete('/{plan}', [PlanController::class, 'destroy'])->name('destroy');
         Route::post('/{plan}/toggle-status', [PlanController::class, 'toggleStatus'])->name('toggle-status');
-        Route::get('/{plan}/duplicate', [PlanController::class, 'duplicate'])->name('duplicate');
+        Route::post('/{plan}/duplicate', [PlanController::class, 'duplicate'])->name('duplicate');
     });
     
     // Order Management

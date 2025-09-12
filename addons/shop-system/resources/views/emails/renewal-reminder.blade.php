@@ -1,6 +1,6 @@
 @extends('shop::emails.layout')
 
-@section('subject', 'Renewal Reminder - ' . $order->items->first()->plan->product->name)
+@section('subject', 'Renewal Reminder - ' . $order->plan->name)
 
 @section('content')
 <h1>Renewal Reminder</h1>
@@ -13,10 +13,10 @@
 <div class="panel">
     <div class="panel-content">
         <div class="panel-item">
-            <strong>Service:</strong> {{ $order->items->first()->plan->product->name }} - {{ $order->items->first()->plan->name }}<br>
-            <strong>Order Number:</strong> #{{ $order->order_number }}<br>
-            <strong>Renewal Date:</strong> {{ $order->items->first()->next_billing_date->format('F j, Y') }}<br>
-            <strong>Renewal Amount:</strong> {{ config('shop.currency.symbol', '$') }}{{ number_format($order->getMonthlyAmount(), 2) }}
+            <strong>Service:</strong> {{ $order->plan->category->name }} - {{ $order->plan->name }}<br>
+            <strong>Order Number:</strong> #{{ $order->id }}<br>
+            <strong>Renewal Date:</strong> {{ $order->due_date->format('F j, Y') }}<br>
+            <strong>Renewal Amount:</strong> {{ config('shop.currency.symbol', '$') }}{{ number_format($order->amount, 2) }}
         </div>
     </div>
 </div>
@@ -34,14 +34,12 @@
         </tr>
     </thead>
     <tbody>
-        @foreach($order->items as $item)
         <tr>
-            <td>{{ $item->plan->product->name }}</td>
-            <td>{{ $item->plan->name }}</td>
-            <td>{{ ucfirst($item->plan->billing_cycle) }}</td>
-            <td>{{ config('shop.currency.symbol', '$') }}{{ number_format($item->plan->price, 2) }}</td>
+            <td>{{ $order->plan->category->name }}</td>
+            <td>{{ $order->plan->name }}</td>
+            <td>{{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</td>
+            <td>{{ config('shop.currency.symbol', '$') }}{{ number_format($order->amount, 2) }}</td>
         </tr>
-        @endforeach
     </tbody>
 </table>
 
@@ -91,8 +89,8 @@
 <h2>What to Expect</h2>
 
 <div style="margin: 20px 0;">
-    <p><strong>{{ $order->items->first()->next_billing_date->subDays(3)->format('M j') }} - 3 days before:</strong> Final reminder email</p>
-    <p><strong>{{ $order->items->first()->next_billing_date->format('M j') }} - Renewal date:</strong> Automatic payment processing</p>
+    <p><strong>{{ $order->due_date->subDays(3)->format('M j') }} - 3 days before:</strong> Final reminder email</p>
+    <p><strong>{{ $order->due_date->format('M j') }} - Renewal date:</strong> Automatic payment processing</p>
     <p><strong>If payment fails:</strong> {{ config('shop.grace_period', 3) }}-day grace period before service suspension</p>
 </div>
 

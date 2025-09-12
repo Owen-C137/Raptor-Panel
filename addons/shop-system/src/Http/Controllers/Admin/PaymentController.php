@@ -34,7 +34,7 @@ class PaymentController extends Controller
      */
     public function show(ShopPayment $payment)
     {
-        $payment->load(['order', 'order.user', 'order.items']);
+        $payment->load(['order', 'order.user', 'order.plan']);
         
         return response()->json([
             'success' => true,

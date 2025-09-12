@@ -59,15 +59,15 @@
                 <div class="card-body">
                     {{-- Order Items --}}
                     <div class="order-items">
-                        @foreach($order->items as $item)
-                        <div class="order-item {{ !$loop->last ? 'border-bottom' : '' }} pb-3 mb-3">
+                        @if($order->plan)
+                        <div class="order-item pb-3 mb-3">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
                                     <div class="item-info">
-                                        <h6 class="mb-1">{{ $item->plan->product->name }}</h6>
-                                        <p class="mb-1 text-primary fw-bold">{{ $item->plan->name }}</p>
+                                        <h6 class="mb-1">{{ $order->plan->category->name ?? 'General' }}</h6>
+                                        <p class="mb-1 text-primary fw-bold">{{ $order->plan->name }}</p>
                                         <div class="item-meta">
-                                            <span class="badge bg-secondary me-2">{{ $item->plan->billing_cycle }}</span>
+                                            <span class="badge bg-secondary me-2">{{ $order->billing_cycle }}</span>
                                             @if($item->quantity > 1)
                                                 <span class="badge bg-info">Quantity: {{ $item->quantity }}</span>
                                             @endif
@@ -123,7 +123,9 @@
                             </div>
                             @endif
                         </div>
-                        @endforeach
+                        @else
+                        <div class="text-muted">No plan associated with this order</div>
+                        @endif
                     </div>
                     
                     {{-- Order Totals --}}

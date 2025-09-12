@@ -413,7 +413,6 @@
 <!-- Forms for actions -->
 <form id="toggle-status-form" method="POST" action="{{ route('admin.shop.plans.toggle-status', $plan->id) }}" style="display: none;">
     @csrf
-    @method('PATCH')
 </form>
 
 <form id="duplicate-form" method="POST" action="{{ route('admin.shop.plans.duplicate', $plan->id) }}" style="display: none;">
@@ -427,54 +426,98 @@
 
 @endsection
 
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="confirmModalLabel">Confirm Action</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning mb-3" id="confirmModalAlert" style="display: none;">
+                    <i class="fa fa-exclamation-triangle"></i>
+                    <span id="confirmModalAlertText"></span>
+                </div>
+                <p id="confirmModalText">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmModalAction">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('footer-scripts')
 <script>
+    // Bootstrap Modal Confirmation Handler
+    function showConfirmModal(title, text, confirmText, alertText, confirmClass, callback) {
+        $('#confirmModalLabel').text(title);
+        $('#confirmModalText').text(text);
+        
+        // Show/hide alert section
+        if (alertText) {
+            $('#confirmModalAlertText').text(alertText);
+            $('#confirmModalAlert').show();
+        } else {
+            $('#confirmModalAlert').hide();
+        }
+        
+        // Set button text and class
+        var confirmBtn = $('#confirmModalAction');
+        confirmBtn.text(confirmText);
+        confirmBtn.removeClass('btn-primary btn-success btn-warning btn-danger');
+        confirmBtn.addClass(confirmClass || 'btn-primary');
+        
+        // Remove previous click handlers and add new one
+        confirmBtn.off('click').on('click', function() {
+            $('#confirmModal').modal('hide');
+            callback();
+        });
+        
+        // Show the modal
+        $('#confirmModal').modal('show');
+    }
+
     function toggleStatus() {
-        swal({
-            title: 'Are you sure?',
-            text: 'This will {{ $plan->visible ? "hide" : "show" }} the plan {{ $plan->visible ? "from" : "in" }} the shop.',
-            type: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: '{{ $plan->visible ? "Hide" : "Show" }} Plan'
-        }).then(function(result) {
-            if (result.value) {
+        showConfirmModal(
+            '{{ $plan->status === "active" ? "Deactivate" : "Activate" }} Plan',
+            'Are you sure you want to {{ $plan->status === "active" ? "deactivate" : "activate" }} this plan?',
+            '{{ $plan->status === "active" ? "Deactivate" : "Activate" }}',
+            null,
+            '{{ $plan->status === "active" ? "btn-warning" : "btn-success" }}',
+            function() {
                 document.getElementById('toggle-status-form').submit();
             }
-        });
+        );
     }
 
     function duplicatePlan() {
-        swal({
-            title: 'Duplicate Plan',
-            text: 'This will create a copy of this plan with the name "Copy of {{ $plan->name }}"',
-            type: 'info',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Duplicate Plan'
-        }).then(function(result) {
-            if (result.value) {
-                document.getElementById('duplicate-form').submit();
+        showConfirmModal(
+            'Duplicate Plan',
+            'This will create a copy of this plan with the name "Copy of {{ $plan->name }}".',
+            'Duplicate Plan',
+            null,
+            'btn-success',
+            function() {
+                window.location.href = '{{ route("admin.shop.plans.duplicate", $plan->id) }}';
             }
-        });
+        );
     }
 
     function deletePlan() {
-        swal({
-            title: 'Are you sure?',
-            text: 'This will permanently delete the plan. This action cannot be undone!',
-            type: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, delete it!'
-        }).then(function(result) {
-            if (result.value) {
+        showConfirmModal(
+            'Delete Plan',
+            'This will permanently delete the plan "{{ $plan->name }}". This action cannot be undone!',
+            'Delete Plan',
+            'This action is irreversible!',
+            'btn-danger',
+            function() {
                 document.getElementById('delete-form').submit();
             }
-        });
+        );
     }
 </script>
-@endpush

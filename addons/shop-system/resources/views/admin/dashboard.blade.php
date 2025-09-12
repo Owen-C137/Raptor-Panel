@@ -200,11 +200,15 @@
                                 </td>
                                 <td>
                                     <div class="order-items-summary">
-                                        @foreach($order->items->take(2) as $item)
-                                            <div class="small">{{ $item->plan->name }} ({{ $item->plan->category->name }})</div>
-                                        @endforeach
-                                        @if($order->items->count() > 2)
-                                            <small class="text-muted">+{{ $order->items->count() - 2 }} more</small>
+                                        @if($order->plan)
+                                            <div class="small">{{ $order->plan->name }} 
+                                                @if($order->plan->category)
+                                                    ({{ $order->plan->category->name }})
+                                                @endif
+                                            </div>
+                                            <small class="text-muted">{{ ucfirst($order->billing_cycle) }} billing</small>
+                                        @else
+                                            <div class="small text-muted">No plan associated</div>
                                         @endif
                                     </div>
                                 </td>

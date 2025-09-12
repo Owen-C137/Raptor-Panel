@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Gate;
 use PterodactylAddons\ShopSystem\Http\Middleware\InjectShopNavigation;
+use Pterodactyl\Http\Middleware\AdminAuthenticate;
+use Pterodactyl\Http\Middleware\RequireTwoFactorAuthentication;
 use PterodactylAddons\ShopSystem\Providers\ShopNavigationServiceProvider;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Policies\ShopOrderPolicy;
@@ -107,9 +109,16 @@ class ShopServiceProvider extends ServiceProvider
         Route::model('category', \PterodactylAddons\ShopSystem\Models\ShopCategory::class);
         Route::model('product', \PterodactylAddons\ShopSystem\Models\ShopCategory::class);
         
-        // Bind order by UUID instead of ID for payment callback routes
+        // Bind order by UUID or ID for flexibility in admin interface
         Route::bind('order', function ($value) {
-            return \PterodactylAddons\ShopSystem\Models\ShopOrder::where('uuid', $value)->firstOrFail();
+            // Check if it's a UUID (contains hyphens) or an ID (numeric)
+            if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $value)) {
+                // It's a UUID
+                return \PterodactylAddons\ShopSystem\Models\ShopOrder::where('uuid', $value)->firstOrFail();
+            } else {
+                // It's an ID
+                return \PterodactylAddons\ShopSystem\Models\ShopOrder::findOrFail($value);
+            }
         });
         
         Route::model('coupon', \PterodactylAddons\ShopSystem\Models\ShopCoupon::class);
@@ -125,8 +134,8 @@ class ShopServiceProvider extends ServiceProvider
         Route::middleware(['web', 'inject-shop-nav'])
             ->group(base_path('addons/shop-system/routes/web.php'));
             
-        // Load admin routes (admin interface) with proper prefix
-        Route::middleware(['web'])
+        // Load admin routes (admin interface) with proper authentication
+        Route::middleware(['web', 'auth.session', RequireTwoFactorAuthentication::class, AdminAuthenticate::class])
             ->prefix('admin/shop')
             ->group(base_path('addons/shop-system/routes/admin.php'));
             

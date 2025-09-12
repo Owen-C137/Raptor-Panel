@@ -134,11 +134,13 @@
                                     </td>
                                     <td>
                                         <div class="order-items">
-                                            @foreach($order->items->take(2) as $item)
-                                                <div class="small">{{ $item->plan->product->name }}</div>
-                                            @endforeach
-                                            @if($order->items->count() > 2)
-                                                <small class="text-muted">+{{ $order->items->count() - 2 }} more</small>
+                                            @if($order->plan)
+                                                <div class="small">{{ $order->plan->name }}</div>
+                                                @if($order->plan->category)
+                                                    <small class="text-muted">{{ $order->plan->category->name }}</small>
+                                                @endif
+                                            @else
+                                                <div class="small text-muted">No plan associated</div>
                                             @endif
                                         </div>
                                     </td>

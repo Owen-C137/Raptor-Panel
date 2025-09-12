@@ -339,10 +339,21 @@
             <div class="summary-line">
                 <span>Subtotal (${data.cart_count} items):</span>
                 <span>${data.formatted_total}</span>
-            </div>
+            </div>`;
+        
+        // Add coupon information if present
+        if (data.coupon) {
+            summaryHtml += `
+            <div class="summary-line coupon-discount">
+                <span>Discount (${data.coupon.code}):</span>
+                <span class="text-success">-${data.coupon.formatted_discount}</span>
+            </div>`;
+        }
+        
+        summaryHtml += `
             <hr>
             <div class="summary-line total">
-                <strong>Total: ${data.formatted_total}</strong>
+                <strong>Total: ${data.coupon ? data.coupon.formatted_new_total : data.formatted_total}</strong>
             </div>
             <div class="d-grid gap-2 mt-3">
                 <a href="{{ route('shop.checkout.index') }}" class="btn btn-success btn-lg">

@@ -177,12 +177,62 @@ class CartService
             }
         }
 
+        // Get applied coupon info
+        $appliedCoupon = $this->getAppliedCouponInfo($total);
+        $discount = $appliedCoupon ? $appliedCoupon['discount_amount'] : 0;
+        
+        // Calculate tax (if configured)
+        $taxRate = config('shop.tax_rate', 0);
+        $discountedSubtotal = $total - $discount;
+        $tax = $discountedSubtotal * ($taxRate / 100);
+        $finalTotal = $discountedSubtotal + $tax;
+
         return [
             'success' => true,
             'items' => $items,
             'cart_count' => $itemCount,
-            'total' => $total,
-            'formatted_total' => '$' . number_format($total, 2),
+            'subtotal' => $total,
+            'setup_total' => 0, // TODO: Add setup fee calculation if needed
+            'discount' => $discount,
+            'tax' => $tax,
+            'total' => $finalTotal,
+            'formatted_total' => '$' . number_format($finalTotal, 2),
+            'applied_coupon' => $appliedCoupon,
+        ];
+    }
+
+    /**
+     * Get applied coupon information with calculated discount.
+     */
+    private function getAppliedCouponInfo(float $cartTotal): ?array
+    {
+        $couponCode = session('applied_coupon');
+        if (!$couponCode) {
+            return null;
+        }
+
+        $coupon = \PterodactylAddons\ShopSystem\Models\ShopCoupon::where('code', $couponCode)
+            ->where('active', true)
+            ->first();
+
+        if (!$coupon || !$coupon->isValid()) {
+            // Coupon is no longer valid, remove from session
+            session()->forget('applied_coupon');
+            return null;
+        }
+
+        $discount = $coupon->calculateDiscount($cartTotal);
+        $newTotal = max(0, $cartTotal - $discount);
+
+        return [
+            'code' => $coupon->code,
+            'description' => $coupon->description,
+            'type' => $coupon->type,
+            'value' => $coupon->value,
+            'discount_amount' => $discount,
+            'formatted_discount' => '$' . number_format($discount, 2),
+            'new_total' => $newTotal,
+            'formatted_new_total' => '$' . number_format($newTotal, 2),
         ];
     }
 

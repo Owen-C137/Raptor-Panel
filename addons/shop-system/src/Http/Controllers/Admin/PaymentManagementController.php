@@ -45,7 +45,7 @@ class PaymentManagementController extends Controller
      */
     public function show(ShopPayment $payment)
     {
-        $payment->load(['order', 'order.user', 'order.items']);
+        $payment->load(['order', 'order.user', 'order.plan']);
         
         return view('shop::admin.payments.show', compact('payment'));
     }

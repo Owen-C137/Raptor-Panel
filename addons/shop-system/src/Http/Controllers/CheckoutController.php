@@ -169,9 +169,10 @@ class CheckoutController extends Controller
             $setupTotal += $plan['setup_fee'] * $quantity;
         }
         
-        $discount = 0; // TODO: Add coupon/discount logic
-        $tax = 0; // TODO: Add tax calculation if needed
-        $total = $subtotal + $setupTotal - $discount + $tax;
+        // Get discount and tax from cart summary (calculated in CartService)
+        $discount = $summary['discount'] ?? 0;
+        $tax = $summary['tax'] ?? 0;
+        $total = $summary['total'] ?? ($subtotal + $setupTotal - $discount + $tax);
 
         $response = [
             'success' => true,
@@ -181,7 +182,8 @@ class CheckoutController extends Controller
                 'setup_total' => $setupTotal,
                 'discount' => $discount,
                 'tax' => $tax,
-                'total' => $total
+                'total' => $total,
+                'applied_coupon' => $summary['applied_coupon'] ?? null
             ]
         ];
         

@@ -217,6 +217,27 @@ class ShopCoupon extends Model
     }
 
     /**
+     * Check if this coupon can be applied to the given cart items.
+     */
+    public function isApplicableToCart(array $cartItems): bool
+    {
+        // If no plan restrictions, coupon is applicable to any cart
+        if (empty($this->applicable_plans)) {
+            return true;
+        }
+
+        // Check if any cart item contains a plan that this coupon applies to
+        foreach ($cartItems as $item) {
+            $planId = $item['plan_id'] ?? null;
+            if ($planId && $this->isApplicableToPlan($planId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Calculate the discount amount for the given amount.
      */
     public function calculateDiscount(float $amount): float

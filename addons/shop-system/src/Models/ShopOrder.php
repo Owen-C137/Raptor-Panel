@@ -518,6 +518,97 @@ class ShopOrder extends Model
     }
 
     /**
+     * Check if the order can be manually processed (e.g., for stuck orders).
+     */
+    public function canProcess(): bool
+    {
+        // Orders can be processed if they are:
+        // 1. Paid but stuck in processing status (likely need variable input)
+        // 2. Have failed server creation and need retry
+        return $this->isPaymentCompleted() && in_array($this->status, [
+            self::STATUS_PROCESSING,
+        ]);
+    }
+
+    /**
+     * Check if the order can be cancelled by the user.
+     */
+    public function canCancel(): bool
+    {
+        // Orders can be cancelled if they are:
+        // 1. Pending payment
+        // 2. Processing but not yet completed
+        // Cannot cancel active, suspended, already cancelled, or terminated orders
+        return in_array($this->status, [
+            self::STATUS_PENDING,
+            self::STATUS_PROCESSING,
+        ]);
+    }
+
+    /**
+     * Check if the order has active subscriptions (recurring billing).
+     */
+    public function hasActiveSubscriptions(): bool
+    {
+        // An order has active subscriptions if:
+        // 1. It's in active status
+        // 2. It has a recurring billing cycle (not one-time)
+        // 3. It has a future due date
+        return $this->status === self::STATUS_ACTIVE && 
+               !is_null($this->next_due_at) && 
+               $this->next_due_at->isFuture();
+    }
+
+    /**
+     * Get the next renewal date for this order.
+     */
+    public function getNextRenewalDate(): ?\Carbon\Carbon
+    {
+        return $this->next_due_at;
+    }
+
+    /**
+     * Calculate the monthly equivalent amount based on billing cycle
+     */
+    public function getMonthlyAmount()
+    {
+        $amount = $this->amount;
+        
+        switch ($this->billing_cycle) {
+            case 'hourly':
+                return $amount * 24 * 30; // 24 hours * 30 days
+            case 'daily':
+                return $amount * 30; // 30 days
+            case 'weekly':
+                return $amount * 4.33; // ~4.33 weeks per month
+            case 'monthly':
+                return $amount;
+            case 'quarterly':
+                return $amount / 3; // 3 months
+            case 'semi-annually':
+                return $amount / 6; // 6 months
+            case 'annually':
+                return $amount / 12; // 12 months
+            default:
+                return $amount; // fallback to original amount
+        }
+    }
+
+    /**
+     * Check if renewal can be cancelled
+     */
+    public function canCancelRenewal()
+    {
+        // Can cancel renewal if:
+        // 1. Order is completed/active
+        // 2. Has active subscriptions
+        // 3. Not already cancelled
+        return $this->status === 'completed' && 
+               $this->hasActiveSubscriptions() && 
+               !in_array($this->status, ['cancelled', 'refunded']);
+    }
+
+    /**
      * Check if the user can download an invoice for this order.
      */
     public function canDownloadInvoice(): bool

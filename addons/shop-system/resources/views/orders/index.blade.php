@@ -114,48 +114,46 @@
                                 {{-- Order Items --}}
                                 <div class="col-md-8">
                                     <div class="order-items">
-                                        @foreach($order->items->take(3) as $item)
-                                        <div class="order-item {{ !$loop->first ? 'border-top pt-2 mt-2' : '' }}">
+                                        @if($order->plan)
+                                        <div class="order-item">
                                             <div class="row align-items-center">
                                                 <div class="col-md-6">
                                                     <div class="item-info">
-                                                        <h6 class="mb-1">{{ $item->plan->product->name }}</h6>
-                                                        <p class="mb-1 text-primary">{{ $item->plan->name }}</p>
+                                                        <h6 class="mb-1">{{ $order->plan->category->name ?? 'General' }}</h6>
+                                                        <p class="mb-1 text-primary">{{ $order->plan->name }}</p>
                                                         <div class="item-meta">
-                                                            <span class="badge bg-secondary me-2">{{ $item->plan->billing_cycle }}</span>
-                                                            @if($item->quantity > 1)
-                                                                <span class="badge bg-info">Qty: {{ $item->quantity }}</span>
-                                                            @endif
+                                                            <span class="badge bg-secondary me-2">{{ $order->billing_cycle }}</span>
+                                                            {{-- Orders are single items, no quantity needed --}}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
                                                 <div class="col-md-3">
                                                     <div class="item-status">
-                                                        @if($item->server_id)
+                                                        @if($order->server_id)
                                                             <span class="badge bg-success">
                                                                 <i class="fas fa-server"></i>
                                                                 Server Active
                                                             </span>
-                                                        @elseif($item->status === 'provisioning')
+                                                        @elseif($order->status === 'provisioning')
                                                             <span class="badge bg-warning">
                                                                 <i class="fas fa-clock"></i>
                                                                 Provisioning
                                                             </span>
-                                                        @elseif($item->status === 'suspended')
+                                                        @elseif($order->status === 'suspended')
                                                             <span class="badge bg-danger">
                                                                 <i class="fas fa-pause"></i>
                                                                 Suspended
                                                             </span>
                                                         @else
-                                                            <span class="badge bg-secondary">{{ ucfirst($item->status) }}</span>
+                                                            <span class="badge bg-secondary">{{ ucfirst($order->status) }}</span>
                                                         @endif
                                                     </div>
                                                 </div>
                                                 
                                                 <div class="col-md-3 text-end">
-                                                    @if($item->server_id && $item->server)
-                                                        <a href="/server/{{ $item->server->uuidShort }}" 
+                                                    @if($order->server_id && $order->server)
+                                                        <a href="/server/{{ $order->server->uuidShort }}" 
                                                            class="btn btn-sm btn-outline-primary">
                                                             <i class="fas fa-external-link-alt"></i>
                                                             Manage Server
@@ -164,13 +162,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        @endforeach
-                                        
-                                        @if($order->items->count() > 3)
-                                        <div class="more-items text-center mt-2">
-                                            <small class="text-muted">
-                                                +{{ $order->items->count() - 3 }} more items
-                                            </small>
+                                        @else
+                                        <div class="order-item">
+                                            <div class="text-muted">No plan associated with this order</div>
                                         </div>
                                         @endif
                                     </div>

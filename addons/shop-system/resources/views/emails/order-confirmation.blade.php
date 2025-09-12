@@ -26,23 +26,21 @@
 <table class="table">
     <thead>
         <tr>
-            <th>Product</th>
+            <th>Category</th>
             <th>Plan</th>
-            <th>Quantity</th>
+            <th>Billing Cycle</th>
             <th>Price</th>
             <th>Total</th>
         </tr>
     </thead>
     <tbody>
-        @foreach($order->items as $item)
         <tr>
-            <td>{{ $item->plan->product->name }}</td>
-            <td>{{ $item->plan->name }}</td>
-            <td>{{ $item->quantity }}</td>
-            <td>{{ config('shop.currency.symbol', '$') }}{{ number_format($item->unit_price, 2) }}</td>
-            <td>{{ config('shop.currency.symbol', '$') }}{{ number_format($item->total, 2) }}</td>
+            <td>{{ $order->plan->category->name }}</td>
+            <td>{{ $order->plan->name }}</td>
+            <td>{{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</td>
+            <td>{{ config('shop.currency.symbol', '$') }}{{ number_format($order->amount, 2) }}</td>
+            <td>{{ config('shop.currency.symbol', '$') }}{{ number_format($order->amount, 2) }}</td>
         </tr>
-        @endforeach
     </tbody>
 </table>
 

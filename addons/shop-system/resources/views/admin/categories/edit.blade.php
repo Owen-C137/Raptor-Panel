@@ -203,31 +203,31 @@
                     <dt>Updated:</dt>
                     <dd>{{ $category->updated_at->format('M d, Y g:i A') }}</dd>
                     
-                    <dt>Products:</dt>
-                    <dd>{{ $category->products->count() }}</dd>
+                    <dt>Plans:</dt>
+                    <dd>{{ $category->plans->count() }}</dd>
                     
-                    @if($category->subcategories && $category->subcategories->count() > 0)
+                    @if($category->children && $category->children->count() > 0)
                         <dt>Subcategories:</dt>
-                        <dd>{{ $category->subcategories->count() }}</dd>
+                        <dd>{{ $category->children->count() }}</dd>
                     @endif
                 </dl>
             </div>
         </div>
         
-        @if($category->products && $category->products->count() > 0)
+        @if($category->plans && $category->plans->count() > 0)
             <div class="box">
                 <div class="box-header with-border">
-                    <h3 class="box-title">Products in Category</h3>
+                    <h3 class="box-title">Plans in Category</h3>
                 </div>
                 
                 <div class="box-body">
-                    @foreach($category->products->take(5) as $product)
+                    @foreach($category->plans->take(5) as $plan)
                         <div class="media">
                             <div class="media-body">
-                                <h5 class="media-heading">{{ $product->name }}</h5>
+                                <h5 class="media-heading">{{ $plan->name }}</h5>
                                 <p class="margin-bottom-5">
-                                    <strong>${{ number_format($product->price, 2) }}</strong>
-                                    @if($product->is_active)
+                                    <strong>${{ number_format($plan->price, 2) }}</strong>
+                                    @if($plan->status === 'active')
                                         <span class="label label-success">Active</span>
                                     @else
                                         <span class="label label-danger">Inactive</span>
@@ -238,11 +238,11 @@
                         @if(!$loop->last)<hr>@endif
                     @endforeach
                     
-                    @if($category->products->count() > 5)
+                    @if($category->plans->count() > 5)
                         <div class="text-center">
-                            <a href="{{ route('admin.shop.products.index', ['category' => $category->id]) }}" 
+                            <a href="{{ route('admin.shop.plans.index', ['category' => $category->id]) }}" 
                                class="btn btn-sm btn-default">
-                                View All Products ({{ $category->products->count() }})
+                                View All Plans ({{ $category->plans->count() }})
                             </a>
                         </div>
                     @endif
@@ -250,14 +250,14 @@
             </div>
         @endif
         
-        @if($category->subcategories && $category->subcategories->count() > 0)
+        @if($category->children && $category->children->count() > 0)
             <div class="box">
                 <div class="box-header with-border">
                     <h3 class="box-title">Subcategories</h3>
                 </div>
                 
                 <div class="box-body">
-                    @foreach($category->subcategories as $subcategory)
+                    @foreach($category->children as $subcategory)
                         <div class="media">
                             <div class="media-body">
                                 <h5 class="media-heading">
@@ -266,7 +266,7 @@
                                     </a>
                                 </h5>
                                 <p class="margin-bottom-5">
-                                    <span class="badge bg-blue">{{ $subcategory->products->count() }} products</span>
+                                    <span class="badge bg-blue">{{ $subcategory->plans->count() }} plans</span>
                                     @if($subcategory->is_active)
                                         <span class="label label-success">Active</span>
                                     @else
@@ -291,7 +291,7 @@
                     <i class="fa fa-trash"></i> Delete Category
                 </button>
                 <small class="form-text text-muted">
-                    This action cannot be undone. All products will be moved to "Uncategorized".
+                    This action cannot be undone. All plans will be moved to the default category.
                 </small>
             </div>
         </div>
@@ -318,7 +318,7 @@
         });
         
         function deleteCategory() {
-            if (confirm('Are you sure you want to delete this category? This action cannot be undone.\n\nAll products in this category will be moved to "Uncategorized".')) {
+            if (confirm('Are you sure you want to delete this category? This action cannot be undone.\n\nAll plans in this category will be moved to the default category.')) {
                 $.ajax({
                     url: '{{ route('admin.shop.categories.destroy', $category->id) }}',
                     type: 'DELETE',
