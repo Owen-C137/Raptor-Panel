@@ -12,6 +12,7 @@ use Pterodactyl\Http\Middleware\RequireTwoFactorAuthentication;
 use PterodactylAddons\ShopSystem\Providers\ShopNavigationServiceProvider;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Policies\ShopOrderPolicy;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class ShopServiceProvider extends ServiceProvider
 {
@@ -42,6 +43,9 @@ class ShopServiceProvider extends ServiceProvider
     {
         // Register the navigation service provider first
         $this->app->register(ShopNavigationServiceProvider::class);
+        
+        // Register morph map for addon models to fix activity logging
+        $this->registerMorphMap();
         
         // Load migrations from the addon directory
         $this->loadMigrationsFrom(base_path('addons/shop-system/database/migrations'));
@@ -193,5 +197,22 @@ class ShopServiceProvider extends ServiceProvider
 
             $view->with('shopNavigation', $shopNavigation);
         });
+    }
+
+    /**
+     * Register morph map for addon models to fix activity logging.
+     */
+    protected function registerMorphMap()
+    {
+        Relation::morphMap([
+            'user_wallet' => \PterodactylAddons\ShopSystem\Models\UserWallet::class,
+            'wallet_transaction' => \PterodactylAddons\ShopSystem\Models\WalletTransaction::class,
+            'shop_order' => \PterodactylAddons\ShopSystem\Models\ShopOrder::class,
+            'shop_payment' => \PterodactylAddons\ShopSystem\Models\ShopPayment::class,
+            'shop_plan' => \PterodactylAddons\ShopSystem\Models\ShopPlan::class,
+            'shop_coupon' => \PterodactylAddons\ShopSystem\Models\ShopCoupon::class,
+            'shop_coupon_usage' => \PterodactylAddons\ShopSystem\Models\ShopCouponUsage::class,
+            'shop_product' => \PterodactylAddons\ShopSystem\Models\ShopProduct::class,
+        ]);
     }
 }
