@@ -15,16 +15,18 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
+            $table->string('image_path')->nullable();
             $table->string('slug')->unique();
             $table->string('image')->nullable();
             $table->boolean('active')->default(true);
             $table->integer('sort_order')->default(0);
             $table->unsignedBigInteger('parent_id')->nullable();
-            $table->json('metadata')->nullable();
+            $table->longText('metadata')->nullable();
             $table->timestamps();
 
-            $table->foreign('parent_id')->references('id')->on('shop_categories')->onDelete('cascade');
             $table->index(['active', 'sort_order']);
+            $table->index('parent_id');
+            $table->foreign('parent_id')->references('id')->on('shop_categories')->onDelete('set null');
         });
     }
 

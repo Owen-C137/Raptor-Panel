@@ -17,9 +17,9 @@ return new class extends Migration
             $table->decimal('balance', 12, 2)->default(0.00);
             $table->char('currency', 3)->default('USD');
             $table->timestamps();
-            
+
+            $table->unique('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->unique(['user_id', 'currency'], 'unique_user_currency');
         });
     }
 

@@ -16,16 +16,15 @@ return new class extends Migration
             $table->unsignedBigInteger('cart_id');
             $table->unsignedBigInteger('plan_id');
             $table->integer('quantity');
-            $table->decimal('unit_price', 10, 2); // Price at time of adding to cart
-            $table->decimal('total_price', 10, 2); // unit_price * quantity
-            $table->json('plan_options')->nullable(); // Store selected options/variants
-            $table->json('server_config')->nullable(); // Store server configuration choices
+            $table->decimal('unit_price', 10, 2);
+            $table->decimal('total_price', 10, 2);
+            $table->longText('plan_options')->nullable();
+            $table->longText('server_config')->nullable();
             $table->timestamps();
 
+            $table->index(['cart_id', 'plan_id']);
             $table->foreign('cart_id')->references('id')->on('shop_cart')->onDelete('cascade');
             $table->foreign('plan_id')->references('id')->on('shop_plans')->onDelete('cascade');
-            $table->unique(['cart_id', 'plan_id']); // Prevent duplicate items in same cart
-            $table->index('cart_id');
         });
     }
 

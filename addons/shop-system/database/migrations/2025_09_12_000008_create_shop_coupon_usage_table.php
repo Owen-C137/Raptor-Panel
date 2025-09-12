@@ -18,13 +18,12 @@ return new class extends Migration
             $table->unsignedBigInteger('order_id');
             $table->decimal('discount_amount', 10, 2);
             $table->timestamps();
-            
+
+            $table->index(['coupon_id', 'user_id']);
+            $table->index('order_id');
             $table->foreign('coupon_id')->references('id')->on('shop_coupons')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('order_id')->references('id')->on('shop_orders')->onDelete('cascade');
-            
-            $table->unique(['coupon_id', 'order_id'], 'unique_coupon_order');
-            $table->index(['user_id', 'coupon_id'], 'idx_user_coupon');
         });
     }
 

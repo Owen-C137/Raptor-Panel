@@ -20,12 +20,11 @@ return new class extends Migration
             $table->decimal('balance_before', 12, 2);
             $table->decimal('balance_after', 12, 2);
             $table->string('description', 500);
-            $table->json('metadata')->nullable(); // Reference to orders, payments, etc.
-            $table->timestamp('created_at');
-            
+            $table->longText('metadata')->nullable();
+            $table->timestamps();
+
+            $table->index(['wallet_id', 'created_at']);
             $table->foreign('wallet_id')->references('id')->on('user_wallets')->onDelete('cascade');
-            $table->index(['wallet_id', 'created_at'], 'idx_wallet_created');
-            $table->index(['type', 'created_at'], 'idx_type_created');
         });
     }
 
