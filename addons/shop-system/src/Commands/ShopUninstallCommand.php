@@ -85,33 +85,34 @@ class ShopUninstallCommand extends Command
     protected function isShopInstalled(): bool
     {
         return File::exists(config_path('shop.php')) || 
-               Schema::hasTable('shop_settings');
+               Schema::hasTable('shop_settings') ||
+               Schema::hasTable('shop_categories');
     }
 
     /**
-     * Drop all shop-related database tables
+     * Drop all shop-related database tables (updated for new structure)
      */
     protected function dropShopTables(): bool
     {
+        // Drop tables in correct order to handle foreign key constraints
         $tables = [
-            'shop_settings',
-            'shop_cart_items',
-            'shop_cart',
-            'shop_order_items',
-            'shop_coupon_usage',
-            'shop_coupons',
-            'shop_payments',
-            'shop_orders',
-            'shop_products',
-            'shop_plans',
-            'wallet_transactions',
-            'user_wallets',
-            'shop_categories',
+            'shop_cart_items',          // References shop_cart and shop_plans
+            'shop_cart',                // References users
+            'shop_coupon_usage',        // References shop_coupons, users, shop_orders
+            'shop_payments',            // References users, shop_orders
+            'shop_orders',              // References users, shop_plans, servers
+            'shop_plans',               // References shop_categories, eggs
+            'shop_categories',          // Self-referencing (parent_id)
+            'shop_coupons',             // Standalone
+            'wallet_transactions',      // References user_wallets
+            'user_wallets',             // References users
+            'shop_settings',            // Standalone
         ];
 
         foreach ($tables as $table) {
             if (Schema::hasTable($table)) {
                 Schema::dropIfExists($table);
+                $this->line("  - Dropped table: {$table}");
             }
         }
 
