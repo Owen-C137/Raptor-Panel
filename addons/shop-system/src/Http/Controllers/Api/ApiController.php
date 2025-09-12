@@ -295,7 +295,7 @@ class ApiController extends Controller
         ]);
 
         $amount = $request->amount;
-        $currentBalance = $this->walletService->getBalance(auth()->id());
+        $currentBalance = $this->walletService->getBalance(auth()->user());
         $maxBalance = config('shop.wallet.maximum_balance', 10000.00);
 
         if ($currentBalance + $amount > $maxBalance) {

@@ -3,6 +3,7 @@
 namespace PterodactylAddons\ShopSystem\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Support\Carbon;
@@ -51,6 +52,7 @@ class WalletTransaction extends Model
         'wallet_id',
         'type',
         'amount',
+        'balance_before',
         'balance_after',
         'description',
         'metadata',
@@ -62,6 +64,7 @@ class WalletTransaction extends Model
     protected $casts = [
         'wallet_id' => 'integer',
         'amount' => 'decimal:2',
+        'balance_before' => 'decimal:2',
         'balance_after' => 'decimal:2',
         'metadata' => 'array',
     ];
@@ -73,6 +76,7 @@ class WalletTransaction extends Model
         'wallet_id' => 'required|exists:user_wallets,id',
         'type' => 'required|in:credit,debit,refund,payment,topup,adjustment',
         'amount' => 'required|numeric',
+        'balance_before' => 'required|numeric|min:0',
         'balance_after' => 'required|numeric|min:0',
         'description' => 'nullable|string|max:255',
         'metadata' => 'nullable|array',
@@ -84,6 +88,18 @@ class WalletTransaction extends Model
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(UserWallet::class, 'wallet_id');
+    }
+
+    /**
+     * Get the user that owns the wallet for this transaction.
+     * This is an accessor that loads the relationship dynamically.
+     */
+    public function getUserAttribute()
+    {
+        if (!$this->relationLoaded('wallet')) {
+            $this->load('wallet.user');
+        }
+        return $this->wallet?->user;
     }
 
     /**

@@ -281,7 +281,7 @@
                                 
                                 <div class="input-group">
                                     <span class="input-group-text">{{ config('shop.currency.symbol', '$') }}</span>
-                                    <input type="number" class="form-control" id="custom-amount" 
+                                    <input type="number" class="form-control" id="customAmount" 
                                            placeholder="Enter custom amount" min="5" max="1000" step="0.01">
                                 </div>
                                 <div class="form-text">
@@ -338,7 +338,7 @@
                                         </div>
                                         <div class="summary-line">
                                             <span>Deposit Amount:</span>
-                                            <span id="deposit-amount-display">$0.00</span>
+                                            <span id="depositAmount">$0.00</span>
                                         </div>
                                         <div class="summary-line" id="processing-fee-line" style="display: none;">
                                             <span>Processing Fee:</span>
@@ -372,8 +372,8 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     Cancel
                 </button>
-                <button type="button" class="btn btn-success" id="process-deposit-btn">
-                    <i class="fas fa-credit-card"></i>
+                <button type="button" class="btn btn-success" id="addFundsBtn">
+                    <i class="fas fa-plus"></i>
                     Add Funds
                 </button>
             </div>
@@ -463,19 +463,22 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Amount button selection
     document.querySelectorAll('.amount-btn').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Amount button clicked:', this.dataset.amount);
             const amount = parseFloat(this.dataset.amount);
             selectAmount(amount);
             
             // Update UI
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            document.getElementById('custom-amount').value = '';
+            document.getElementById('customAmount').value = '';
         });
     });
     
     // Custom amount input
-    document.getElementById('custom-amount').addEventListener('input', function() {
+    document.getElementById('customAmount').addEventListener('input', function() {
+        console.log('Custom amount input:', this.value);
         const amount = parseFloat(this.value) || 0;
         selectAmount(amount);
         
@@ -485,41 +488,60 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Amount selection logic
     function selectAmount(amount) {
+        console.log('Selecting amount:', amount);
         selectedAmount = amount;
         updateDepositSummary();
     }
     
     // Update deposit summary
     function updateDepositSummary() {
+        console.log('Updating deposit summary with amount:', selectedAmount);
         const currentBalance = {{ $wallet->balance }};
         const processingFee = 0; // Calculate based on payment method if needed
         const newBalance = currentBalance + selectedAmount;
         
-        document.getElementById('deposit-amount-display').textContent = 
-            '{{ config("shop.currency.symbol", "$") }}' + selectedAmount.toFixed(2);
+        const depositAmountElement = document.getElementById('depositAmount');
+        const newBalanceElement = document.getElementById('new-balance-display');
         
-        document.getElementById('new-balance-display').textContent = 
-            '{{ config("shop.currency.symbol", "$") }}' + newBalance.toFixed(2);
+        if (depositAmountElement) {
+            depositAmountElement.textContent = '{{ config("shop.currency.symbol", "$") }}' + selectedAmount.toFixed(2);
+        }
+        
+        if (newBalanceElement) {
+            newBalanceElement.textContent = '{{ config("shop.currency.symbol", "$") }}' + newBalance.toFixed(2);
+        }
         
         // Enable/disable deposit button
-        const depositBtn = document.getElementById('process-deposit-btn');
-        if (selectedAmount >= 5) {
-            depositBtn.disabled = false;
-            depositBtn.innerHTML = '<i class="fas fa-credit-card"></i> Add $' + selectedAmount.toFixed(2);
-        } else {
-            depositBtn.disabled = true;
-            depositBtn.innerHTML = '<i class="fas fa-credit-card"></i> Add Funds';
+        const depositBtn = document.getElementById('addFundsBtn');
+        if (depositBtn) {
+            if (selectedAmount >= 5) {
+                depositBtn.disabled = false;
+                depositBtn.innerHTML = '<i class="fas fa-credit-card"></i> Add $' + selectedAmount.toFixed(2);
+            } else {
+                depositBtn.disabled = true;
+                depositBtn.innerHTML = '<i class="fas fa-credit-card"></i> Add Funds';
+            }
         }
     }
     
     // Process deposit
-    document.getElementById('process-deposit-btn').addEventListener('click', function() {
+    document.getElementById('addFundsBtn').addEventListener('click', function() {
+        console.log('Process deposit button clicked, selected amount:', selectedAmount);
+        
         if (selectedAmount < 5) {
-            Shop.showNotification('error', 'Minimum deposit amount is $5.00');
+            Shop.showNotification('Minimum deposit amount is $5.00', 'error');
             return;
         }
         
-        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+        const paymentMethodElement = document.querySelector('input[name="payment_method"]:checked');
+        if (!paymentMethodElement) {
+            Shop.showNotification('Please select a payment method', 'error');
+            return;
+        }
+        
+        const paymentMethod = paymentMethodElement.value;
+        console.log('Payment method:', paymentMethod);
+        
         const formData = new FormData();
         formData.append('amount', selectedAmount);
         formData.append('payment_method', paymentMethod);
@@ -536,22 +558,23 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
+            console.log('Response:', data);
             if (data.success) {
                 if (data.redirect_url) {
                     window.location.href = data.redirect_url;
                 } else {
-                    Shop.showNotification('success', 'Funds added successfully!');
+                    Shop.showNotification('Funds added successfully!', 'success');
                     location.reload();
                 }
             } else {
-                Shop.showNotification('error', data.message);
+                Shop.showNotification(data.message || 'Payment processing failed', 'error');
                 this.disabled = false;
                 this.innerHTML = '<i class="fas fa-credit-card"></i> Add Funds';
             }
         })
         .catch(error => {
             console.error('Deposit error:', error);
-            Shop.showNotification('error', 'Failed to process deposit.');
+            Shop.showNotification('Failed to process deposit.', 'error');
             this.disabled = false;
             this.innerHTML = '<i class="fas fa-credit-card"></i> Add Funds';
         });
@@ -627,11 +650,37 @@ document.addEventListener('DOMContentLoaded', function() {
     updateDepositSummary();
 });
 
-// Export transactions function
+// Initialize Shop object if not exists
 if (typeof Shop === 'undefined') {
-    window.Shop = {};
+    window.Shop = {
+        showNotification: function(message, type = 'info') {
+            // Create a simple notification
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.style.maxWidth = '300px';
+            
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+    };
 }
 
+// Export transactions function
 Shop.exportTransactions = function() {
     window.open('{{ route("shop.wallet.export") }}', '_blank');
 };

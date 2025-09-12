@@ -1,9 +1,217 @@
 // Shop System JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Only run shop JavaScript if we're on a shop page
-    if (!document.body.classList.contains('shop-page') && !document.querySelector('.shop-container')) {
+// Wallet Add Funds Modal Functionality
+function initWalletModal() {
+    console.log('Initializing wallet modal...');
+    
+    const modal = document.getElementById('addFundsModal');
+    const amountButtons = document.querySelectorAll('.amount-btn');
+    const customAmountInput = document.getElementById('customAmount');
+    const depositAmountDisplay = document.getElementById('depositAmount');
+    const addFundsBtn = document.getElementById('addFundsBtn');
+    
+    if (!modal) {
+        console.log('Wallet modal not found on this page');
         return;
+    }
+    
+    console.log('Found wallet modal elements:', {
+        modal: !!modal,
+        amountButtons: amountButtons.length,
+        customAmountInput: !!customAmountInput,
+        depositAmountDisplay: !!depositAmountDisplay,
+        addFundsBtn: !!addFundsBtn
+    });
+    
+    let selectedAmount = 0;
+    
+    // Amount button handlers
+    amountButtons.forEach(button => {
+        console.log('Setting up amount button:', button.textContent);
+        button.addEventListener('click', function() {
+            console.log('Amount button clicked:', this.textContent);
+            
+            // Remove active class from all buttons
+            amountButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add active class to clicked button
+            this.classList.add('active');
+            
+            // Get amount from data attribute or text
+            selectedAmount = parseFloat(this.dataset.amount || this.textContent.replace(/[^0-9.]/g, ''));
+            console.log('Selected amount:', selectedAmount);
+            
+            // Clear custom amount input
+            if (customAmountInput) {
+                customAmountInput.value = '';
+            }
+            
+            // Update display
+            updateDepositDisplay();
+        });
+    });
+    
+    // Custom amount input handler
+    if (customAmountInput) {
+        customAmountInput.addEventListener('input', function() {
+            console.log('Custom amount input changed:', this.value);
+            
+            // Remove active class from amount buttons
+            amountButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Set selected amount
+            selectedAmount = parseFloat(this.value) || 0;
+            console.log('Custom selected amount:', selectedAmount);
+            
+            // Update display
+            updateDepositDisplay();
+        });
+    }
+    
+    // Update deposit display function
+    function updateDepositDisplay() {
+        console.log('Updating deposit display with amount:', selectedAmount);
+        
+        if (depositAmountDisplay) {
+            depositAmountDisplay.textContent = selectedAmount > 0 ? `$${selectedAmount.toFixed(2)}` : '$0.00';
+            console.log('Updated deposit display to:', depositAmountDisplay.textContent);
+        } else {
+            console.error('Deposit amount display element not found');
+        }
+        
+        // Update add funds button state
+        if (addFundsBtn) {
+            addFundsBtn.disabled = selectedAmount <= 0;
+            console.log('Add funds button disabled:', addFundsBtn.disabled);
+        }
+    }
+    
+    // Add funds button handler
+    if (addFundsBtn) {
+        addFundsBtn.addEventListener('click', function() {
+            console.log('Add funds button clicked, amount:', selectedAmount);
+            
+            if (selectedAmount <= 0) {
+                console.error('No amount selected');
+                if (typeof showNotification === 'function') {
+                    showNotification('Please select an amount to add', 'error');
+                } else {
+                    alert('Please select an amount to add');
+                }
+                return;
+            }
+            
+            // Get selected payment method
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!paymentMethod) {
+                console.error('No payment method selected');
+                if (typeof showNotification === 'function') {
+                    showNotification('Please select a payment method', 'error');
+                } else {
+                    alert('Please select a payment method');
+                }
+                return;
+            }
+            
+            console.log('Processing payment with method:', paymentMethod.value);
+            
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('amount', selectedAmount);
+            formData.append('payment_method', paymentMethod.value);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            
+            // Submit payment request
+            fetch('/shop/wallet/add-funds', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Payment response:', data);
+                
+                if (data.success) {
+                    // Handle Stripe payment
+                    if (data.client_secret && paymentMethod.value === 'stripe') {
+                        console.log('Processing Stripe payment...');
+                        // For now, we'll show a success message since Stripe integration requires more frontend setup
+                        if (typeof showNotification === 'function') {
+                            showNotification('Payment initiated successfully! Please complete the payment process.', 'success');
+                        } else {
+                            alert('Payment initiated successfully! Please complete the payment process.');
+                        }
+                        // In a full implementation, you'd use Stripe.js here to handle the payment intent
+                        setTimeout(() => window.location.reload(), 2000);
+                    }
+                    // Handle PayPal payment
+                    else if (data.approval_url && paymentMethod.value === 'paypal') {
+                        console.log('Redirecting to PayPal:', data.approval_url);
+                        window.location.href = data.approval_url;
+                    }
+                    // Handle legacy redirect_url format
+                    else if (data.redirect_url) {
+                        console.log('Redirecting to payment gateway:', data.redirect_url);
+                        window.location.href = data.redirect_url;
+                    }
+                    else {
+                        console.log('Payment processed successfully');
+                        if (typeof showNotification === 'function') {
+                            showNotification('Payment processed successfully!', 'success');
+                        } else {
+                            alert('Payment processed successfully!');
+                        }
+                        setTimeout(() => window.location.reload(), 1000);
+                    }
+                } else {
+                    console.error('Payment failed:', data.message);
+                    if (typeof showNotification === 'function') {
+                        showNotification(data.message || 'Payment processing failed', 'error');
+                    } else {
+                        alert(data.message || 'Payment processing failed');
+                    }
+                    
+                    // Reset button
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-plus"></i> Add Funds';
+                }
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                if (typeof showNotification === 'function') {
+                    showNotification('Payment processing failed', 'error');
+                } else {
+                    alert('Payment processing failed');
+                }
+                
+                // Reset button
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-plus"></i> Add Funds';
+            });
+        });
+    }
+    
+    console.log('Wallet modal initialization complete');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Only run shop JavaScript if we're on a shop page or wallet page
+    if (!document.body.classList.contains('shop-page') && 
+        !document.querySelector('.shop-container') && 
+        !document.querySelector('#addFundsModal')) {
+        return;
+    }
+    
+    // Initialize wallet modal if present
+    if (document.querySelector('#addFundsModal')) {
+        console.log('Wallet page detected, initializing wallet modal...');
+        initWalletModal();
     }
     
     // Update cart count on page load
@@ -418,3 +626,13 @@ function applyPromoCode(code) {
         showNotification('Error applying promo code', 'error');
     });
 }
+
+// Global Shop object for external access
+window.Shop = {
+    showNotification: showNotification,
+    addToCart: addToCart,
+    updateCartCount: updateCartCount,
+    clearCart: clearCart,
+    applyCoupon: applyCoupon,
+    initWalletModal: initWalletModal
+};

@@ -5,18 +5,25 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 use PterodactylAddons\ShopSystem\Repositories\UserWalletRepository;
 use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
+use PterodactylAddons\ShopSystem\Models\WalletTransaction;
+use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use PterodactylAddons\ShopSystem\Mail\WalletFundsAddedMail;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 
 class WalletController extends Controller
 {
     public function __construct(
         private UserWalletRepository $walletRepository,
         private WalletService $walletService,
-        private PaymentGatewayManager $paymentManager
+        private PaymentGatewayManager $paymentGatewayManager,
+        private ShopConfigService $shopConfig
     ) {}
 
     /**
@@ -49,7 +56,7 @@ class WalletController extends Controller
         $minimumDeposit = config('shop.wallet.minimum_deposit', 5.00);
         $maximumBalance = config('shop.wallet.maximum_balance', 10000.00);
         
-        $currentBalance = $this->walletService->getBalance(auth()->id());
+        $currentBalance = $this->walletService->getBalance(auth()->user());
 
         return view('shop::wallet.add-funds', compact(
             'paymentMethods', 
@@ -75,7 +82,7 @@ class WalletController extends Controller
         ]);
 
         $amount = $request->amount;
-        $currentBalance = $this->walletService->getBalance(auth()->id());
+        $currentBalance = $this->walletService->getBalance(auth()->user());
         $maxBalance = config('shop.wallet.maximum_balance', 10000.00);
 
         // Check if adding funds would exceed maximum balance
@@ -88,9 +95,9 @@ class WalletController extends Controller
 
             // Create pending transaction
             $transaction = $this->walletService->createPendingDeposit(
-                userId: auth()->id(),
-                amount: $amount,
-                paymentMethod: $request->payment_method
+                auth()->id(),
+                $amount,
+                $request->payment_method
             );
 
             // Process payment
@@ -105,11 +112,22 @@ class WalletController extends Controller
                     'transaction_id' => $transaction->id,
                 ]);
 
-                return $this->successResponse([
-                    'redirect_url' => $paymentResult['redirect_url'] ?? route('shop.wallet'),
-                    'requires_payment_action' => $paymentResult['requires_action'] ?? false,
-                    'payment_intent' => $paymentResult['payment_intent'] ?? null,
-                ], 'Payment processing initiated!');
+                // Handle different response formats for different payment methods
+                $response = ['success' => true];
+                
+                if (isset($paymentResult['client_secret'])) {
+                    // Stripe payment intent
+                    $response['client_secret'] = $paymentResult['client_secret'];
+                    $response['payment_intent_id'] = $paymentResult['payment_intent_id'];
+                } elseif (isset($paymentResult['approval_url'])) {
+                    // PayPal payment
+                    $response['redirect_url'] = $paymentResult['approval_url'];
+                } elseif (isset($paymentResult['redirect_url'])) {
+                    // Legacy format
+                    $response['redirect_url'] = $paymentResult['redirect_url'];
+                }
+
+                return response()->json($response);
             } else {
                 DB::rollBack();
                 return $this->errorResponse($paymentResult['message'] ?? 'Payment processing failed.');
@@ -132,7 +150,7 @@ class WalletController extends Controller
      */
     public function getBalance(): JsonResponse
     {
-        $balance = $this->walletService->getBalance(auth()->id());
+        $balance = $this->walletService->getBalance(auth()->user());
 
         return $this->successResponse([
             'balance' => $balance,
@@ -178,7 +196,7 @@ class WalletController extends Controller
                 'required',
                 'numeric',
                 'min:1',
-                'max:' . $this->walletService->getBalance(auth()->id()),
+                'max:' . $this->walletService->getBalance(auth()->user()),
             ],
             'note' => 'nullable|string|max:255',
         ]);
@@ -281,19 +299,54 @@ class WalletController extends Controller
      */
     private function processStripePayment($transaction, array $paymentData): array
     {
-        $gateway = $this->paymentManager->getGateway('stripe');
-        
-        return $gateway->createPayment([
-            'amount' => $transaction->amount,
-            'currency' => config('shop.currency.default', 'USD'),
-            'description' => "Wallet deposit - " . $this->formatCurrency($transaction->amount),
-            'metadata' => [
+        try {
+            $gateway = $this->paymentGatewayManager->gateway('stripe');
+            $currency = $this->shopConfig->getSetting('currency', 'USD');
+            
+            // Get Stripe configuration
+            $stripeConfig = $gateway->getConfig();
+            if (!isset($stripeConfig['secret_key'])) {
+                throw new \Exception('Stripe secret key not configured');
+            }
+            
+            // Debug log the available config keys
+            \Log::info('Stripe config keys available: ' . implode(', ', array_keys($stripeConfig)));
+            
+            // Create a simplified payment intent directly with Stripe
+            \Stripe\Stripe::setApiKey($stripeConfig['secret_key']);
+            
+            $paymentIntent = \Stripe\PaymentIntent::create([
+                'amount' => intval($transaction->amount * 100), // Convert to cents
+                'currency' => strtolower($currency),
+                'description' => "Wallet deposit - " . $this->formatCurrency($transaction->amount),
+                'metadata' => [
+                    'type' => 'wallet_deposit',
+                    'user_id' => $transaction->user_id,
+                    'transaction_id' => $transaction->id,
+                ],
+                'automatic_payment_methods' => [
+                    'enabled' => true,
+                ],
+            ]);
+
+            return [
+                'success' => true,
+                'client_secret' => $paymentIntent->client_secret,
+                'payment_intent_id' => $paymentIntent->id,
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('Stripe wallet payment failed', [
                 'transaction_id' => $transaction->id,
-                'user_id' => $transaction->user_id,
-                'type' => 'wallet_deposit',
-            ],
-            'payment_method_data' => $paymentData['payment_method_data'] ?? [],
-        ]);
+                'amount' => $transaction->amount,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Payment processing failed: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -301,20 +354,76 @@ class WalletController extends Controller
      */
     private function processPayPalPayment($transaction, array $paymentData): array
     {
-        $gateway = $this->paymentManager->getGateway('paypal');
-        
-        return $gateway->createPayment([
-            'amount' => $transaction->amount,
-            'currency' => config('shop.currency.default', 'USD'),
-            'description' => "Wallet deposit - " . $this->formatCurrency($transaction->amount),
-            'return_url' => route('shop.wallet'),
-            'cancel_url' => route('shop.wallet.add-funds'),
-            'metadata' => [
+        try {
+            $gateway = $this->paymentGatewayManager->gateway('paypal');
+            $currency = $this->shopConfig->getSetting('currency', 'USD');
+            
+            // Get PayPal configuration
+            $paypalConfig = $gateway->getConfig();
+            if (!isset($paypalConfig['client_id']) || !isset($paypalConfig['client_secret'])) {
+                throw new \Exception('PayPal credentials not configured');
+            }
+            
+            // Debug log the available config keys
+            \Log::info('PayPal config keys available: ' . implode(', ', array_keys($paypalConfig)));
+            
+            // Create PayPal environment - default to sandbox if mode not set
+            $mode = $paypalConfig['mode'] ?? 'sandbox';
+            $environment = $mode === 'live' 
+                ? new \PayPalCheckoutSdk\Core\LiveEnvironment($paypalConfig['client_id'], $paypalConfig['client_secret'])
+                : new \PayPalCheckoutSdk\Core\SandboxEnvironment($paypalConfig['client_id'], $paypalConfig['client_secret']);
+            
+            $client = new \PayPalCheckoutSdk\Core\PayPalHttpClient($environment);
+            
+            $request = new \PayPalCheckoutSdk\Orders\OrdersCreateRequest();
+            $request->headers["prefer"] = "return=representation";
+            $request->body = [
+                "intent" => "CAPTURE",
+                "purchase_units" => [[
+                    "reference_id" => "wallet_deposit_{$transaction->id}",
+                    "amount" => [
+                        "value" => number_format($transaction->amount, 2, '.', ''),
+                        "currency_code" => $currency
+                    ],
+                    "description" => "Wallet deposit - " . $this->formatCurrency($transaction->amount)
+                ]],
+                "application_context" => [
+                    "brand_name" => $this->shopConfig->getSetting('shop_name', 'Game Server Shop'),
+                    "cancel_url" => route('shop.wallet.index'),
+                    "return_url" => route('shop.wallet.deposit.paypal.return', ['transaction' => $transaction->id]),
+                ]
+            ];
+
+            $response = $client->execute($request);
+            $order = $response->result;
+
+            // Find approval URL
+            $approvalUrl = null;
+            foreach ($order->links as $link) {
+                if ($link->rel === 'approve') {
+                    $approvalUrl = $link->href;
+                    break;
+                }
+            }
+
+            return [
+                'success' => true,
+                'approval_url' => $approvalUrl,
+                'order_id' => $order->id,
+            ];
+
+        } catch (\Exception $e) {
+            \Log::error('PayPal wallet payment failed', [
                 'transaction_id' => $transaction->id,
-                'user_id' => $transaction->user_id,
-                'type' => 'wallet_deposit',
-            ],
-        ]);
+                'amount' => $transaction->amount,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Payment processing failed: ' . $e->getMessage()
+            ];
+        }
     }
 
     /**
@@ -400,5 +509,284 @@ class WalletController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
+    }
+
+    /**
+     * Handle Stripe deposit return/completion.
+     */
+    public function stripeDepositReturn(Request $request): RedirectResponse
+    {
+        try {
+            $paymentIntentId = $request->get('payment_intent');
+            $transactionId = $request->get('transaction_id');
+
+            if (!$paymentIntentId || !$transactionId) {
+                Log::error('Missing payment_intent or transaction_id in Stripe deposit return');
+                return redirect()->route('shop.wallet.index')->with('error', 'Invalid payment return data.');
+            }
+
+            $payment = ShopPayment::findOrFail($transactionId);
+            
+            // Verify the payment with Stripe
+            $gateway = $this->paymentGatewayManager->gateway('stripe');
+            $paymentResult = $gateway->verifyPayment($paymentIntentId);
+
+            if ($paymentResult['success'] && $paymentResult['status'] === 'succeeded') {
+                $this->completeWalletPayment($payment, $paymentIntentId);
+                return redirect()->route('shop.wallet.index')->with('success', 'Funds added successfully!');
+            } else {
+                Log::error('Stripe wallet deposit verification failed', [
+                    'transaction_id' => $transactionId,
+                    'payment_intent' => $paymentIntentId,
+                    'result' => $paymentResult
+                ]);
+                return redirect()->route('shop.wallet.index')->with('error', 'Payment verification failed.');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Stripe wallet deposit return error: ' . $e->getMessage());
+            return redirect()->route('shop.wallet.index')->with('error', 'An error occurred processing your payment.');
+        }
+    }
+
+    /**
+     * Handle PayPal deposit return/completion.
+     */
+    public function paypalDepositReturn(Request $request): RedirectResponse
+    {
+        try {
+            $token = $request->get('token');
+            $transactionParam = $request->get('transaction');
+
+            if (!$token || !$transactionParam) {
+                Log::error('Missing token or transaction in PayPal deposit return');
+                return redirect()->route('shop.wallet.index')->with('error', 'Invalid payment return data.');
+            }
+
+            $payment = ShopPayment::findOrFail($transactionParam);
+            
+            // Capture the PayPal order
+            $gateway = $this->paymentGatewayManager->gateway('paypal');
+            
+            // Get PayPal configuration and capture order
+            $paypalConfig = $gateway->getConfig();
+            $mode = $paypalConfig['mode'] ?? 'sandbox';
+            $environment = $mode === 'live' 
+                ? new \PayPalCheckoutSdk\Core\LiveEnvironment($paypalConfig['client_id'], $paypalConfig['client_secret'])
+                : new \PayPalCheckoutSdk\Core\SandboxEnvironment($paypalConfig['client_id'], $paypalConfig['client_secret']);
+            
+            $client = new \PayPalCheckoutSdk\Core\PayPalHttpClient($environment);
+            
+            $request_capture = new \PayPalCheckoutSdk\Orders\OrdersCaptureRequest($token);
+            $request_capture->headers["prefer"] = "return=representation";
+            
+            $response = $client->execute($request_capture);
+            $order = $response->result;
+
+            if ($order->status === 'COMPLETED') {
+                $this->completeWalletPayment($payment, $token);
+                return redirect()->route('shop.wallet.index')->with('success', 'Funds added successfully!');
+            } else {
+                Log::error('PayPal wallet deposit capture failed', [
+                    'transaction_id' => $transactionParam,
+                    'token' => $token,
+                    'status' => $order->status
+                ]);
+                return redirect()->route('shop.wallet.index')->with('error', 'Payment capture failed.');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('PayPal wallet deposit return error: ' . $e->getMessage());
+            return redirect()->route('shop.wallet.index')->with('error', 'An error occurred processing your payment.');
+        }
+    }
+
+    /**
+     * Handle PayPal deposit cancellation.
+     */
+    public function paypalDepositCancel(Request $request): RedirectResponse
+    {
+        $transactionId = $request->get('transaction_id');
+
+        if ($transactionId) {
+            try {
+                $transaction = WalletTransaction::findOrFail($transactionId);
+                $transaction->update([
+                    'status' => 'cancelled',
+                    'notes' => 'Payment cancelled by user'
+                ]);
+
+                Log::info('PayPal wallet deposit cancelled', ['transaction_id' => $transactionId]);
+            } catch (\Exception $e) {
+                Log::error('Error updating cancelled wallet deposit: ' . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('shop.wallet.index')->with('info', 'Payment was cancelled.');
+    }
+
+    /**
+     * Complete a wallet deposit from ShopPayment.
+     */
+    private function completeWalletPayment(ShopPayment $payment, string $paymentReference): void
+    {
+        try {
+            DB::beginTransaction();
+
+            // Get current wallet balance before update
+            $wallet = $this->walletService->getWallet($payment->user_id);
+            $balanceBefore = $wallet->balance;
+
+            // Add funds to wallet with payment method metadata
+            $walletTransaction = $this->walletService->addFunds(
+                $wallet,
+                $payment->amount,
+                "Deposit via " . ucfirst($payment->gateway),
+                'credit'
+            );
+
+            // Update transaction with payment method metadata
+            $walletTransaction->update([
+                'metadata' => [
+                    'payment_method' => $payment->gateway,
+                    'payment_reference' => $paymentReference,
+                    'shop_payment_id' => $payment->id
+                ]
+            ]);
+
+            // Update payment status
+            $payment->update([
+                'status' => ShopPayment::STATUS_COMPLETED,
+                'gateway_transaction_id' => $paymentReference,
+                'processed_at' => now()
+            ]);
+
+            DB::commit();
+
+            // Send email notification using the wallet transaction
+            $this->sendFundsAddedEmail($walletTransaction);
+
+            Log::info('Wallet deposit completed successfully', [
+                'payment_id' => $payment->id,
+                'user_id' => $payment->user_id,
+                'amount' => $payment->amount,
+                'gateway' => $payment->gateway,
+                'payment_reference' => $paymentReference,
+                'wallet_transaction_id' => $walletTransaction->id
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to complete wallet payment', [
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Complete a wallet deposit transaction.
+     */
+    private function completeWalletDeposit(WalletTransaction $transaction, string $paymentReference): void
+    {
+        try {
+            DB::beginTransaction();
+
+            // Get current wallet balance before update
+            $wallet = $this->walletService->getWallet($transaction->user_id);
+            $balanceBefore = $wallet->balance;
+
+            // Add funds to wallet
+            $this->walletService->addFunds(
+                $wallet,
+                $transaction->amount,
+                "Deposit via " . ucfirst($transaction->payment_method),
+                'credit'
+            );
+
+            // Update transaction status
+            $transaction->update([
+                'status' => 'completed',
+                'reference' => $paymentReference,
+                'balance_before' => $balanceBefore,
+                'completed_at' => now()
+            ]);
+
+            DB::commit();
+
+            // Send email notification
+            $this->sendFundsAddedEmail($transaction);
+
+            Log::info('Wallet deposit completed successfully', [
+                'transaction_id' => $transaction->id,
+                'user_id' => $transaction->user_id,
+                'amount' => $transaction->amount,
+                'payment_reference' => $paymentReference
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to complete wallet deposit', [
+                'transaction_id' => $transaction->id,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Send email notification for wallet funds added from ShopPayment.
+     */
+    private function sendWalletFundsAddedEmail(ShopPayment $payment): void
+    {
+        try {
+            $user = \Pterodactyl\Models\User::findOrFail($payment->user_id);
+            $wallet = $this->walletService->getWallet($payment->user_id);
+
+            Mail::to($user->email)->send(new WalletFundsAddedMail(
+                user: $user,
+                amount: $payment->amount,
+                newBalance: $wallet->balance,
+                paymentMethod: ucfirst($payment->gateway),
+                transactionId: $payment->id
+            ));
+
+            Log::info('Wallet funds added email sent', [
+                'user_id' => $user->id,
+                'payment_id' => $payment->id,
+                'amount' => $payment->amount
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send wallet funds added email', [
+                'payment_id' => $payment->id,
+                'error' => $e->getMessage()
+            ]);
+            // Don't throw - email failure shouldn't fail the transaction
+        }
+    }
+
+    /**
+     * Send email notification for successful funds addition.
+     */
+    private function sendFundsAddedEmail(WalletTransaction $transaction): void
+    {
+        try {
+            // Reload transaction with wallet and its user relationship
+            $transaction->load(['wallet.user']);
+            
+            Mail::to($transaction->wallet->user->email)->send(new WalletFundsAddedMail($transaction));
+            
+            Log::info('Wallet funds added email sent successfully', [
+                'transaction_id' => $transaction->id,
+                'user_email' => $transaction->wallet->user->email
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to send wallet funds added email', [
+                'transaction_id' => $transaction->id,
+                'error' => $e->getMessage()
+            ]);
+            // Don't throw - we don't want email failure to break the deposit completion
+        }
     }
 }

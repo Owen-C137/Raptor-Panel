@@ -4,6 +4,7 @@ namespace PterodactylAddons\ShopSystem\Services;
 
 use PterodactylAddons\ShopSystem\Models\UserWallet;
 use PterodactylAddons\ShopSystem\Models\WalletTransaction;
+use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use Pterodactyl\Models\User;
 use Pterodactyl\Facades\Activity;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class WalletService
      */
     public function getOrCreateWallet(User $user, string $currency = null): UserWallet
     {
-        $currency = $currency ?? config('shop.currency', 'USD');
+        $currency = $currency ?? config('shop.currency.default', 'USD');
         
         return UserWallet::firstOrCreate(
             ['user_id' => $user->id, 'currency' => $currency],
@@ -39,6 +40,9 @@ class WalletService
     {
         return DB::transaction(function () use ($wallet, $amount, $description, $type) {
             $transaction = $wallet->addFunds($amount, $description, $type);
+            
+            // Load the wallet relationship for email notifications
+            $transaction->load('wallet.user');
             
             // Log activity
             Activity::event('shop:wallet.credit')
@@ -201,5 +205,20 @@ class WalletService
             'total_volume' => WalletTransaction::sum(\DB::raw('ABS(amount)')),
             'average_balance' => UserWallet::avg('balance'),
         ];
+    }
+
+    /**
+     * Create a pending deposit payment record for wallet funding.
+     */
+    public function createPendingDeposit(int $userId, float $amount, string $paymentMethod): ShopPayment
+    {
+        return ShopPayment::create([
+            'user_id' => $userId,
+            'type' => ShopPayment::TYPE_WALLET_TOPUP,
+            'status' => ShopPayment::STATUS_PENDING,
+            'amount' => $amount,
+            'currency' => config('shop.currency.default', 'USD'),
+            'gateway' => $paymentMethod,
+        ]);
     }
 }

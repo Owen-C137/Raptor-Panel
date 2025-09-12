@@ -47,7 +47,7 @@ class ShopOrderService
             'billing_cycle' => $data['billing_cycle'],
             'amount' => $billing['price'],
             'setup_fee' => $billing['setup_fee'] ?? 0,
-            'currency' => config('shop.currency', 'USD'),
+            'currency' => config('shop.currency.default', 'USD'),
             'server_config' => [
                 'memory' => $plan->server_limits['memory'],
                 'swap' => $plan->server_limits['swap'],

@@ -243,4 +243,12 @@ abstract class AbstractPaymentGateway
             'message' => 'Connection test not implemented for this gateway',
         ];
     }
+
+    /**
+     * Get gateway configuration.
+     */
+    public function getConfig(): array
+    {
+        return $this->config;
+    }
 }

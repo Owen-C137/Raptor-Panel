@@ -79,11 +79,13 @@ class UserWallet extends Model
      */
     public function addFunds(float $amount, string $description = '', string $type = 'credit'): WalletTransaction
     {
+        $balanceBefore = $this->balance;
         $this->increment('balance', $amount);
 
         return $this->transactions()->create([
             'type' => $type,
             'amount' => $amount,
+            'balance_before' => $balanceBefore,
             'balance_after' => $this->balance,
             'description' => $description,
         ]);
@@ -98,11 +100,13 @@ class UserWallet extends Model
             return null; // Insufficient funds
         }
 
+        $balanceBefore = $this->balance;
         $this->decrement('balance', $amount);
 
         return $this->transactions()->create([
             'type' => $type,
             'amount' => -$amount,
+            'balance_before' => $balanceBefore,
             'balance_after' => $this->balance,
             'description' => $description,
         ]);

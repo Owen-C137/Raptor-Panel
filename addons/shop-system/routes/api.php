@@ -63,6 +63,29 @@ Route::prefix('api/shop/public')->name('api.shop.public.')->middleware(['throttl
 
 /*
 |--------------------------------------------------------------------------
+| Webhook Endpoints
+|--------------------------------------------------------------------------
+|
+| These endpoints handle payment gateway webhooks and callbacks.
+| They are excluded from authentication middleware for external access.
+|
+*/
+
+Route::prefix('api/shop/webhooks')->name('api.shop.webhooks.')->middleware(['throttle:60,1'])->group(function () {
+    
+    // Stripe webhooks
+    Route::post('/stripe', [\PterodactylAddons\ShopSystem\Http\Controllers\WebhookController::class, 'stripeWebhook'])->name('stripe');
+    
+    // PayPal webhooks
+    Route::post('/paypal', [\PterodactylAddons\ShopSystem\Http\Controllers\WebhookController::class, 'paypalWebhook'])->name('paypal');
+    
+    // Wallet-specific webhooks (if needed for additional processing)
+    Route::post('/stripe/wallet', [\PterodactylAddons\ShopSystem\Http\Controllers\WalletController::class, 'stripeWebhook'])->name('stripe.wallet');
+    Route::post('/paypal/wallet', [\PterodactylAddons\ShopSystem\Http\Controllers\WalletController::class, 'paypalWebhook'])->name('paypal.wallet');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Administrative API Endpoints
 |--------------------------------------------------------------------------
 |

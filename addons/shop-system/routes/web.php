@@ -126,6 +126,11 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
         Route::post('/auto-topup', [WalletController::class, 'autoTopup'])->name('auto-topup');
         Route::get('/export', [WalletController::class, 'exportTransactions'])->name('export');
         
+        // Wallet deposit completion callbacks
+        Route::get('/deposit/stripe/return', [WalletController::class, 'stripeDepositReturn'])->name('deposit.stripe.return');
+        Route::get('/deposit/paypal/return', [WalletController::class, 'paypalDepositReturn'])->name('deposit.paypal.return');
+        Route::get('/deposit/paypal/cancel', [WalletController::class, 'paypalDepositCancel'])->name('deposit.paypal.cancel');
+        
         // Optional wallet transfer feature
         Route::middleware('shop.transfers_enabled')->group(function () {
             Route::post('/transfer', [WalletController::class, 'transfer'])->name('transfer');
