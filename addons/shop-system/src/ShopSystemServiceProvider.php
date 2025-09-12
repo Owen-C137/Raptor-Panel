@@ -28,6 +28,9 @@ class ShopSystemServiceProvider extends ServiceProvider
         
         // Register navigation provider
         $this->app->register(ShopNavigationServiceProvider::class);
+        
+        // Register middleware
+        $this->registerMiddleware();
     }
 
     /**
@@ -191,6 +194,18 @@ class ShopSystemServiceProvider extends ServiceProvider
                 \PterodactylAddons\ShopSystem\Commands\ProcessShopOrdersCommand::class,
             ]);
         }
+    }
+    
+    /**
+     * Register custom middleware
+     */
+    private function registerMiddleware(): void
+    {
+        $router = $this->app['router'];
+        
+        // Register middleware aliases
+        $router->aliasMiddleware('shop.enabled', \PterodactylAddons\ShopSystem\Http\Middleware\CheckShopEnabled::class);
+        $router->aliasMiddleware('shop.credits', \PterodactylAddons\ShopSystem\Http\Middleware\CheckCreditsEnabled::class);
     }
 }
 

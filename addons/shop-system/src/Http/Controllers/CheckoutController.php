@@ -56,7 +56,13 @@ class CheckoutController extends Controller
         $total = $cartSummary['total'];
         
         $paymentMethods = $this->getAvailablePaymentMethods();
-        $userWallet = $this->walletService->getWallet(auth()->id());
+        $userWallet = null;
+        
+        // Only fetch wallet if credits are enabled
+        $settings = $this->shopConfig->getShopConfig();
+        if ($settings['credits_enabled'] ?? false) {
+            $userWallet = $this->walletService->getWallet(auth()->id());
+        }
 
         return view('shop::checkout.index', compact(
             'cartItems',

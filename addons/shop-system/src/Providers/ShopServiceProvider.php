@@ -154,8 +154,14 @@ class ShopServiceProvider extends ServiceProvider
      */
     protected function registerShopMiddleware()
     {
+        $router = $this->app['router'];
+        
         // Register the navigation injection middleware
-        $this->app['router']->aliasMiddleware('inject-shop-nav', InjectShopNavigation::class);
+        $router->aliasMiddleware('inject-shop-nav', InjectShopNavigation::class);
+        
+        // Register shop functionality middleware
+        $router->aliasMiddleware('shop.enabled', \PterodactylAddons\ShopSystem\Http\Middleware\CheckShopEnabled::class);
+        $router->aliasMiddleware('shop.credits', \PterodactylAddons\ShopSystem\Http\Middleware\CheckCreditsEnabled::class);
     }
 
     /**

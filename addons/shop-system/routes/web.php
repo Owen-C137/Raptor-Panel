@@ -27,6 +27,26 @@ Route::get('shop/assets/css/shop.css', function () {
         ->header('Content-Type', 'text/css');
 })->name('shop.assets.css');
 
+// Serve nebula theme CSS
+Route::get('shop/assets/css/nebula-theme.css', function () {
+    $path = base_path('addons/shop-system/resources/assets/css/nebula-theme.css');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response(file_get_contents($path))
+        ->header('Content-Type', 'text/css');
+})->name('shop.assets.css');
+
+// Serve modern dark theme CSS
+Route::get('shop/assets/css/shop_modern_dark.css', function () {
+    $path = base_path('addons/shop-system/resources/assets/css/shop_modern_dark.css');
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    return response(file_get_contents($path))
+        ->header('Content-Type', 'text/css');
+})->name('shop.assets.modern_css');
+
 // Serve shop JS
 Route::get('shop/assets/js/shop.js', function () {
     $path = base_path('addons/shop-system/resources/assets/js/shop.js');
@@ -47,8 +67,8 @@ Route::get('shop/assets/js/shop.js', function () {
 |
 */
 
-// Public shop routes (no authentication required)
-Route::prefix('shop')->name('shop.')->group(function () {
+// Public shop routes (minimal authentication, but still check if shop is enabled)
+Route::prefix('shop')->name('shop.')->middleware('shop.enabled')->group(function () {
     // Main shop catalog
     Route::get('/', [ShopController::class, 'index'])->name('index');
     
@@ -117,7 +137,7 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
     });
     
     // Wallet management
-    Route::prefix('wallet')->name('wallet.')->group(function () {
+    Route::prefix('wallet')->name('wallet.')->middleware('shop.credits')->group(function () {
         Route::get('/', [WalletController::class, 'index'])->name('index');
         Route::get('/add-funds', [WalletController::class, 'addFunds'])->name('add-funds');
         Route::post('/add-funds', [WalletController::class, 'processAddFunds'])->name('add-funds.process');
@@ -146,14 +166,6 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
 
 // Custom middleware for shop functionality
 Route::middleware(['web'])->group(function () {
-    // Shop enabled check middleware
-    Route::aliasMiddleware('shop.enabled', function ($request, $next) {
-        if (!config('shop.enabled', false)) {
-            abort(503, config('shop.maintenance_message', 'Shop is temporarily unavailable.'));
-        }
-        return $next($request);
-    });
-    
     // Shop transfers enabled check
     Route::aliasMiddleware('shop.transfers_enabled', function ($request, $next) {
         if (!config('shop.wallet.transfers_enabled', false)) {

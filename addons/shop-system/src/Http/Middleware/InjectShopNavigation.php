@@ -243,6 +243,10 @@ class InjectShopNavigation
         
         $content = $response->getContent();
         
+        // Get credits enabled setting
+        $creditsEnabled = \PterodactylAddons\ShopSystem\Models\ShopSettings::getValue('credits_enabled', true);
+        $walletNavItem = $creditsEnabled ? '<li><a class="dropdown-item" href="/shop/wallet"><i class="fa fa-wallet me-2"></i>Wallet</a></li>' : '';
+        
         // Inject shop navigation into client area
         $shopClientNav = '
             <li class="nav-item dropdown">
@@ -254,7 +258,7 @@ class InjectShopNavigation
                     <li><a class="dropdown-item" href="/shop/cart"><i class="fa fa-shopping-cart me-2"></i>Shopping Cart <span class="badge bg-primary" id="cart-count">0</span></a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="/shop/orders"><i class="fa fa-list me-2"></i>My Orders</a></li>
-                    <li><a class="dropdown-item" href="/shop/wallet"><i class="fa fa-wallet me-2"></i>Wallet</a></li>
+                    ' . $walletNavItem . '
                     <li><a class="dropdown-item" href="/shop/dashboard"><i class="fa fa-dashboard me-2"></i>Shop Dashboard</a></li>
                 </ul>
             </li>';
