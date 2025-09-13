@@ -335,25 +335,45 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if Shop object exists before initializing
-    if (typeof Shop !== 'undefined') {
+    // Check if Shop object exists and has required methods
+    if (typeof Shop !== 'undefined' && typeof Shop.init === 'function') {
         // Initialize shop functionality
         Shop.init();
-        
         console.log('🛒 Shop system loaded and initialized');
+    } else if (typeof Shop !== 'undefined') {
+        // Shop exists but no init function - try to initialize manually
+        console.log('🛒 Shop object found, initializing manually...');
         
-        // Update wallet balance periodically for authenticated users
-        @auth
-        setInterval(function() {
-            if (Shop.updateWalletBalance) {
-                Shop.updateWalletBalance();
-            }
-        }, 30000); // Update every 30 seconds
-        @endauth
+        // Manual initialization of available methods
+        if (typeof Shop.loadCart === 'function') Shop.loadCart();
+        if (typeof Shop.initEventListeners === 'function') Shop.initEventListeners();
+        if (typeof Shop.initTooltips === 'function') Shop.initTooltips();
+        if (typeof Shop.updateCartDisplay === 'function') Shop.updateCartDisplay();
+        
+        console.log('🛒 Shop system manually initialized');
     } else {
         console.error('❌ Shop object not found - shop.js may not be loaded properly');
         
-        // Fallback: Basic cart count update function
+        // Create minimal Shop object with basic functionality
+        window.Shop = {
+            showNotification: function(type, message) {
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
+        };
+    }
+    
+    // Update wallet balance periodically for authenticated users
+    @auth
+    if (typeof Shop !== 'undefined' && typeof Shop.updateWalletBalance === 'function') {
+        Shop.updateWalletBalance();
+        setInterval(function() {
+            Shop.updateWalletBalance();
+        }, 30000);
+    }
+    @endauth
+    
+    // Ensure cart update function exists
+    if (typeof window.updateCartCount === 'undefined') {
         window.updateCartCount = function(count) {
             const cartElements = document.querySelectorAll('.cart-count, .cart-count-nav');
             cartElements.forEach(element => {

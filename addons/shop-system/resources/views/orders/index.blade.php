@@ -95,218 +95,170 @@
     <div class="orders-content">
         <div class="container-fluid">
             @if($orders->count() > 0)
-                <div class="orders-grid" id="orders-list">
-                    @foreach($orders as $order)
-                    {{-- Completely Redesigned Order Card --}}
-                    <div class="order-card-redesigned" data-status="{{ $order->status }}">
-                        {{-- Order Header Strip --}}
-                        <div class="order-header-strip">
-                            <div class="order-id-section">
-                                <span class="order-hash">#{{ $order->order_number ?? str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
-                                <span class="order-date-simple">{{ $order->created_at->format('M d, Y') }}</span>
-                            </div>
-                            
-                            <div class="order-status-pill">
-                                @php
-                                    $statusConfig = match($order->status) {
-                                        'active' => ['class' => 'success', 'icon' => 'check-circle', 'label' => 'Active'],
-                                        'pending' => ['class' => 'warning', 'icon' => 'clock', 'label' => 'Pending'],
-                                        'cancelled' => ['class' => 'danger', 'icon' => 'times-circle', 'label' => 'Cancelled'],
-                                        'suspended' => ['class' => 'secondary', 'icon' => 'pause-circle', 'label' => 'Suspended'],
-                                        'completed' => ['class' => 'info', 'icon' => 'check', 'label' => 'Completed'],
-                                        default => ['class' => 'secondary', 'icon' => 'question-circle', 'label' => ucfirst($order->status)]
-                                    };
-                                @endphp
-                                <span class="status-indicator status-{{ $statusConfig['class'] }}">
-                                    <i class="fas fa-{{ $statusConfig['icon'] }}"></i>
-                                    {{ $statusConfig['label'] }}
-                                </span>
-                            </div>
-                            
-                            <div class="order-total-display">
-                                <span class="total-amount">${{ number_format($order->total ?? 0, 2) }}</span>
-                            </div>
-                            
-                            <div class="order-actions-minimal">
-                                <div class="dropdown">
-                                    <button class="btn-action-dots" type="button" data-bs-toggle="dropdown">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('shop.orders.show', $order) }}">
-                                                <i class="fas fa-eye"></i>
-                                                View Details
-                                            </a>
-                                        </li>
-                                        @if($order->status === 'active')
-                                            <li>
-                                                <a class="dropdown-item" href="{{ route('shop.orders.invoice', $order) }}">
-                                                    <i class="fas fa-file-pdf"></i>
-                                                    Download Invoice
-                                                </a>
-                                            </li>
-                                        @endif
-                                        @if(in_array($order->status, ['pending', 'active']))
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item text-danger cancel-order-btn" 
-                                                   href="#" data-order-id="{{ $order->id }}">
-                                                    <i class="fas fa-times"></i>
-                                                    Cancel Order
-                                                </a>
-                                            </li>
-                                        @endif
-                                    </ul>
+                <div class="block block-rounded">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">All Orders</h3>
+                        <div class="block-options">
+                            <div class="dropdown">
+                                <button type="button" class="btn-block-option" id="dropdown-order-filters" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Filters <i class="fa fa-angle-down ms-1"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-order-filters">
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" data-filter="all">
+                                        All Orders
+                                        <span class="badge bg-primary rounded-pill">{{ $orders->count() }}</span>
+                                    </a>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" data-filter="active">
+                                        Active
+                                        <span class="badge bg-success rounded-pill">{{ $orders->where('status', 'active')->count() }}</span>
+                                    </a>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" data-filter="pending">
+                                        Pending
+                                        <span class="badge bg-warning rounded-pill">{{ $orders->where('status', 'pending')->count() }}</span>
+                                    </a>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" data-filter="cancelled">
+                                        Cancelled
+                                        <span class="badge bg-danger rounded-pill">{{ $orders->where('status', 'cancelled')->count() }}</span>
+                                    </a>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between" href="javascript:void(0)" data-filter="completed">
+                                        Completed
+                                        <span class="badge bg-info rounded-pill">{{ $orders->where('status', 'completed')->count() }}</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
-                        
-                        {{-- Order Content --}}
-                        <div class="order-content-main">
-                            {{-- Service Details --}}
-                            <div class="service-details-section">
-                                @if($order->items && $order->items->count() > 0)
-                                    @foreach($order->items as $item)
-                                    <div class="service-item-card">
-                                        <div class="service-icon">
+                    </div>
+                    <div class="block-content">
+                        <form action="{{ route('shop.orders.index') }}" method="GET" onsubmit="return false;">
+                            <div class="mb-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-alt" id="order-search" name="search" placeholder="Search all orders..." value="{{ request('search') }}">
+                                    <span class="input-group-text bg-body border-0">
+                                        <i class="fa fa-search"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-striped table-vcenter">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center" style="width: 100px;">Order</th>
+                                        <th class="d-none d-sm-table-cell text-center">Date</th>
+                                        <th>Status</th>
+                                        <th class="d-none d-xl-table-cell">Services</th>
+                                        <th class="d-none d-xl-table-cell text-center">Items</th>
+                                        <th class="d-none d-sm-table-cell text-end">Total</th>
+                                        <th class="text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($orders as $order)
+                                    <tr data-status="{{ $order->status }}">
+                                        <td class="text-center fs-sm">
+                                            <a class="fw-semibold" href="{{ route('shop.orders.show', $order) }}">
+                                                <strong>#{{ $order->order_number ?? str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</strong>
+                                            </a>
+                                        </td>
+                                        <td class="d-none d-sm-table-cell text-center fs-sm">{{ $order->created_at->format('d/m/Y') }}</td>
+                                        <td>
                                             @php
-                                                $categoryIcon = match(strtolower($item->plan->category->name ?? 'general')) {
-                                                    'minecraft' => 'fas fa-cube',
-                                                    'ark' => 'fas fa-dragon',
-                                                    'rust' => 'fas fa-tools',
-                                                    'cs2', 'csgo', 'counter-strike' => 'fas fa-crosshairs',
-                                                    'gmod', 'garry\'s mod' => 'fas fa-wrench',
-                                                    'terraria' => 'fas fa-mountain',
-                                                    'valheim' => 'fas fa-hammer',
-                                                    'fivem' => 'fas fa-car',
-                                                    default => 'fas fa-server'
+                                                $statusConfig = match($order->status) {
+                                                    'active' => ['class' => 'success', 'label' => 'Active'],
+                                                    'pending' => ['class' => 'warning', 'label' => 'Pending'],
+                                                    'cancelled' => ['class' => 'danger', 'label' => 'Cancelled'],
+                                                    'suspended' => ['class' => 'secondary', 'label' => 'Suspended'],
+                                                    'completed' => ['class' => 'info', 'label' => 'Completed'],
+                                                    default => ['class' => 'secondary', 'label' => ucfirst($order->status)]
                                                 };
                                             @endphp
-                                            <i class="{{ $categoryIcon }}"></i>
-                                        </div>
-                                        <div class="service-info">
-                                            <h4 class="service-name">{{ $item->plan->name ?? 'Custom Plan' }}</h4>
-                                            <p class="service-category">{{ $item->plan->category->name ?? 'General' }}</p>
-                                            <div class="service-meta">
-                                                <span class="billing-cycle">{{ ucfirst($order->billing_cycle ?? 'monthly') }} billing</span>
-                                                @if($item->quantity > 1)
-                                                    <span class="quantity">x{{ $item->quantity }}</span>
+                                            <span class="badge bg-{{ $statusConfig['class'] }}">{{ $statusConfig['label'] }}</span>
+                                        </td>
+                                        <td class="d-none d-xl-table-cell fs-sm">
+                                            @if($order->items && $order->items->count() > 0)
+                                                <div class="fw-semibold">{{ $order->items->first()->plan->name ?? 'Custom Plan' }}</div>
+                                                @if($order->items->count() > 1)
+                                                    <small class="text-muted">+{{ $order->items->count() - 1 }} more</small>
                                                 @endif
-                                            </div>
-                                        </div>
-                                        <div class="service-status">
-                                            @if($order->status === 'active')
-                                                <span class="status-badge active">
-                                                    <i class="fas fa-play"></i>
-                                                    Running
-                                                </span>
-                                            @elseif($order->status === 'pending')
-                                                <span class="status-badge pending">
-                                                    <i class="fas fa-clock"></i>
-                                                    Setting Up
-                                                </span>
                                             @else
-                                                <span class="status-badge inactive">
-                                                    <i class="fas fa-stop"></i>
-                                                    {{ ucfirst($order->status) }}
-                                                </span>
+                                                <span class="fw-semibold">{{ $order->plan->name ?? 'Custom Order' }}</span>
                                             @endif
-                                        </div>
-                                        <div class="service-actions">
-                                            @if($order->status === 'active' && $order->server_id)
-                                                <a href="/server/{{ $order->server_id }}" class="btn-manage">
-                                                    <i class="fas fa-cog"></i>
-                                                    Manage
+                                        </td>
+                                        <td class="d-none d-xl-table-cell text-center fs-sm">
+                                            <a class="fw-semibold" href="{{ route('shop.orders.show', $order) }}">
+                                                {{ $order->items ? $order->items->sum('quantity') : 1 }}
+                                            </a>
+                                        </td>
+                                        <td class="d-none d-sm-table-cell text-end fs-sm">
+                                            <strong>${{ number_format($order->total_amount ?? 0, 2) }}</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <a class="btn btn-sm btn-alt-secondary js-bs-tooltip-enabled" href="{{ route('shop.orders.show', $order) }}" data-bs-toggle="tooltip" aria-label="View" data-bs-original-title="View Order">
+                                                <i class="fa fa-fw fa-eye"></i>
+                                            </a>
+                                            @if($order->status === 'active')
+                                                <a class="btn btn-sm btn-alt-secondary js-bs-tooltip-enabled" href="{{ route('shop.orders.invoice', $order) }}" data-bs-toggle="tooltip" aria-label="Invoice" data-bs-original-title="Download Invoice">
+                                                    <i class="fa fa-fw fa-file-pdf"></i>
                                                 </a>
-                                            @elseif($order->status === 'pending')
-                                                <button class="btn-manage disabled" disabled>
-                                                    <i class="fas fa-hourglass-half"></i>
-                                                    Pending
-                                                </button>
                                             @endif
-                                        </div>
-                                    </div>
+                                            @if($order->status === 'active' && $order->server_id && $order->server)
+                                                <a class="btn btn-sm btn-alt-secondary js-bs-tooltip-enabled" href="/server/{{ $order->server->uuidShort }}" data-bs-toggle="tooltip" aria-label="Manage" data-bs-original-title="Manage Server">
+                                                    <i class="fa fa-fw fa-cog"></i>
+                                                </a>
+                                            @endif
+                                            @if(in_array($order->status, ['pending', 'active']))
+                                                <a class="btn btn-sm btn-alt-secondary text-danger js-bs-tooltip-enabled cancel-order-btn" href="#" data-order-id="{{ $order->id }}" data-bs-toggle="tooltip" aria-label="Cancel" data-bs-original-title="Cancel Order">
+                                                    <i class="fa fa-fw fa-times"></i>
+                                                </a>
+                                            @endif
+                                        </td>
+                                    </tr>
                                     @endforeach
-                                @else
-                                    <div class="service-item-card">
-                                        <div class="service-icon">
-                                            <i class="fas fa-server"></i>
-                                        </div>
-                                        <div class="service-info">
-                                            <h4 class="service-name">{{ $order->plan->name ?? 'Custom Order' }}</h4>
-                                            <p class="service-category">{{ $order->plan->category->name ?? 'General' }}</p>
-                                            <div class="service-meta">
-                                                <span class="billing-cycle">{{ ucfirst($order->billing_cycle ?? 'monthly') }} billing</span>
-                                            </div>
-                                        </div>
-                                        <div class="service-status">
-                                            <span class="status-badge {{ $order->status === 'active' ? 'active' : ($order->status === 'pending' ? 'pending' : 'inactive') }}">
-                                                <i class="fas fa-{{ $statusConfig['icon'] }}"></i>
-                                                {{ $statusConfig['label'] }}
-                                            </span>
-                                        </div>
-                                        <div class="service-actions">
-                                            @if($order->status === 'active' && $order->server_id)
-                                                <a href="/server/{{ $order->server_id }}" class="btn-manage">
-                                                    <i class="fas fa-cog"></i>
-                                                    Manage
-                                                </a>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                            
-                            {{-- Quick Info Panel --}}
-                            <div class="quick-info-panel">
-                                @if(in_array($order->status, ['active', 'pending']))
-                                    <div class="info-item">
-                                        <span class="info-label">Next Renewal</span>
-                                        @if($order->expires_at)
-                                            <span class="info-value primary">{{ $order->expires_at->format('M d, Y') }}</span>
-                                            <span class="info-note">{{ $order->expires_at->diffForHumans() }}</span>
-                                        @else
-                                            <span class="info-value muted">Not set</span>
-                                        @endif
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Renewal Amount</span>
-                                        <span class="info-value success">${{ number_format($order->total ?? 0, 2) }}</span>
-                                        <span class="info-note">{{ $order->billing_cycle ?? 'monthly' }}</span>
-                                    </div>
-                                @elseif($order->status === 'completed')
-                                    <div class="info-item">
-                                        <span class="info-label">Completed</span>
-                                        <span class="info-value success">{{ $order->updated_at->format('M d, Y') }}</span>
-                                        <span class="info-note">{{ $order->updated_at->diffForHumans() }}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Total Paid</span>
-                                        <span class="info-value success">${{ number_format($order->total ?? 0, 2) }}</span>
-                                    </div>
-                                @else
-                                    <div class="info-item">
-                                        <span class="info-label">Status</span>
-                                        <span class="info-value">{{ ucfirst($order->status) }}</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Total</span>
-                                        <span class="info-value">${{ number_format($order->total ?? 0, 2) }}</span>
-                                    </div>
-                                @endif
-                            </div>
+                                </tbody>
+                            </table>
                         </div>
+                        @if($orders->hasPages())
+                        <nav aria-label="Orders Navigation">
+                            <ul class="pagination pagination-sm justify-content-end mt-2">
+                                {{-- Previous Page Link --}}
+                                @if ($orders->onFirstPage())
+                                    <li class="page-item disabled">
+                                        <span class="page-link" tabindex="-1" aria-label="Previous">Prev</span>
+                                    </li>
+                                @else
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $orders->previousPageUrl() }}" tabindex="-1" aria-label="Previous">Prev</a>
+                                    </li>
+                                @endif
+
+                                {{-- Pagination Elements --}}
+                                @foreach ($orders->getUrlRange(1, $orders->lastPage()) as $page => $url)
+                                    @if ($page == $orders->currentPage())
+                                        <li class="page-item active">
+                                            <span class="page-link">{{ $page }}</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                        </li>
+                                    @endif
+                                @endforeach
+
+                                {{-- Next Page Link --}}
+                                @if ($orders->hasMorePages())
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ $orders->nextPageUrl() }}" aria-label="Next">Next</a>
+                                    </li>
+                                @else
+                                    <li class="page-item disabled">
+                                        <span class="page-link" aria-label="Next">Next</span>
+                                    </li>
+                                @endif
+                            </ul>
+                        </nav>
+                        @endif
                     </div>
-                    @endforeach
                 </div>
-                
-                {{-- Pagination --}}
-                @if($orders->hasPages())
-                <div class="pagination-wrapper">
-                    {{ $orders->links() }}
-                </div>
-                @endif
             @else
                 {{-- Enhanced Empty State --}}
                 <div class="empty-state-enhanced">

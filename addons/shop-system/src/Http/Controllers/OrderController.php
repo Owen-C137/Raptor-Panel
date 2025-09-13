@@ -158,14 +158,28 @@ class OrderController extends Controller
     {
         Gate::authorize('view', $order);
 
-        // TODO: Generate PDF invoice
-        // For now, return a simple text response
-        $content = $this->generateInvoiceContent($order);
+        // Load necessary relationships for the invoice
+        $order->load(['plan.category', 'user', 'server.allocation', 'payments']);
 
-        return response($content, 200, [
-            'Content-Type' => 'text/plain',
-            'Content-Disposition' => 'attachment; filename="invoice-' . $order->id . '.txt"',
+        // Get the domain for the support email
+        $domain = request()->getHost();
+
+        // Render the view first to ensure Blade processing
+        $html = view('shop::invoice', compact('order', 'domain'))->render();
+
+        // Generate PDF invoice using DomPDF
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadHTML($html);
+        $pdf->setPaper('A4', 'portrait');
+
+        // Set PDF options for better rendering
+        $pdf->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'isRemoteEnabled' => true,
         ]);
+
+        return $pdf->download("invoice-{$order->id}.pdf");
     }
 
     /**
@@ -337,17 +351,11 @@ class OrderController extends Controller
     }
 
     /**
-     * Generate invoice content.
+     * Format currency amount.
      */
-    private function generateInvoiceContent($order): string
+    protected function formatCurrency(float $amount): string
     {
-        return "INVOICE #{$order->id}\n" .
-               "Date: " . $order->created_at->format('M j, Y') . "\n" .
-               "Customer: " . $order->user->username . "\n" .
-               "Plan: " . $order->plan->name . "\n" .
-               "Amount: " . $this->formatCurrency($order->amount) . "\n" .
-               "Status: " . ucfirst($order->status) . "\n" .
-               "Next Due: " . ($order->next_due_at ? $order->next_due_at->format('M j, Y') : 'N/A');
+        return '$' . number_format($amount, 2);
     }
 
     /**
