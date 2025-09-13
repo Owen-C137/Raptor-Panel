@@ -202,6 +202,60 @@ class CartService
     }
 
     /**
+     * Get cart items for dropdown/API display.
+     */
+    public function getCartItems(): array
+    {
+        $cart = $this->getCart();
+        $items = [];
+        $total = 0;
+        $itemCount = 0;
+
+        foreach ($cart->items as $item) {
+            $plan = ShopPlan::find($item->plan_id);
+            if ($plan) {
+                $options = $item->plan_options ?? [];
+                $billingCycle = $options['billing_cycle'] ?? 'monthly';
+                
+                // Get current price data
+                $billingCycles = $plan->billing_cycles ?? [];
+                $cycleData = collect($billingCycles)->firstWhere('cycle', $billingCycle) ?? $billingCycles[0] ?? null;
+                
+                if ($cycleData) {
+                    $currentPrice = (float) $cycleData['price'];
+                    
+                    $items[] = [
+                        'id' => $item->id,
+                        'plan_id' => $plan->id,
+                        'name' => $plan->name,
+                        'description' => $plan->description,
+                        'price' => $currentPrice,
+                        'quantity' => $item->quantity,
+                        'billing_cycle' => $billingCycle,
+                        'total' => $item->total_price,
+                    ];
+                    
+                    $total += $item->total_price;
+                    $itemCount += $item->quantity;
+                }
+            }
+        }
+
+        // Calculate tax
+        $taxRate = config('shop.tax_rate', 0);
+        $tax = $total * ($taxRate / 100);
+        $finalTotal = $total + $tax;
+
+        return [
+            'items' => $items,
+            'total_quantity' => $itemCount,
+            'subtotal' => $total,
+            'tax' => $tax,
+            'total' => $finalTotal,
+        ];
+    }
+
+    /**
      * Get applied coupon information with calculated discount.
      */
     private function getAppliedCouponInfo(float $cartTotal): ?array

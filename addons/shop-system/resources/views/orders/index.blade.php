@@ -3,218 +3,298 @@
 @section('shop-title', 'My Orders')
 
 @section('shop-content')
-<div class="orders-container">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h1>
-                    <i class="fas fa-shopping-bag"></i>
-                    My Orders
-                </h1>
+<div class="shop-container orders-page">
+    {{-- Enhanced Orders Header --}}
+    <div class="orders-header-enhanced">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="page-title-section">
+                        <div class="title-icon">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                        <div class="title-content">
+                            <h1 class="page-title">My Orders</h1>
+                            <p class="page-subtitle">Manage and track your hosting orders</p>
+                        </div>
+                    </div>
+                </div>
                 
-                <div class="order-filters">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-primary active" data-filter="all">
-                            All Orders
-                        </button>
-                        <button type="button" class="btn btn-outline-success" data-filter="active">
-                            Active
-                        </button>
-                        <button type="button" class="btn btn-outline-warning" data-filter="pending">
-                            Pending
-                        </button>
-                        <button type="button" class="btn btn-outline-danger" data-filter="cancelled">
-                            Cancelled
-                        </button>
+                <div class="col-md-4">
+                    <div class="orders-summary">
+                        <div class="summary-stats">
+                            <div class="stat-item">
+                                <span class="stat-value">{{ $orders->where('status', 'active')->count() }}</span>
+                                <span class="stat-label">Active</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ $orders->where('status', 'pending')->count() }}</span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-value">{{ $orders->count() }}</span>
+                                <span class="stat-label">Total</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
-    {{-- Orders List --}}
-    <div class="row">
-        <div class="col-12">
+
+    {{-- Enhanced Filter Bar --}}
+    <div class="filter-bar-enhanced">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="filter-buttons">
+                        <button type="button" class="filter-btn active" data-filter="all">
+                            <i class="fas fa-list me-2"></i>
+                            <span>All Orders</span>
+                            <span class="count">{{ $orders->count() }}</span>
+                        </button>
+                        <button type="button" class="filter-btn" data-filter="active">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <span>Active</span>
+                            <span class="count">{{ $orders->where('status', 'active')->count() }}</span>
+                        </button>
+                        <button type="button" class="filter-btn" data-filter="pending">
+                            <i class="fas fa-clock me-2"></i>
+                            <span>Pending</span>
+                            <span class="count">{{ $orders->where('status', 'pending')->count() }}</span>
+                        </button>
+                        <button type="button" class="filter-btn" data-filter="cancelled">
+                            <i class="fas fa-times-circle me-2"></i>
+                            <span>Cancelled</span>
+                            <span class="count">{{ $orders->where('status', 'cancelled')->count() }}</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="search-and-sort">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" placeholder="Search orders..." id="order-search">
+                        </div>
+                        <div class="sort-dropdown">
+                            <select class="sort-select" id="order-sort">
+                                <option value="newest">Newest First</option>
+                                <option value="oldest">Oldest First</option>
+                                <option value="amount-high">Highest Amount</option>
+                                <option value="amount-low">Lowest Amount</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Enhanced Orders List --}}
+    <div class="orders-content">
+        <div class="container-fluid">
             @if($orders->count() > 0)
-                <div id="orders-list">
+                <div class="orders-grid" id="orders-list">
                     @foreach($orders as $order)
-                    <div class="card mb-3 order-card" data-status="{{ $order->status }}">
-                        <div class="card-header">
-                            <div class="row align-items-center">
-                                <div class="col-md-4">
-                                    <div class="order-header-info">
-                                        <h6 class="mb-1">
-                                            <a href="{{ route('shop.orders.show', $order) }}" class="text-decoration-none">
-                                                Order #{{ $order->order_number }}
+                    {{-- Completely Redesigned Order Card --}}
+                    <div class="order-card-redesigned" data-status="{{ $order->status }}">
+                        {{-- Order Header Strip --}}
+                        <div class="order-header-strip">
+                            <div class="order-id-section">
+                                <span class="order-hash">#{{ $order->order_number ?? str_pad($order->id, 6, '0', STR_PAD_LEFT) }}</span>
+                                <span class="order-date-simple">{{ $order->created_at->format('M d, Y') }}</span>
+                            </div>
+                            
+                            <div class="order-status-pill">
+                                @php
+                                    $statusConfig = match($order->status) {
+                                        'active' => ['class' => 'success', 'icon' => 'check-circle', 'label' => 'Active'],
+                                        'pending' => ['class' => 'warning', 'icon' => 'clock', 'label' => 'Pending'],
+                                        'cancelled' => ['class' => 'danger', 'icon' => 'times-circle', 'label' => 'Cancelled'],
+                                        'suspended' => ['class' => 'secondary', 'icon' => 'pause-circle', 'label' => 'Suspended'],
+                                        'completed' => ['class' => 'info', 'icon' => 'check', 'label' => 'Completed'],
+                                        default => ['class' => 'secondary', 'icon' => 'question-circle', 'label' => ucfirst($order->status)]
+                                    };
+                                @endphp
+                                <span class="status-indicator status-{{ $statusConfig['class'] }}">
+                                    <i class="fas fa-{{ $statusConfig['icon'] }}"></i>
+                                    {{ $statusConfig['label'] }}
+                                </span>
+                            </div>
+                            
+                            <div class="order-total-display">
+                                <span class="total-amount">${{ number_format($order->total ?? 0, 2) }}</span>
+                            </div>
+                            
+                            <div class="order-actions-minimal">
+                                <div class="dropdown">
+                                    <button class="btn-action-dots" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('shop.orders.show', $order) }}">
+                                                <i class="fas fa-eye"></i>
+                                                View Details
                                             </a>
-                                        </h6>
-                                        <small class="text-muted">
-                                            {{ $order->created_at->format('M d, Y \a\t g:i A') }}
-                                        </small>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-3 text-center">
-                                    <div class="order-status">
-                                        <span class="badge badge-lg bg-{{ $order->getStatusColor() }}">
-                                            {{ $order->getStatusLabel() }}
-                                        </span>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-3 text-center">
-                                    <div class="order-total">
-                                        <strong class="text-success">
-                                            {{ config('shop.currency.symbol', '$') }}{{ number_format($order->amount, 2) }}
-                                        </strong>
-                                    </div>
-                                </div>
-                                
-                                <div class="col-md-2 text-end">
-                                    <div class="order-actions">
-                                        <div class="dropdown">
-                                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" 
-                                                    type="button" data-bs-toggle="dropdown">
-                                                Actions
-                                            </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('shop.orders.show', $order) }}">
-                                                        <i class="fas fa-eye"></i>
-                                                        View Details
-                                                    </a>
-                                                </li>
-                                                @if($order->canDownloadInvoice())
-                                                <li>
-                                                    <a class="dropdown-item" href="{{ route('shop.orders.invoice', $order) }}">
-                                                        <i class="fas fa-file-pdf"></i>
-                                                        Download Invoice
-                                                    </a>
-                                                </li>
-                                                @endif
-                                                @if($order->canCancel())
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li>
-                                                    <button class="dropdown-item text-danger cancel-order-btn" 
-                                                            data-order-id="{{ $order->id }}">
-                                                        <i class="fas fa-times"></i>
-                                                        Cancel Order
-                                                    </button>
-                                                </li>
-                                                @endif
-                                            </ul>
-                                        </div>
-                                    </div>
+                                        </li>
+                                        @if($order->status === 'active')
+                                            <li>
+                                                <a class="dropdown-item" href="{{ route('shop.orders.invoice', $order) }}">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                    Download Invoice
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if(in_array($order->status, ['pending', 'active']))
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li>
+                                                <a class="dropdown-item text-danger cancel-order-btn" 
+                                                   href="#" data-order-id="{{ $order->id }}">
+                                                    <i class="fas fa-times"></i>
+                                                    Cancel Order
+                                                </a>
+                                            </li>
+                                        @endif
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                         
-                        <div class="card-body">
-                            <div class="row">
-                                {{-- Order Items --}}
-                                <div class="col-md-8">
-                                    <div class="order-items">
-                                        @if($order->plan)
-                                        <div class="order-item">
-                                            <div class="row align-items-center">
-                                                <div class="col-md-6">
-                                                    <div class="item-info">
-                                                        <h6 class="mb-1">{{ $order->plan->category->name ?? 'General' }}</h6>
-                                                        <p class="mb-1 text-primary">{{ $order->plan->name }}</p>
-                                                        <div class="item-meta">
-                                                            <span class="badge bg-secondary me-2">{{ $order->billing_cycle }}</span>
-                                                            {{-- Orders are single items, no quantity needed --}}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-3">
-                                                    <div class="item-status">
-                                                        @if($order->server_id)
-                                                            <span class="badge bg-success">
-                                                                <i class="fas fa-server"></i>
-                                                                Server Active
-                                                            </span>
-                                                        @elseif($order->status === 'provisioning')
-                                                            <span class="badge bg-warning">
-                                                                <i class="fas fa-clock"></i>
-                                                                Provisioning
-                                                            </span>
-                                                        @elseif($order->status === 'suspended')
-                                                            <span class="badge bg-danger">
-                                                                <i class="fas fa-pause"></i>
-                                                                Suspended
-                                                            </span>
-                                                        @else
-                                                            <span class="badge bg-secondary">{{ ucfirst($order->status) }}</span>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="col-md-3 text-end">
-                                                    @if($order->server_id && $order->server)
-                                                        <a href="/server/{{ $order->server->uuidShort }}" 
-                                                           class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-external-link-alt"></i>
-                                                            Manage Server
-                                                        </a>
-                                                    @endif
-                                                </div>
+                        {{-- Order Content --}}
+                        <div class="order-content-main">
+                            {{-- Service Details --}}
+                            <div class="service-details-section">
+                                @if($order->items && $order->items->count() > 0)
+                                    @foreach($order->items as $item)
+                                    <div class="service-item-card">
+                                        <div class="service-icon">
+                                            @php
+                                                $categoryIcon = match(strtolower($item->plan->category->name ?? 'general')) {
+                                                    'minecraft' => 'fas fa-cube',
+                                                    'ark' => 'fas fa-dragon',
+                                                    'rust' => 'fas fa-tools',
+                                                    'cs2', 'csgo', 'counter-strike' => 'fas fa-crosshairs',
+                                                    'gmod', 'garry\'s mod' => 'fas fa-wrench',
+                                                    'terraria' => 'fas fa-mountain',
+                                                    'valheim' => 'fas fa-hammer',
+                                                    'fivem' => 'fas fa-car',
+                                                    default => 'fas fa-server'
+                                                };
+                                            @endphp
+                                            <i class="{{ $categoryIcon }}"></i>
+                                        </div>
+                                        <div class="service-info">
+                                            <h4 class="service-name">{{ $item->plan->name ?? 'Custom Plan' }}</h4>
+                                            <p class="service-category">{{ $item->plan->category->name ?? 'General' }}</p>
+                                            <div class="service-meta">
+                                                <span class="billing-cycle">{{ ucfirst($order->billing_cycle ?? 'monthly') }} billing</span>
+                                                @if($item->quantity > 1)
+                                                    <span class="quantity">x{{ $item->quantity }}</span>
+                                                @endif
                                             </div>
                                         </div>
-                                        @else
-                                        <div class="order-item">
-                                            <div class="text-muted">No plan associated with this order</div>
+                                        <div class="service-status">
+                                            @if($order->status === 'active')
+                                                <span class="status-badge active">
+                                                    <i class="fas fa-play"></i>
+                                                    Running
+                                                </span>
+                                            @elseif($order->status === 'pending')
+                                                <span class="status-badge pending">
+                                                    <i class="fas fa-clock"></i>
+                                                    Setting Up
+                                                </span>
+                                            @else
+                                                <span class="status-badge inactive">
+                                                    <i class="fas fa-stop"></i>
+                                                    {{ ucfirst($order->status) }}
+                                                </span>
+                                            @endif
                                         </div>
-                                        @endif
+                                        <div class="service-actions">
+                                            @if($order->status === 'active' && $order->server_id)
+                                                <a href="/server/{{ $order->server_id }}" class="btn-manage">
+                                                    <i class="fas fa-cog"></i>
+                                                    Manage
+                                                </a>
+                                            @elseif($order->status === 'pending')
+                                                <button class="btn-manage disabled" disabled>
+                                                    <i class="fas fa-hourglass-half"></i>
+                                                    Pending
+                                                </button>
+                                            @endif
+                                        </div>
                                     </div>
-                                </div>
-                                
-                                {{-- Renewal Information --}}
-                                <div class="col-md-4">
-                                    @if($order->hasActiveSubscriptions())
-                                    <div class="renewal-info">
-                                        <h6 class="text-muted">
-                                            <i class="fas fa-sync-alt"></i>
-                                            Next Renewal
-                                        </h6>
-                                        
-                                        @php
-                                            $nextRenewal = $order->getNextRenewalDate();
-                                        @endphp
-                                        
-                                        @if($nextRenewal)
-                                        <div class="renewal-date">
-                                            <strong>{{ $nextRenewal->format('M d, Y') }}</strong>
-                                            <small class="d-block text-muted">
-                                                {{ $nextRenewal->diffForHumans() }}
-                                            </small>
+                                    @endforeach
+                                @else
+                                    <div class="service-item-card">
+                                        <div class="service-icon">
+                                            <i class="fas fa-server"></i>
                                         </div>
-                                        
-                                        <div class="renewal-amount mt-2">
-                                            <span class="badge bg-info">
-                                                {{ config('shop.currency.symbol', '$') }}{{ number_format($order->getMonthlyAmount(), 2) }}/month
+                                        <div class="service-info">
+                                            <h4 class="service-name">{{ $order->plan->name ?? 'Custom Order' }}</h4>
+                                            <p class="service-category">{{ $order->plan->category->name ?? 'General' }}</p>
+                                            <div class="service-meta">
+                                                <span class="billing-cycle">{{ ucfirst($order->billing_cycle ?? 'monthly') }} billing</span>
+                                            </div>
+                                        </div>
+                                        <div class="service-status">
+                                            <span class="status-badge {{ $order->status === 'active' ? 'active' : ($order->status === 'pending' ? 'pending' : 'inactive') }}">
+                                                <i class="fas fa-{{ $statusConfig['icon'] }}"></i>
+                                                {{ $statusConfig['label'] }}
                                             </span>
                                         </div>
-                                        @endif
-                                        
-                                        @if($order->canCancelRenewal())
-                                        <div class="renewal-actions mt-2">
-                                            <button class="btn btn-sm btn-outline-danger cancel-renewal-btn" 
-                                                    data-order-id="{{ $order->id }}">
-                                                <i class="fas fa-stop"></i>
-                                                Cancel Auto-Renewal
-                                            </button>
+                                        <div class="service-actions">
+                                            @if($order->status === 'active' && $order->server_id)
+                                                <a href="/server/{{ $order->server_id }}" class="btn-manage">
+                                                    <i class="fas fa-cog"></i>
+                                                    Manage
+                                                </a>
+                                            @endif
                                         </div>
+                                    </div>
+                                @endif
+                            </div>
+                            
+                            {{-- Quick Info Panel --}}
+                            <div class="quick-info-panel">
+                                @if(in_array($order->status, ['active', 'pending']))
+                                    <div class="info-item">
+                                        <span class="info-label">Next Renewal</span>
+                                        @if($order->expires_at)
+                                            <span class="info-value primary">{{ $order->expires_at->format('M d, Y') }}</span>
+                                            <span class="info-note">{{ $order->expires_at->diffForHumans() }}</span>
+                                        @else
+                                            <span class="info-value muted">Not set</span>
                                         @endif
                                     </div>
-                                    @elseif($order->status === 'completed' && !$order->hasActiveSubscriptions())
-                                    <div class="order-complete-info text-center">
-                                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
-                                        <small class="text-muted">One-time order completed</small>
+                                    <div class="info-item">
+                                        <span class="info-label">Renewal Amount</span>
+                                        <span class="info-value success">${{ number_format($order->total ?? 0, 2) }}</span>
+                                        <span class="info-note">{{ $order->billing_cycle ?? 'monthly' }}</span>
                                     </div>
-                                    @endif
-                                </div>
+                                @elseif($order->status === 'completed')
+                                    <div class="info-item">
+                                        <span class="info-label">Completed</span>
+                                        <span class="info-value success">{{ $order->updated_at->format('M d, Y') }}</span>
+                                        <span class="info-note">{{ $order->updated_at->diffForHumans() }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Total Paid</span>
+                                        <span class="info-value success">${{ number_format($order->total ?? 0, 2) }}</span>
+                                    </div>
+                                @else
+                                    <div class="info-item">
+                                        <span class="info-label">Status</span>
+                                        <span class="info-value">{{ ucfirst($order->status) }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Total</span>
+                                        <span class="info-value">${{ number_format($order->total ?? 0, 2) }}</span>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -223,48 +303,57 @@
                 
                 {{-- Pagination --}}
                 @if($orders->hasPages())
-                <div class="d-flex justify-content-center mt-4">
+                <div class="pagination-wrapper">
                     {{ $orders->links() }}
                 </div>
                 @endif
             @else
-                {{-- Empty State --}}
-                <div class="empty-orders text-center py-5">
-                    <i class="fas fa-shopping-bag fa-4x text-muted mb-4"></i>
-                    <h3>No Orders Yet</h3>
-                    <p class="text-muted mb-4">You haven't placed any orders. Browse our products to get started.</p>
-                    <a href="{{ route('shop.index') }}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-store"></i>
-                        Start Shopping
-                    </a>
+                {{-- Enhanced Empty State --}}
+                <div class="empty-state-enhanced">
+                    <div class="empty-icon">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div class="empty-content">
+                        <h3 class="empty-title">No Orders Yet</h3>
+                        <p class="empty-description">You haven't placed any orders. Browse our hosting plans to get started.</p>
+                        <a href="{{ route('shop.index') }}" class="btn-empty-action">
+                            <i class="fas fa-store me-2"></i>
+                            <span>Start Shopping</span>
+                        </a>
+                    </div>
                 </div>
             @endif
         </div>
     </div>
 </div>
 
-{{-- Cancel Order Modal --}}
+{{-- Enhanced Cancel Order Modal --}}
 <div class="modal fade" id="cancelOrderModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-enhanced">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                     Cancel Order
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Are you sure you want to cancel this order?</p>
+                <p class="modal-description">Are you sure you want to cancel this order?</p>
                 <div class="alert alert-warning">
-                    <strong>Warning:</strong> Cancelling this order will:
-                    <ul class="mb-0 mt-2">
-                        <li>Stop all services associated with this order</li>
-                        <li>Cancel future renewals</li>
-                        <li>May result in data loss</li>
-                    </ul>
+                    <div class="alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="alert-content">
+                        <strong>Warning:</strong> Cancelling this order will:
+                        <ul class="warning-list">
+                            <li>Stop all services associated with this order</li>
+                            <li>Cancel future renewals</li>
+                            <li>May result in data loss</li>
+                        </ul>
+                    </div>
                 </div>
-                <div class="mb-3">
+                <div class="form-group">
                     <label for="cancel-reason" class="form-label">Reason for cancellation (optional):</label>
                     <textarea class="form-control" id="cancel-reason" rows="3" 
                               placeholder="Please let us know why you're cancelling..."></textarea>
@@ -272,42 +361,12 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-arrow-left me-2"></i>
                     Keep Order
                 </button>
                 <button type="button" class="btn btn-danger" id="confirm-cancel-order">
-                    <i class="fas fa-times"></i>
+                    <i class="fas fa-times me-2"></i>
                     Cancel Order
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Cancel Renewal Modal --}}
-<div class="modal fade" id="cancelRenewalModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-stop-circle text-warning"></i>
-                    Cancel Auto-Renewal
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to cancel automatic renewals for this order?</p>
-                <div class="alert alert-info">
-                    <strong>Note:</strong> Your services will remain active until the current billing period ends, 
-                    but they will not automatically renew.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    Keep Auto-Renewal
-                </button>
-                <button type="button" class="btn btn-warning" id="confirm-cancel-renewal">
-                    <i class="fas fa-stop"></i>
-                    Cancel Auto-Renewal
                 </button>
             </div>
         </div>
@@ -316,44 +375,122 @@
 @endsection
 
 @push('scripts')
+{{-- Enhanced JavaScript for Orders Page --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let currentOrderId = null;
     
-    // Filter functionality
-    document.querySelectorAll('[data-filter]').forEach(button => {
+    // Enhanced filter functionality
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const orderCards = document.querySelectorAll('.order-card-enhanced');
+    
+    filterButtons.forEach(button => {
         button.addEventListener('click', function() {
             const filter = this.dataset.filter;
             
-            // Update active button
-            document.querySelectorAll('[data-filter]').forEach(btn => {
+            // Update active button with animation
+            filterButtons.forEach(btn => {
                 btn.classList.remove('active');
             });
             this.classList.add('active');
             
-            // Filter orders
-            document.querySelectorAll('.order-card').forEach(card => {
+            // Filter orders with fade animation
+            orderCards.forEach(card => {
                 const status = card.dataset.status;
-                let show = false;
+                let shouldShow = false;
                 
                 if (filter === 'all') {
-                    show = true;
+                    shouldShow = true;
                 } else if (filter === 'active') {
-                    show = ['active', 'completed'].includes(status);
+                    shouldShow = ['active', 'completed'].includes(status);
                 } else if (filter === 'pending') {
-                    show = ['pending', 'processing'].includes(status);
+                    shouldShow = ['pending', 'processing', 'provisioning'].includes(status);
                 } else if (filter === 'cancelled') {
-                    show = ['cancelled', 'refunded', 'failed'].includes(status);
+                    shouldShow = ['cancelled', 'refunded', 'failed', 'suspended'].includes(status);
                 } else {
-                    show = status === filter;
+                    shouldShow = status === filter;
                 }
                 
-                card.style.display = show ? 'block' : 'none';
+                if (shouldShow) {
+                    card.style.display = 'block';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    
+                    requestAnimationFrame(() => {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    });
+                } else {
+                    card.style.transition = 'all 0.3s ease';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(-20px)';
+                    setTimeout(() => {
+                        card.style.display = 'none';
+                    }, 300);
+                }
             });
         });
     });
     
-    // Cancel order functionality
+    // Enhanced search functionality
+    const searchInput = document.getElementById('order-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            orderCards.forEach(card => {
+                const orderNumber = card.querySelector('.order-link').textContent.toLowerCase();
+                const planName = card.querySelector('.plan-name')?.textContent.toLowerCase() || '';
+                const categoryName = card.querySelector('.plan-category')?.textContent.toLowerCase() || '';
+                
+                const matches = orderNumber.includes(searchTerm) || 
+                               planName.includes(searchTerm) || 
+                               categoryName.includes(searchTerm);
+                
+                if (matches || searchTerm === '') {
+                    card.style.display = 'block';
+                    card.style.opacity = '1';
+                } else {
+                    card.style.opacity = '0.3';
+                }
+            });
+        });
+    }
+    
+    // Enhanced sort functionality
+    const sortSelect = document.getElementById('order-sort');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const sortType = this.value;
+            const ordersContainer = document.getElementById('orders-list');
+            const ordersArray = Array.from(orderCards);
+            
+            ordersArray.sort((a, b) => {
+                switch (sortType) {
+                    case 'newest':
+                        return new Date(b.querySelector('.order-date').textContent) - 
+                               new Date(a.querySelector('.order-date').textContent);
+                    case 'oldest':
+                        return new Date(a.querySelector('.order-date').textContent) - 
+                               new Date(b.querySelector('.order-date').textContent);
+                    case 'amount-high':
+                        return parseFloat(b.dataset.amount) - parseFloat(a.dataset.amount);
+                    case 'amount-low':
+                        return parseFloat(a.dataset.amount) - parseFloat(b.dataset.amount);
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Re-append sorted elements
+            ordersArray.forEach(card => {
+                ordersContainer.appendChild(card);
+            });
+        });
+    }
+    
+    // Enhanced cancel order functionality
     document.querySelectorAll('.cancel-order-btn').forEach(button => {
         button.addEventListener('click', function() {
             currentOrderId = this.dataset.orderId;
@@ -362,196 +499,104 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    document.getElementById('confirm-cancel-order').addEventListener('click', function() {
-        if (!currentOrderId) return;
-        
-        const reason = document.getElementById('cancel-reason').value;
-        const formData = new FormData();
-        formData.append('reason', reason);
-        
-        this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
-        
-        fetch(`/shop/orders/${currentOrderId}/cancel`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Shop.showNotification('success', 'Order cancelled successfully.');
-                location.reload();
-            } else {
-                Shop.showNotification('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error cancelling order:', error);
-            Shop.showNotification('error', 'Failed to cancel order.');
-        })
-        .finally(() => {
-            bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal')).hide();
-            this.disabled = false;
-            this.innerHTML = '<i class="fas fa-times"></i> Cancel Order';
+    const confirmCancelBtn = document.getElementById('confirm-cancel-order');
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', function() {
+            if (!currentOrderId) return;
+            
+            const reason = document.getElementById('cancel-reason').value;
+            const formData = new FormData();
+            formData.append('reason', reason);
+            
+            // Add loading state
+            const originalText = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cancelling...';
+            
+            fetch(`/shop/orders/${currentOrderId}/cancel`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Order cancelled successfully.', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Failed to cancel order.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error cancelling order:', error);
+                showToast('Failed to cancel order. Please try again.', 'error');
+            })
+            .finally(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderModal'));
+                if (modal) modal.hide();
+                this.disabled = false;
+                this.innerHTML = originalText;
+            });
         });
-    });
+    }
     
-    // Cancel renewal functionality
-    document.querySelectorAll('.cancel-renewal-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            currentOrderId = this.dataset.orderId;
-            const modal = new bootstrap.Modal(document.getElementById('cancelRenewalModal'));
-            modal.show();
+    // Enhanced card hover effects
+    orderCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
         });
-    });
-    
-    document.getElementById('confirm-cancel-renewal').addEventListener('click', function() {
-        if (!currentOrderId) return;
         
-        this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cancelling...';
-        
-        fetch(`/shop/orders/${currentOrderId}/cancel-renewal`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                Shop.showNotification('success', 'Auto-renewal cancelled successfully.');
-                location.reload();
-            } else {
-                Shop.showNotification('error', data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error cancelling renewal:', error);
-            Shop.showNotification('error', 'Failed to cancel auto-renewal.');
-        })
-        .finally(() => {
-            bootstrap.Modal.getInstance(document.getElementById('cancelRenewalModal')).hide();
-            this.disabled = false;
-            this.innerHTML = '<i class="fas fa-stop"></i> Cancel Auto-Renewal';
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
         });
     });
 });
+
+// Enhanced toast notification system
+function showToast(message, type = 'info') {
+    // Use Shop notification system if available
+    if (typeof Shop !== 'undefined' && Shop.showNotification) {
+        Shop.showNotification(type, message);
+        return;
+    }
+    
+    // Fallback toast system
+    const toast = document.createElement('div');
+    toast.className = `toast-notification toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas fa-${getToastIcon(type)} me-2"></i>
+            <span>${message}</span>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, 5000);
+}
+
+function getToastIcon(type) {
+    switch(type) {
+        case 'success': return 'check-circle';
+        case 'error': return 'exclamation-circle';
+        case 'warning': return 'exclamation-triangle';
+        default: return 'info-circle';
+    }
+}
 </script>
 @endpush
 
-@push('styles')
-<style>
-.order-card {
-    transition: all 0.3s ease;
-    border-left: 4px solid transparent;
-}
-
-.order-card[data-status="active"] {
-    border-left-color: #28a745;
-}
-
-.order-card[data-status="pending"] {
-    border-left-color: #ffc107;
-}
-
-.order-card[data-status="cancelled"] {
-    border-left-color: #dc3545;
-}
-
-.order-card[data-status="completed"] {
-    border-left-color: #17a2b8;
-}
-
-.order-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.badge-lg {
-    padding: 6px 12px;
-    font-size: 0.85em;
-}
-
-.order-header-info h6 a {
-    color: #495057;
-    font-weight: 600;
-}
-
-.order-header-info h6 a:hover {
-    color: #007bff;
-}
-
-.order-item {
-    padding: 8px 0;
-}
-
-.item-info h6 {
-    color: #495057;
-    font-size: 0.9em;
-}
-
-.item-info .text-primary {
-    font-weight: 500;
-}
-
-.renewal-info {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
-}
-
-.renewal-date strong {
-    color: #495057;
-    font-size: 1.1em;
-}
-
-.order-complete-info {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-}
-
-.empty-orders {
-    background: #f8f9fa;
-    border-radius: 12px;
-    margin: 40px 0;
-}
-
-.btn-group .btn.active {
-    background-color: #007bff;
-    color: white;
-    border-color: #007bff;
-}
-
-@media (max-width: 768px) {
-    .order-card .row > div {
-        margin-bottom: 15px;
-        text-align: center;
-    }
-    
-    .order-filters {
-        width: 100%;
-        margin-top: 15px;
-    }
-    
-    .btn-group {
-        width: 100%;
-        display: flex;
-    }
-    
-    .btn-group .btn {
-        flex: 1;
-        font-size: 0.8em;
-        padding: 8px 4px;
-    }
-    
-    .order-actions .dropdown-toggle {
-        width: 100%;
-    }
-}
-</style>
-@endpush

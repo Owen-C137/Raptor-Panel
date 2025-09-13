@@ -20,10 +20,22 @@ class CheckShopEnabled
         // Get shop enabled setting from database
         $shopEnabled = ShopSettings::getValue('shop_enabled', true);
         
-        // If shop is disabled, show the shop closed page
+        // If shop is disabled, show appropriate response
         if (!$shopEnabled) {
+            $maintenanceMessage = ShopSettings::getValue('shop_maintenance_message', 'The shop is temporarily closed for maintenance.');
+            
+            // If this is an AJAX request, return JSON response
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $maintenanceMessage,
+                    'error' => 'Shop is currently disabled',
+                ], 503);
+            }
+            
+            // Otherwise return the maintenance view
             return response()->view('shop::shop.disabled', [
-                'maintenanceMessage' => ShopSettings::getValue('shop_maintenance_message', 'The shop is temporarily closed for maintenance.'),
+                'maintenanceMessage' => $maintenanceMessage,
                 'dashboardUrl' => route('index')
             ], 503);
         }

@@ -27,25 +27,16 @@ Route::get('shop/assets/css/shop.css', function () {
         ->header('Content-Type', 'text/css');
 })->name('shop.assets.css');
 
-// Serve nebula theme CSS
-Route::get('shop/assets/css/nebula-theme.css', function () {
-    $path = base_path('addons/shop-system/resources/assets/css/nebula-theme.css');
+// oneui theme CSS
+Route::get('shop/assets/css/oneui.css', function () {
+    $path = base_path('addons/shop-system/resources/assets/css/oneui.css');
     if (!file_exists($path)) {
         abort(404);
     }
     return response(file_get_contents($path))
         ->header('Content-Type', 'text/css');
-})->name('shop.assets.css');
+})->name('shop.assets.oneui.css');
 
-// Serve modern dark theme CSS
-Route::get('shop/assets/css/shop_modern_dark.css', function () {
-    $path = base_path('addons/shop-system/resources/assets/css/shop_modern_dark.css');
-    if (!file_exists($path)) {
-        abort(404);
-    }
-    return response(file_get_contents($path))
-        ->header('Content-Type', 'text/css');
-})->name('shop.assets.modern_css');
 
 // Serve shop JS
 Route::get('shop/assets/js/shop.js', function () {
@@ -99,6 +90,7 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
     
     // Cart management (database-based, auth required)
     Route::get('/cart', [ShopController::class, 'cart'])->name('cart');
+    Route::get('/cart/items', [ShopController::class, 'getCartItems'])->name('cart.items'); // For AJAX dropdown
     Route::post('/cart/add', [ShopController::class, 'addToCart'])->name('cart.add');
     Route::delete('/cart/remove', [ShopController::class, 'removeFromCart'])->name('cart.remove');
     Route::put('/cart/update', [ShopController::class, 'updateCartQuantity'])->name('cart.update');
@@ -156,6 +148,18 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
             Route::post('/transfer', [WalletController::class, 'transfer'])->name('transfer');
         });
     });
+});
+
+// API routes for AJAX calls
+Route::prefix('shop/api')->name('shop.api.')->middleware(['auth', 'shop.enabled'])->group(function () {
+    // Get server locations for node filtering
+    Route::get('/locations', [ShopController::class, 'getLocations'])->name('locations');
+    
+    // Get plan details for quick view modals
+    Route::get('/plans/{plan}', [ShopController::class, 'getPlanDetails'])->name('plans.details');
+    
+    // Get wallet balance
+    Route::get('/wallet/balance', [WalletController::class, 'getBalance'])->name('wallet.balance');
 });
 
 /*

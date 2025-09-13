@@ -11,6 +11,8 @@ use PterodactylAddons\ShopSystem\Repositories\ShopCategoryRepository;
 use PterodactylAddons\ShopSystem\Repositories\ShopPlanRepository;
 use PterodactylAddons\ShopSystem\Services\ShopOrderService;
 use PterodactylAddons\ShopSystem\Services\CartService;
+use Pterodactyl\Models\Location;
+use Pterodactyl\Models\Node;
 
 class ShopController extends Controller
 {
@@ -270,6 +272,38 @@ class ShopController extends Controller
     }
 
     /**
+     * Get cart items for dropdown/AJAX requests.
+     */
+    public function getCartItems(): JsonResponse
+    {
+        $cartData = $this->cartService->getCartItems();
+        
+        if (empty($cartData['items'])) {
+            return response()->json([
+                'success' => true,
+                'cart' => [
+                    'items' => [],
+                    'total_items' => 0,
+                    'total_amount' => '0.00',
+                    'currency_symbol' => config('shop.currency_symbol', '$')
+                ]
+            ]);
+        }
+        
+        return response()->json([
+            'success' => true,
+            'cart' => [
+                'items' => $cartData['items'],
+                'total_items' => $cartData['total_quantity'],
+                'total_amount' => number_format($cartData['total'], 2),
+                'subtotal' => number_format($cartData['subtotal'], 2),
+                'tax' => number_format($cartData['tax'], 2),
+                'currency_symbol' => config('shop.currency_symbol', '$')
+            ]
+        ]);
+    }
+
+    /**
      * Apply promo code to cart.
      */
     public function applyPromoCode(Request $request): JsonResponse
@@ -310,5 +344,72 @@ class ShopController extends Controller
             'success' => true,
             'message' => 'Promo code removed successfully!',
         ]);
+    }
+
+    /**
+     * Get server locations for API calls.
+     */
+    public function getLocations(): JsonResponse
+    {
+        try {
+            // Get locations from Pterodactyl database
+            $locations = Location::orderBy('long')->get();
+            
+            $formattedLocations = $locations->map(function ($location) {
+                return [
+                    'id' => $location->id,
+                    'name' => $location->long ?? $location->short ?? "Location {$location->id}",
+                    'short' => $location->short ?? '',
+                    'long' => $location->long ?? '',
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'locations' => $formattedLocations
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load locations: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load server locations',
+                'locations' => []
+            ], 500);
+        }
+    }
+
+    /**
+     * Get plan details for API calls.
+     */
+    public function getPlanDetails(ShopPlan $plan): JsonResponse
+    {
+        try {
+            return response()->json([
+                'success' => true,
+                'plan' => [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'description' => $plan->description,
+                    'price' => $plan->price,
+                    'billing_cycle' => $plan->billing_cycle,
+                    'cpu' => $plan->cpu,
+                    'memory' => $plan->memory,
+                    'storage' => $plan->storage,
+                    'databases' => $plan->databases,
+                    'allocations' => $plan->allocations,
+                    'backups' => $plan->backups,
+                    'features' => $plan->features,
+                    'location_ids' => $plan->location_ids,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to load plan details: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Plan not found'
+            ], 404);
+        }
     }
 }

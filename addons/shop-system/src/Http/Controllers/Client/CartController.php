@@ -169,23 +169,56 @@ class CartController extends Controller
     public function getItems(): JsonResponse
     {
         $cartItems = ShopCartItem::where('user_id', auth()->id())
-            ->with('product')
+            ->with(['plan:id,name,description'])
             ->get();
         
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'cart' => [
+                    'items' => [],
+                    'total_items' => 0,
+                    'total_amount' => '0.00',
+                    'currency_symbol' => config('shop.currency_symbol', '$')
+                ]
+            ]);
+        }
+        
+        // Format cart items for frontend
+        $formattedItems = $cartItems->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'plan_id' => $item->plan_id,
+                'name' => $item->plan ? $item->plan->name : 'Unknown Plan',
+                'description' => $item->plan ? $item->plan->description : '',
+                'price' => (float) $item->price,
+                'quantity' => $item->quantity,
+                'billing_cycle' => $item->billing_cycle ?? 'monthly',
+                'total' => (float) ($item->price * $item->quantity)
+            ];
+        });
+        
+        $totals = $this->getCartTotals();
+        
         return response()->json([
-            'items' => $cartItems->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'product_id' => $item->product_id,
-                    'product_name' => $item->product->name,
-                    'quantity' => $item->quantity,
-                    'price' => (float) $item->price,
-                    'total' => (float) ($item->quantity * $item->price),
-                ];
-            }),
-            'count' => $cartItems->count(),
-            'totals' => $this->getCartTotals()
+            'success' => true,
+            'cart' => [
+                'items' => $formattedItems,
+                'total_items' => $cartItems->sum('quantity'),
+                'total_amount' => number_format($totals['total'], 2),
+                'subtotal' => number_format($totals['subtotal'], 2),
+                'tax' => number_format($totals['tax'], 2),
+                'currency_symbol' => config('shop.currency_symbol', '$')
+            ]
         ]);
+    }
+    
+    /**
+     * Alias for getItems() to match frontend expectations
+     */
+    public function items(): JsonResponse
+    {
+        return $this->getItems();
     }
 
     /**

@@ -522,15 +522,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     billingFilter.addEventListener('change', filterPlans);
     
-    // Load locations for node filter
-    Shop.loadLocations(function(locations) {
-        locations.forEach(function(location) {
-            const option = document.createElement('option');
-            option.value = location.id;
-            option.textContent = location.name;
-            nodeFilter.appendChild(option);
+    billingFilter.addEventListener('change', filterPlans);
+    
+    // Load locations for node filter - with proper error checking
+    function loadLocationOptions() {
+        if (typeof Shop === 'undefined' || typeof Shop.loadLocations !== 'function') {
+            console.warn('⚠️ Shop.loadLocations not available, retrying in 100ms...');
+            setTimeout(loadLocationOptions, 100);
+            return;
+        }
+        
+        Shop.loadLocations(function(locations) {
+            if (locations && locations.length > 0) {
+                locations.forEach(function(location) {
+                    const option = document.createElement('option');
+                    option.value = location.id;
+                    option.textContent = location.name;
+                    nodeFilter.appendChild(option);
+                });
+                console.log('📍 Loaded', locations.length, 'locations for node filter');
+            } else {
+                console.log('📍 No locations available for filtering');
+            }
         });
-    });
+    }
+    
+    // Start loading locations
+    loadLocationOptions();
 });
 </script>
 @endpush
