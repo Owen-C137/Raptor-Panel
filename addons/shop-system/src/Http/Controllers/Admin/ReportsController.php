@@ -108,11 +108,13 @@ class ReportsController extends Controller
             ->count();
 
         // Customer lifetime value
-        $customerLifetimeValue = ShopPayment::where('status', 'completed')
+        $lifetimeValues = ShopPayment::where('status', 'completed')
             ->join('shop_orders', 'shop_payments.order_id', '=', 'shop_orders.id')
             ->select('shop_orders.user_id', DB::raw('SUM(shop_payments.amount) as lifetime_value'))
             ->groupBy('shop_orders.user_id')
-            ->avg('lifetime_value') ?? 0;
+            ->pluck('lifetime_value');
+        
+        $customerLifetimeValue = $lifetimeValues->avg() ?? 0;
 
         return view('shop::admin.reports.customers', compact('topCustomers', 'newCustomers', 'customerLifetimeValue', 'period'));
     }

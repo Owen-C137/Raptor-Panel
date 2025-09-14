@@ -84,6 +84,57 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * Display revenue analytics page
+     */
+    public function revenue(Request $request)
+    {
+        $period = $request->get('period', '30');
+        $analytics = $this->getRevenueAnalytics($period);
+        
+        return view('shop::admin.analytics.revenue', compact('analytics', 'period'));
+    }
+
+    /**
+     * Display orders analytics page
+     */
+    public function orders(Request $request)
+    {
+        $period = $request->get('period', '30');
+        $analytics = $this->getOrderAnalytics($period);
+        
+        return view('shop::admin.analytics.orders', compact('analytics', 'period'));
+    }
+
+    /**
+     * Display customers analytics page
+     */
+    public function customers(Request $request)
+    {
+        $period = $request->get('period', '30');
+        $analytics = $this->getCustomerAnalytics($period);
+        
+        return view('shop::admin.analytics.customers', compact('analytics', 'period'));
+    }
+
+    /**
+     * Export analytics data
+     */
+    public function export(Request $request)
+    {
+        $period = $request->get('period', '30');
+        $type = $request->get('type', 'all');
+        
+        $analytics = [
+            'revenue' => $this->getRevenueAnalytics($period),
+            'orders' => $this->getOrderAnalytics($period),
+            'plans' => $this->getPlanAnalytics($period),
+            'customers' => $this->getCustomerAnalytics($period),
+        ];
+        
+        return view('shop::admin.analytics.export', compact('analytics', 'period', 'type'));
+    }
+
+    /**
      * Get revenue analytics
      */
     protected function getRevenueAnalytics(int $days): array
