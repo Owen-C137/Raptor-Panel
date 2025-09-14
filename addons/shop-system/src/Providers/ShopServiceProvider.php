@@ -21,17 +21,31 @@ class ShopServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        // Always register middleware to prevent binding resolution errors
+        $this->registerShopMiddleware();
+        
+        // Always register commands for install/uninstall functionality
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \PterodactylAddons\ShopSystem\Console\Commands\ShopInstallCommand::class,
+                \PterodactylAddons\ShopSystem\Console\Commands\ShopUninstallCommand::class,
+            ]);
+        }
+
+        // Only register other shop services if shop is installed
+        if (!file_exists(config_path('shop.php'))) {
+            return;
+        }
+
         // Load config from addon directory
         $this->mergeConfigFrom(
             base_path('addons/shop-system/config/shop.php'), 'shop'
         );
 
-        // Register commands if running in console
+        // Register additional commands if running in console and shop is installed
         if ($this->app->runningInConsole()) {
             $this->commands([
-                \PterodactylAddons\ShopSystem\Commands\ShopInstallCommand::class,
-                \PterodactylAddons\ShopSystem\Commands\ShopUninstallCommand::class,
-                \PterodactylAddons\ShopSystem\Commands\ProcessShopOrdersCommand::class,
+                \PterodactylAddons\ShopSystem\Console\Commands\ProcessShopOrdersCommand::class,
             ]);
         }
     }
@@ -41,6 +55,12 @@ class ShopServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // Only fully boot the shop system if it's installed
+        if (!$this->isShopInstalled()) {
+            // Only register commands for install/uninstall
+            return;
+        }
+        
         // Register the navigation service provider first
         $this->app->register(ShopNavigationServiceProvider::class);
         
@@ -158,6 +178,7 @@ class ShopServiceProvider extends ServiceProvider
         
         // Register the navigation injection middleware
         $router->aliasMiddleware('inject-shop-nav', InjectShopNavigation::class);
+        $router->aliasMiddleware('shop.inject.navigation', \PterodactylAddons\ShopSystem\Http\Middleware\InjectShopNavigation::class);
         
         // Register shop functionality middleware
         $router->aliasMiddleware('shop.enabled', \PterodactylAddons\ShopSystem\Http\Middleware\CheckShopEnabled::class);
@@ -220,5 +241,18 @@ class ShopServiceProvider extends ServiceProvider
             'shop_coupon_usage' => \PterodactylAddons\ShopSystem\Models\ShopCouponUsage::class,
             'shop_product' => \PterodactylAddons\ShopSystem\Models\ShopProduct::class,
         ]);
+    }
+    
+    /**
+     * Check if the shop system is installed
+     */
+    protected function isShopInstalled(): bool
+    {
+        try {
+            // Simple file-based check that doesn't require database access
+            return file_exists(config_path('shop.php'));
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

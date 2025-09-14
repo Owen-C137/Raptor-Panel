@@ -203,7 +203,7 @@ return [
         /*
          * Shop System Service Provider - Self-contained addon
          */
-        PterodactylAddons\ShopSystem\Providers\ShopServiceProvider::class,
+        PterodactylAddons\ShopSystem\ShopServiceProvider::class,
         
         Pterodactyl\Providers\RouteServiceProvider::class,
         Pterodactyl\Providers\RepositoryServiceProvider::class,

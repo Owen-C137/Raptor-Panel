@@ -93,31 +93,16 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="is_active">Category Status</label>
+                        <label for="active">Category Status</label>
                         <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" name="is_active" id="is_active" value="1" 
-                                   {{ old('is_active', $category->is_active) ? 'checked' : '' }}>
-                            <label for="is_active" class="strong">Active</label>
+                            <input type="checkbox" name="active" id="active" value="1" 
+                                   {{ old('active', $category->active) ? 'checked' : '' }}>
+                            <label for="active" class="strong">Active</label>
                         </div>
                         <small class="form-text text-muted">
                             Inactive categories are hidden from customers.
                         </small>
-                        @error('is_active')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="is_featured">Featured Options</label>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" name="is_featured" id="is_featured" value="1" 
-                                   {{ old('is_featured', $category->is_featured) ? 'checked' : '' }}>
-                            <label for="is_featured" class="strong">Featured Category</label>
-                        </div>
-                        <small class="form-text text-muted">
-                            Featured categories appear prominently in the shop.
-                        </small>
-                        @error('is_featured')
+                        @error('active')
                             <span class="text-danger">{{ $message }}</span>
                         @enderror
                     </div>
@@ -265,7 +250,7 @@
                                 </h5>
                                 <p class="margin-bottom-5">
                                     <span class="badge bg-blue">{{ $subcategory->plans->count() }} plans</span>
-                                    @if($subcategory->is_active)
+                                    @if($subcategory->active)
                                         <span class="label label-success">Active</span>
                                     @else
                                         <span class="label label-danger">Inactive</span>

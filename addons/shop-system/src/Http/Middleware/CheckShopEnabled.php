@@ -4,7 +4,8 @@ namespace PterodactylAddons\ShopSystem\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use PterodactylAddons\ShopSystem\Models\ShopSettings;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CheckShopEnabled
 {
@@ -17,29 +18,74 @@ class CheckShopEnabled
      */
     public function handle(Request $request, Closure $next)
     {
-        // Get shop enabled setting from database
-        $shopEnabled = ShopSettings::getValue('shop_enabled', true);
+        // First check if shop is installed (config file exists and tables exist)
+        if (!config('shop') || !Schema::hasTable('shop_settings')) {
+            return $this->shopNotAvailable($request);
+        }
+
+        // Get shop enabled setting from database safely
+        try {
+            $shopEnabled = DB::table('shop_settings')
+                ->where('key', 'shop_enabled')
+                ->value('value');
+            
+            $shopEnabled = in_array($shopEnabled, ['true', '1', 1, true], true);
+        } catch (\Exception $e) {
+            // If database query fails, consider shop disabled
+            return $this->shopNotAvailable($request);
+        }
         
         // If shop is disabled, show appropriate response
         if (!$shopEnabled) {
-            $maintenanceMessage = ShopSettings::getValue('shop_maintenance_message', 'The shop is temporarily closed for maintenance.');
+            $maintenanceMessage = 'The shop is temporarily closed for maintenance.';
             
-            // If this is an AJAX request, return JSON response
-            if ($request->expectsJson() || $request->ajax()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => $maintenanceMessage,
-                    'error' => 'Shop is currently disabled',
-                ], 503);
+            try {
+                $maintenanceMessage = DB::table('shop_settings')
+                    ->where('key', 'shop_maintenance_message')
+                    ->value('value') ?: $maintenanceMessage;
+            } catch (\Exception $e) {
+                // Use default message if database query fails
             }
             
-            // Otherwise return the maintenance view
-            return response()->view('shop::shop.disabled', [
-                'maintenanceMessage' => $maintenanceMessage,
-                'dashboardUrl' => route('index')
-            ], 503);
+            return $this->shopDisabled($request, $maintenanceMessage);
         }
         
         return $next($request);
+    }
+
+    /**
+     * Handle shop not available (not installed)
+     */
+    private function shopNotAvailable(Request $request)
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Shop system is not available',
+                'error' => 'Shop not installed',
+            ], 503);
+        }
+        
+        return response()->view('shop::errors.503', [
+            'message' => 'Shop system is not available',
+        ], 503);
+    }
+
+    /**
+     * Handle shop disabled (installed but disabled)
+     */
+    private function shopDisabled(Request $request, string $maintenanceMessage)
+    {
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => false,
+                'message' => $maintenanceMessage,
+                'error' => 'Shop is currently disabled',
+            ], 503);
+        }
+        
+        return response()->view('shop::errors.503', [
+            'message' => $maintenanceMessage,
+        ], 503);
     }
 }

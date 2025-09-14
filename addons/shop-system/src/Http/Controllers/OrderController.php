@@ -42,18 +42,20 @@ class OrderController extends Controller
     /**
      * Display specific order.
      */
-    public function show(ShopOrder $order): View
+    public function show(Request $request, ShopOrder $order): View
     {
         Gate::authorize('view', $order);
 
-        $order->load(['plan.category', 'server', 'payments', 'user']);
+        $order->load(['plan.category', 'server.allocation', 'payments', 'user']);
         
         $paymentMethods = [];
         if ($order->isPending() || $order->isOverdue()) {
             $paymentMethods = $this->getAvailablePaymentMethods();
         }
 
-        return view('shop::orders.show', compact('order', 'paymentMethods'));
+        $isSuccessView = $request->has('success');
+
+        return view('shop::orders.show', compact('order', 'paymentMethods', 'isSuccessView'));
     }
 
     /**

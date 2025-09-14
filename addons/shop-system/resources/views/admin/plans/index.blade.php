@@ -78,11 +78,29 @@
             <div class="box-header with-border">
                 <h3 class="box-title">Plans</h3>
                 <div class="box-tools">
-                    <a href="{{ route('admin.shop.plans.create') }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('admin.shop.plans.create') }}" class="btn btn-sm btn-primary" data-toggle="tooltip" data-placement="top" title="Create New Plan">
                         <i class="fa fa-plus"></i> Create Plan
                     </a>
+                    <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#importPlansModal" title="Import Plans from JSON File">
+                        <i class="fa fa-upload"></i> Import Plans
+                    </button>
                 </div>
             </div>
+            
+            <!-- Success/Error Messages -->
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <i class="fa fa-check"></i> {{ session('success') }}
+                </div>
+            @endif
+            
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                    <i class="fa fa-exclamation-triangle"></i> {{ session('error') }}
+                </div>
+            @endif
             
             <!-- Search and Filter Form -->
             <div class="box-body">
@@ -128,10 +146,57 @@
     <div class="col-xs-12">
         <div class="box">
             <div class="box-body table-responsive no-padding">
+                <!-- Batch Actions Bar -->
+                <div class="row" id="batchActionsBar" style="display: none; padding: 15px;">
+                    <div class="col-md-12">
+                        <div class="alert alert-info">
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <span id="selectedCount">0</span> plans selected
+                                </div>
+                                <div class="col-sm-6 text-right">
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-success btn-sm" 
+                                                onclick="batchAction('activate')"
+                                                data-toggle="tooltip" 
+                                                data-placement="top" 
+                                                title="Activate Selected Plans">
+                                            <i class="fa fa-check"></i> Activate Selected
+                                        </button>
+                                        <button type="button" class="btn btn-warning btn-sm" 
+                                                onclick="batchAction('deactivate')"
+                                                data-toggle="tooltip" 
+                                                data-placement="top" 
+                                                title="Deactivate Selected Plans">
+                                            <i class="fa fa-pause"></i> Deactivate Selected
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-sm" 
+                                                onclick="batchAction('delete')"
+                                                data-toggle="tooltip" 
+                                                data-placement="top" 
+                                                title="Delete Selected Plans">
+                                            <i class="fa fa-trash"></i> Delete Selected
+                                        </button>
+                                        <button type="button" class="btn btn-default btn-sm" 
+                                                onclick="clearSelection()"
+                                                data-toggle="tooltip" 
+                                                data-placement="top" 
+                                                title="Clear All Selections">
+                                            <i class="fa fa-times"></i> Clear Selection
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @if($plans->count() > 0)
                     <table class="table table-hover">
                         <thead>
                             <tr>
+                                <th width="30px">
+                                    <input type="checkbox" id="master-checkbox" data-toggle="tooltip" data-placement="top" title="Select All Plans">
+                                </th>
                                 <th>Name</th>
                                 <th>Category</th>
                                 <th>Server(s)</th>
@@ -145,6 +210,13 @@
                         <tbody>
                             @foreach($plans as $plan)
                                 <tr data-plan-id="{{ $plan->id }}">
+                                    <td>
+                                        <input type="checkbox" class="plan-checkbox" value="{{ $plan->id }}" 
+                                               data-name="{{ $plan->name }}"
+                                               data-toggle="tooltip" 
+                                               data-placement="right" 
+                                               title="Select {{ $plan->name }}">
+                                    </td>
                                     <td>
                                         <strong>{{ $plan->name }}</strong>
                                         @if($plan->description)
@@ -164,7 +236,9 @@
                                                 <div style="margin-bottom: 2px;">
                                                     <a href="{{ route('admin.servers.view', $server->id) }}" 
                                                        class="server-link" 
-                                                       title="View server: {{ $server->name }}">
+                                                       data-toggle="tooltip" 
+                                                       data-placement="right" 
+                                                       title="View Server: {{ $server->name }}">
                                                         <i class="fa fa-server"></i>{{ Str::limit($server->name, 18) }}
                                                     </a>
                                                 </div>
@@ -260,29 +334,49 @@
                                     <td>{{ $plan->sort_order }}</td>
                                     <td>
                                         <div class="btn-group">
-                                            <a href="{{ route('admin.shop.plans.show', $plan->id) }}" class="btn btn-xs btn-primary" title="View">
+                                            <a href="{{ route('admin.shop.plans.show', $plan->id) }}" 
+                                               class="btn btn-xs btn-primary" 
+                                               data-toggle="tooltip" 
+                                               data-placement="top" 
+                                               title="View Plan Details">
                                                 <i class="fa fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.shop.plans.edit', $plan->id) }}" class="btn btn-xs btn-warning" title="Edit">
+                                            <a href="{{ route('admin.shop.plans.edit', $plan->id) }}" 
+                                               class="btn btn-xs btn-warning" 
+                                               data-toggle="tooltip" 
+                                               data-placement="top" 
+                                               title="Edit Plan">
                                                 <i class="fa fa-pencil"></i>
                                             </a>
                                             @if($plan->status === 'active')
                                                 <button class="btn btn-xs btn-danger" 
-                                                        onclick="showToggleModal({{ $plan->id }}, 'active', '{{ $plan->name }}')" title="Deactivate">
+                                                        onclick="showToggleModal({{ $plan->id }}, 'active', '{{ $plan->name }}')" 
+                                                        data-toggle="tooltip" 
+                                                        data-placement="top" 
+                                                        title="Deactivate Plan">
                                                     <i class="fa fa-pause"></i>
                                                 </button>
                                             @else
                                                 <button class="btn btn-xs btn-success" 
-                                                        onclick="showToggleModal({{ $plan->id }}, 'inactive', '{{ $plan->name }}')" title="Activate">
+                                                        onclick="showToggleModal({{ $plan->id }}, 'inactive', '{{ $plan->name }}')" 
+                                                        data-toggle="tooltip" 
+                                                        data-placement="top" 
+                                                        title="Activate Plan">
                                                     <i class="fa fa-play"></i>
                                                 </button>
                                             @endif
                                             <button class="btn btn-xs btn-info" 
-                                                    onclick="showDuplicateModal({{ $plan->id }}, '{{ $plan->name }}')" title="Duplicate">
+                                                    onclick="showDuplicateModal({{ $plan->id }}, '{{ $plan->name }}')" 
+                                                    data-toggle="tooltip" 
+                                                    data-placement="top" 
+                                                    title="Duplicate Plan">
                                                 <i class="fa fa-copy"></i>
                                             </button>
                                             <button class="btn btn-xs btn-danger" 
-                                                    onclick="showDeleteModal({{ $plan->id }}, '{{ $plan->name }}')" title="Delete">
+                                                    onclick="showDeleteModal({{ $plan->id }}, '{{ $plan->name }}')" 
+                                                    data-toggle="tooltip" 
+                                                    data-placement="top" 
+                                                    title="Delete Plan">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </div>
@@ -453,6 +547,39 @@
             // Update delete button text when checkbox changes
             $('#deleteServers').on('change', function() {
                 updateDeleteButtonText();
+            });
+            
+            // Batch functionality
+            // Master checkbox toggle
+            $('#master-checkbox').on('change', function() {
+                const isChecked = $(this).prop('checked');
+                $('.plan-checkbox').prop('checked', isChecked);
+                updateBatchUI();
+            });
+            
+            // Individual checkbox change
+            $(document).on('change', '.plan-checkbox', function() {
+                const totalCheckboxes = $('.plan-checkbox').length;
+                const checkedCheckboxes = $('.plan-checkbox:checked').length;
+                
+                // Update master checkbox state
+                $('#master-checkbox').prop('checked', checkedCheckboxes === totalCheckboxes);
+                $('#master-checkbox').prop('indeterminate', checkedCheckboxes > 0 && checkedCheckboxes < totalCheckboxes);
+                
+                updateBatchUI();
+            });
+            
+            // Modal confirmation handlers
+            $('#confirmBatchActivate').on('click', function() {
+                executeBatchAction('activate');
+            });
+            
+            $('#confirmBatchDeactivate').on('click', function() {
+                executeBatchAction('deactivate');
+            });
+            
+            $('#confirmBatchDelete').on('click', function() {
+                executeBatchAction('delete');
             });
         });
 
@@ -730,6 +857,9 @@
                 container: 'body'
             });
             
+            // Initialize tooltips
+            $('[data-toggle="tooltip"]').tooltip();
+            
             // Close popover when clicking elsewhere
             $(document).on('click', function (e) {
                 $('[data-toggle="popover"]').each(function () {
@@ -741,3 +871,355 @@
         });
     </script>
 @endsection
+
+<!-- Import Plans Modal -->
+<div class="modal fade" id="importPlansModal" tabindex="-1" role="dialog" aria-labelledby="importPlansModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="importPlansModalLabel">
+                    <i class="fa fa-upload"></i> Import Plans from JSON
+                </h4>
+            </div>
+            <form id="importPlansForm" action="{{ route('admin.shop.plans.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="box box-primary">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Upload JSON File</h3>
+                                </div>
+                                <div class="box-body">
+                                    <div class="form-group">
+                                        <label for="import_file">Select JSON File <span class="text-danger">*</span></label>
+                                        <input type="file" name="import_file" id="import_file" class="form-control" accept=".json" required>
+                                        <small class="help-block">Upload a JSON file containing an array of plans</small>
+                                    </div>
+                                    
+                                        <label>
+                                            <input type="checkbox" name="overwrite_existing" value="1">
+                                            Overwrite existing plans with same name
+                                        </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="box box-info">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">JSON Template</h3>
+                                </div>
+                                <div class="box-body">
+                                    <p class="text-muted">Use this template to create your plans JSON file:</p>
+                                    <button type="button" class="btn btn-xs btn-info" onclick="copyTemplate()" data-toggle="tooltip" data-placement="top" title="Copy JSON Template to Clipboard">
+                                        <i class="fa fa-copy"></i> Copy Template
+                                    </button>
+                                    <pre id="jsonTemplate" style="max-height: 300px; overflow-y: auto; font-size: 11px;">// Available Categories: {{ implode(', ', $availableCategories) }}
+// Available Eggs: {{ implode(', ', $availableEggs) }}
+// Available Locations: {{ implode(', ', $availableLocations) }}
+// Available Nodes: {{ implode(', ', $availableNodes) }}
+
+[
+  {
+    "name": "Basic Minecraft",
+    "description": "Perfect for small communities",
+    "category_name": "{{ $availableCategories[0] ?? 'Minecraft' }}",
+    "sort_order": 0,
+    "visible": true,
+    "billing_cycles": [
+      {
+        "cycle": "monthly", 
+        "price": 9.99,
+        "setup_fee": 0
+      },
+      {
+        "cycle": "annually",
+        "price": 99.99,
+        "setup_fee": 0
+      }
+    ],
+    "server_limits": {
+      "cpu": 100,
+      "memory": 2048,
+      "disk": 5120,
+      "swap": 0,
+      "io": 500,
+      "oom_disabled": false
+    },
+    "server_feature_limits": {
+      "databases": 2,
+      "allocations": 1,
+      "backups": 3
+    },
+    "egg_name": "{{ $availableEggs[0] ?? 'Vanilla Minecraft' }}",
+    "allowed_location_names": [{{ count($availableLocations) > 0 ? '"' . implode('", "', array_slice($availableLocations, 0, 2)) . '"' : '"US East", "EU West"' }}],
+    "allowed_node_names": [{{ count($availableNodes) > 0 ? '"' . implode('", "', array_slice($availableNodes, 0, 2)) . '"' : '"Node-1", "Node-2"' }}]
+  }
+]</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="callout callout-info">
+                                <h4><i class="fa fa-info-circle"></i> Import Notes</h4>
+                                <ul class="text-sm">
+                                    <li><strong>category_name:</strong> Must match existing category name exactly</li>
+                                    <li><strong>egg_name:</strong> Must match existing egg name (optional field)</li>
+                                    <li><strong>location_names/node_names:</strong> Must match existing names (optional)</li>
+                                    <li><strong>billing_cycles:</strong> At least one cycle is required</li>
+                                    <li><strong>visible:</strong> true/false - whether plan appears in shop</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-upload"></i> Import Plans
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Delete Confirmation Modal -->
+<div class="modal fade" id="batchDeleteModal" tabindex="-1" role="dialog" aria-labelledby="batchDeleteModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="batchDeleteModalLabel">
+                    <i class="fa fa-exclamation-triangle text-danger"></i> Confirm Batch Deletion
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the selected plans?</p>
+                <p class="text-danger">
+                    <strong>This action cannot be undone.</strong>
+                </p>
+                <div id="batchDeleteDetails" class="well well-sm">
+                    <strong>Selected Plans:</strong>
+                    <ul id="batchDeleteList"></ul>
+                </div>
+                <div id="batchDeleteWarnings" class="alert alert-warning" style="display: none;">
+                    <strong>Warning:</strong> Plans with associated servers will also have their servers deleted.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    <i class="fa fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmBatchDelete">
+                    <i class="fa fa-trash"></i> Delete Selected Plans
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Activate Confirmation Modal -->
+<div class="modal fade" id="batchActivateModal" tabindex="-1" role="dialog" aria-labelledby="batchActivateModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="batchActivateModalLabel">
+                    <i class="fa fa-check text-success"></i> Confirm Batch Activation
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to activate the selected plans?</p>
+                <div id="batchActivateDetails" class="well well-sm">
+                    <strong>Selected Plans:</strong>
+                    <ul id="batchActivateList"></ul>
+                </div>
+                <p class="text-info">
+                    <i class="fa fa-info-circle"></i> Activated plans will be available for purchase in the shop.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    <i class="fa fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="confirmBatchActivate">
+                    <i class="fa fa-check"></i> Activate Selected Plans
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Batch Deactivate Confirmation Modal -->
+<div class="modal fade" id="batchDeactivateModal" tabindex="-1" role="dialog" aria-labelledby="batchDeactivateModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="batchDeactivateModalLabel">
+                    <i class="fa fa-pause text-warning"></i> Confirm Batch Deactivation
+                </h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to deactivate the selected plans?</p>
+                <div id="batchDeactivateDetails" class="well well-sm">
+                    <strong>Selected Plans:</strong>
+                    <ul id="batchDeactivateList"></ul>
+                </div>
+                <p class="text-info">
+                    <i class="fa fa-info-circle"></i> Deactivated plans will not be available for purchase in the shop.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">
+                    <i class="fa fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-warning" id="confirmBatchDeactivate">
+                    <i class="fa fa-pause"></i> Deactivate Selected Plans
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyTemplate() {
+    const template = document.getElementById('jsonTemplate').textContent;
+    navigator.clipboard.writeText(template).then(function() {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-check"></i> Copied!';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-info');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.add('btn-info');
+            btn.classList.remove('btn-success');
+        }, 2000);
+    });
+}
+
+// Batch functionality
+function updateBatchUI() {
+    const checkedBoxes = $('.plan-checkbox:checked');
+    const count = checkedBoxes.length;
+    
+    if (count > 0) {
+        $('#batchActionsBar').show();
+        $('#selectedCount').text(count);
+    } else {
+        $('#batchActionsBar').hide();
+    }
+}
+
+function clearSelection() {
+    $('.plan-checkbox').prop('checked', false);
+    $('#master-checkbox').prop('checked', false).prop('indeterminate', false);
+    updateBatchUI();
+}
+
+function batchAction(action) {
+    const selectedPlans = $('.plan-checkbox:checked');
+    
+    if (selectedPlans.length === 0) {
+        alert('Please select at least one plan.');
+        return;
+    }
+    
+    // Populate modal with selected plan names
+    let planList = '';
+    selectedPlans.each(function() {
+        const planName = $(this).data('name');
+        planList += '<li>' + planName + '</li>';
+    });
+    
+    switch(action) {
+        case 'activate':
+            $('#batchActivateList').html(planList);
+            $('#batchActivateModal').modal('show');
+            break;
+        case 'deactivate':
+            $('#batchDeactivateList').html(planList);
+            $('#batchDeactivateModal').modal('show');
+            break;
+        case 'delete':
+            $('#batchDeleteList').html(planList);
+            // Show warning if any plans might have servers
+            $('#batchDeleteWarnings').show();
+            $('#batchDeleteModal').modal('show');
+            break;
+    }
+}
+
+function executeBatchAction(action) {
+    const selectedPlans = $('.plan-checkbox:checked').map(function() {
+        return $(this).val();
+    }).get();
+    
+    // Get the appropriate modal and button
+    let modal, button;
+    switch(action) {
+        case 'activate':
+            modal = '#batchActivateModal';
+            button = '#confirmBatchActivate';
+            break;
+        case 'deactivate':
+            modal = '#batchDeactivateModal';
+            button = '#confirmBatchDeactivate';
+            break;
+        case 'delete':
+            modal = '#batchDeleteModal';
+            button = '#confirmBatchDelete';
+            break;
+    }
+    
+    // Show loading state
+    const actionButton = $(button);
+    const originalText = actionButton.html();
+    actionButton.html('<i class="fa fa-spinner fa-spin"></i> Processing...').prop('disabled', true);
+    
+    $.ajax({
+        url: '{{ route("admin.shop.plans.batch") }}',
+        method: 'POST',
+        data: {
+            _token: '{{ csrf_token() }}',
+            action: action,
+            plans: selectedPlans
+        },
+        success: function(response) {
+            if (response.success) {
+                // Show success message
+                actionButton.html('<i class="fa fa-check"></i> Success!').removeClass().addClass('btn btn-success');
+                setTimeout(function() {
+                    $(modal).modal('hide');
+                    location.reload();
+                }, 1000);
+            } else {
+                alert('Error: ' + response.message);
+                actionButton.html(originalText).prop('disabled', false);
+            }
+        },
+        error: function(xhr) {
+            console.error('Batch action failed:', xhr);
+            alert('An error occurred while performing the batch action.');
+            actionButton.html(originalText).prop('disabled', false);
+        }
+    });
+}
+</script>

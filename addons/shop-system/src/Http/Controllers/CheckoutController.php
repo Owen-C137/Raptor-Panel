@@ -69,7 +69,7 @@ class CheckoutController extends Controller
             'total', 
             'paymentMethods',
             'userWallet'
-        ));
+        ))->with('shopConfig', $settings);
     }
 
     /**
@@ -318,7 +318,7 @@ class CheckoutController extends Controller
 
                 $responseData = [
                     'order_uuid' => $order->uuid,
-                    'redirect_url' => $paymentResult['redirect_url'] ?? route('shop.orders.show', $order->uuid),
+                    'redirect_url' => $paymentResult['redirect_url'] ?? route('shop.orders.show', ['order' => $order->uuid, 'success' => 1]),
                     'requires_payment_action' => $paymentResult['requires_action'] ?? false,
                     'payment_intent' => $paymentResult['payment_intent'] ?? null,
                 ];

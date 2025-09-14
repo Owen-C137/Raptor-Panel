@@ -5,6 +5,8 @@ namespace PterodactylAddons\ShopSystem\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class ShopInstallCommand extends Command
 {
@@ -35,38 +37,50 @@ class ShopInstallCommand extends Command
 
         try {
             // Step 1: Verify addon structure
-            $this->task('Verifying addon structure', function () {
-                return $this->verifyAddonStructure();
-            });
+            $this->info('🔍 Verifying addon structure...');
+            $this->verifyAddonStructure();
+            $this->line('   ✅ Addon structure verified');
 
             // Step 2: Register service provider if not already registered
-            $this->task('Registering service provider', function () {
-                return $this->registerServiceProvider();
-            });
+            $this->info('🔧 Registering service provider...');
+            $this->registerServiceProvider();
+            $this->line('   ✅ Service provider registered');
 
             // Step 3: Run migrations
-            $this->task('Running database migrations', function () {
+            $this->info('📊 Running database migrations...');
+            try {
+                // Try standard migrate command first (will work with service provider migration loading)
                 Artisan::call('migrate', ['--force' => true]);
-                return true;
-            });
+            } catch (\Exception $e) {
+                // Fallback: Try to run migrations from specific addon path
+                $this->warn('   ⚠️  Standard migration failed, trying addon-specific path...');
+                Artisan::call('migrate', [
+                    '--path' => 'addons/shop-system/database/migrations',
+                    '--force' => true
+                ]);
+            }
+            // Clear schema cache to ensure table detection works
+            if (\Illuminate\Support\Facades\DB::getSchemaBuilder()->hasTable('migrations')) {
+                \Illuminate\Support\Facades\Artisan::call('config:clear');
+            }
+            $this->line('   ✅ Database migrations completed');
 
             // Step 4: Publish configuration
-            $this->task('Publishing configuration', function () {
-                return $this->publishConfiguration();
-            });
+            $this->info('📁 Publishing configuration...');
+            $this->publishConfiguration();
+            $this->line('   ✅ Configuration published');
 
             // Step 5: Seed default data
-            $this->task('Creating default shop settings', function () {
-                return $this->seedDefaultData();
-            });
+            $this->info('🌱 Creating default shop settings...');
+            $this->seedDefaultData();
+            $this->line('   ✅ Default settings created');
 
             // Step 6: Clear caches
-            $this->task('Clearing application caches', function () {
-                Artisan::call('config:clear');
-                Artisan::call('route:clear');
-                Artisan::call('view:clear');
-                return true;
-            });
+            $this->info('🧹 Clearing application caches...');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+            $this->line('   ✅ Caches cleared');
 
             $this->newLine();
             $this->info('✅ Shop System installed successfully!');
@@ -97,7 +111,7 @@ class ShopInstallCommand extends Command
     protected function isInstalled(): bool
     {
         return File::exists(config_path('shop.php')) && 
-               \Schema::hasTable('shop_settings');
+               Schema::hasTable('shop_settings');
     }
 
     /**
@@ -108,7 +122,7 @@ class ShopInstallCommand extends Command
         $requiredPaths = [
             'addons/shop-system/src/Models',
             'addons/shop-system/src/Http/Controllers',
-            'addons/shop-system/src/Providers/ShopServiceProvider.php',
+            'addons/shop-system/src/ShopServiceProvider.php',
             'addons/shop-system/database/migrations',
             'addons/shop-system/resources/views',
             'addons/shop-system/config/shop.php',
@@ -128,25 +142,13 @@ class ShopInstallCommand extends Command
      */
     protected function registerServiceProvider(): bool
     {
-        $providersPath = app_path('Providers/ShopServiceProvider.php');
-        
-        if (!File::exists($providersPath)) {
-            // Create the minimal service provider wrapper
-            $serviceProviderContent = $this->getServiceProviderContent();
-            File::put($providersPath, $serviceProviderContent);
-        }
-
-        // Check if registered in config/app.php
+        // Service provider is already registered in config/app.php
+        // Just verify it's working
         $configPath = config_path('app.php');
         $configContent = File::get($configPath);
         
-        if (!str_contains($configContent, 'ShopServiceProvider::class')) {
-            // Add to providers array
-            $pattern = "/(Pterodactyl\\\\Providers\\\\EventServiceProvider::class,)/";
-            $replacement = "$1\n        \n        /*\n         * Shop System Service Provider\n         */\n        Pterodactyl\\Providers\\ShopServiceProvider::class,";
-            
-            $newContent = preg_replace($pattern, $replacement, $configContent);
-            File::put($configPath, $newContent);
+        if (!str_contains($configContent, 'PterodactylAddons\ShopSystem\ShopServiceProvider::class')) {
+            throw new \Exception('Shop service provider is not registered in config/app.php');
         }
 
         return true;
@@ -172,6 +174,11 @@ class ShopInstallCommand extends Command
      */
     protected function seedDefaultData(): bool
     {
+        // Ensure the table exists before trying to seed data
+        if (!\Schema::hasTable('shop_settings')) {
+            throw new \Exception('shop_settings table does not exist. Migrations may have failed.');
+        }
+
         // Create default shop settings if they don't exist
         $defaultSettings = [
             ['key' => 'shop_enabled', 'value' => 'true', 'type' => 'boolean', 'description' => 'Enable/disable the shop system', 'group' => 'general', 'is_public' => true],

@@ -5,6 +5,7 @@ namespace PterodactylAddons\ShopSystem\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class ShopCategory extends Model
 {
@@ -36,6 +37,46 @@ class ShopCategory extends Model
         'metadata' => 'array',
         'sort_order' => 'integer',
     ];
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Automatically generate slug when creating a category
+        static::creating(function ($category) {
+            if (empty($category->slug)) {
+                $category->slug = static::generateUniqueSlug($category->name);
+            }
+        });
+
+        // Update slug when name changes
+        static::updating(function ($category) {
+            if ($category->isDirty('name') && empty($category->slug)) {
+                $category->slug = static::generateUniqueSlug($category->name, $category->id);
+            }
+        });
+    }
+
+    /**
+     * Generate a unique slug for the category.
+     */
+    public static function generateUniqueSlug(string $name, ?int $excludeId = null): string
+    {
+        $baseSlug = Str::slug($name);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)
+            ->when($excludeId, fn($query) => $query->where('id', '!=', $excludeId))
+            ->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+
+        return $slug;
+    }
 
     /**
      * Get the plans in this category.

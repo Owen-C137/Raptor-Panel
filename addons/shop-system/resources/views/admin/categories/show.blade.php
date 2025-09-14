@@ -33,8 +33,8 @@
                         <strong>Name:</strong> {{ $category->name }}<br>
                         <strong>Slug:</strong> {{ $category->slug }}<br>
                         <strong>Status:</strong> 
-                        <span class="label label-{{ $category->is_active ? 'success' : 'warning' }}">
-                            {{ $category->is_active ? 'Active' : 'Inactive' }}
+                        <span class="label label-{{ $category->active ? 'success' : 'warning' }}">
+                            {{ $category->active ? 'Active' : 'Inactive' }}
                         </span><br>
                         <strong>Sort Order:</strong> {{ $category->sort_order ?? 'Not set' }}<br>
                         <strong>Plans Count:</strong> {{ $category->plans->count() }}<br>
@@ -125,8 +125,8 @@
                             <tr>
                                 <td>{{ $subcategory->name }}</td>
                                 <td>
-                                    <span class="label label-{{ $subcategory->is_active ? 'success' : 'warning' }}">
-                                        {{ $subcategory->is_active ? 'Active' : 'Inactive' }}
+                                    <span class="label label-{{ $subcategory->active ? 'success' : 'warning' }}">
+                                        {{ $subcategory->active ? 'Active' : 'Inactive' }}
                                     </span>
                                 </td>
                                 <td>{{ $subcategory->plans->count() }}</td>

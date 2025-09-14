@@ -40,9 +40,9 @@
                     @endif
                         {{-- Category Details --}}
                         <div class="category-info">
-                            <div class="d-flex align-items-start justify-content-between mb-3">
-                                <div>
-                                    <h2 class="product-title">{{ $category->name }}</h2>
+                            <div class="d-flex align-items-start justify-content-between mb-4">
+                                <div class="flex-grow-1">
+                                    <h1 class="h2 fw-bold text-primary mb-2">{{ $category->name }}</h1>
                                     <div class="product-badges">
                                         @if($category->parent)
                                             <span class="badge bg-secondary me-2">{{ $category->parent->name }}</span>
@@ -61,34 +61,46 @@
                                 
                                 {{-- Price Range --}}
                                 @if($plans->count() > 0)
-                                <div class="price-display text-end">
-                                    @php
-                                        $allPrices = $plans->flatMap(function ($plan) {
-                                            return collect($plan->billing_cycles ?? [])->pluck('price');
-                                        })->filter();
+                                <div class="flex-shrink-0 ms-4">
+                                    <div class="text-end">
+                                        @php
+                                            $allPrices = $plans->flatMap(function ($plan) {
+                                                return collect($plan->billing_cycles ?? [])->pluck('price');
+                                            })->filter();
+                                            
+                                            $minPrice = $allPrices->min();
+                                            $maxPrice = $allPrices->max();
+                                        @endphp
                                         
-                                        $minPrice = $allPrices->min();
-                                        $maxPrice = $allPrices->max();
-                                    @endphp
-                                    
-                                    @if($minPrice && $maxPrice && $minPrice == $maxPrice)
-                                        <div class="price-single">
-                                            <span class="price-amount">{{ config('shop.currency.symbol', '$') }}{{ number_format($minPrice, 2) }}</span>
-                                            <span class="price-period">/ month</span>
-                                        </div>
-                                    @elseif($minPrice)
-                                        <div class="price-range">
-                                            <span class="price-from">from</span>
-                                            <span class="price-amount">{{ config('shop.currency.symbol', '$') }}{{ number_format($minPrice, 2) }}</span>
-                                            <span class="price-period">/ month</span>
-                                        </div>
-                                    @endif
+                                        @if($minPrice && $maxPrice && $minPrice == $maxPrice)
+                                            <div class="bg-success-light rounded p-3">
+                                                <div class="text-muted small mb-1">Starting from</div>
+                                                <div class="h4 fw-bold text-success mb-0">
+                                                    <span class="price-amount">{{ config('shop.currency.symbol', '$') }}{{ number_format($minPrice, 2) }}</span>
+                                                    <span class="text-muted fs-6">/ month</span>
+                                                </div>
+                                            </div>
+                                        @elseif($minPrice)
+                                            <div class="bg-success-light rounded p-3">
+                                                <div class="text-muted small mb-1">Starting from</div>
+                                                <div class="h4 fw-bold text-success mb-0">
+                                                    <span class="price-amount">{{ config('shop.currency.symbol', '$') }}{{ number_format($minPrice, 2) }}</span>
+                                                    <span class="text-muted fs-6">/ month</span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                                 @endif
                             </div>
                             
                             <div class="product-description mb-4">
-                                {!! nl2br(e($category->description)) !!}
+                                <div class="bg-body-extra-light rounded p-3">
+                                    <p class="mb-0 text-muted">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        {!! nl2br(e($category->description)) !!}
+                                    </p>
+                                </div>
                             </div>
                             
                             {{-- Product Features --}}
@@ -152,119 +164,113 @@
                              data-billing-cycle="{{ $plan->billing_cycle }}"
                              data-location-ids="{{ json_encode($plan->location_ids ?: []) }}"
                              data-node-ids="{{ json_encode($plan->node_ids ?: []) }}">
-                            <div class="card plan-card h-100 {{ !$plan->isAvailable() ? 'unavailable' : '' }}">
-                                <div class="card-header plan-header">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="plan-name mb-0">{{ $plan->name }}</h6>
-                                        @if(!$plan->isAvailable())
-                                            <span class="badge bg-danger">Unavailable</span>
-                                        @elseif($plan->stock && $plan->stock <= 5)
-                                            <span class="badge bg-warning text-dark">{{ $plan->stock }} left</span>
-                                        @endif
+                            <div class="block block-rounded h-100 {{ !$plan->isAvailable() ? 'opacity-75' : '' }}">
+                                
+                                {{-- Status Badge --}}
+                                @if(!$plan->isAvailable())
+                                    <div class="position-absolute top-0 end-0 p-3">
+                                        <span class="badge bg-danger">Unavailable</span>
                                     </div>
+                                @elseif($plan->stock && $plan->stock <= 5)
+                                    <div class="position-absolute top-0 end-0 p-3">
+                                        <span class="badge bg-warning text-dark">{{ $plan->stock }} left</span>
+                                    </div>
+                                @endif
+                                
+                                <div class="block-header block-header-default text-center">
+                                    <h3 class="block-title">
+                                        {{ $plan->name }} <small class="text-success">{{ config('shop.currency.symbol', '$') }}{{ number_format($plan->price, 2) }}/{{ $plan->billing_cycle }}</small>
+                                    </h3>
                                 </div>
                                 
-                                <div class="card-body d-flex flex-column">
-                                    {{-- Plan Description --}}
-                                    @if($plan->description)
-                                    <p class="plan-description text-muted">{{ $plan->description }}</p>
-                                    @endif
+                                <div class="block-content bg-body-light d-flex flex-column text-center p-4">
                                     
-                                    {{-- Pricing --}}
-                                    <div class="plan-pricing mb-3">
-                                        <div class="price-main">
-                                            <span class="price-currency">{{ config('shop.currency.symbol', '$') }}</span>
-                                            <span class="price-amount">{{ number_format($plan->price, 2) }}</span>
-                                            <span class="price-period">/ {{ $plan->billing_cycle }}</span>
+                                    {{-- Pricing Display --}}
+                                    <div class="mb-4">
+                                        <div class="h2 fw-bold text-success mb-1">
+                                            {{ config('shop.currency.symbol', '$') }}{{ number_format($plan->price, 2) }}
                                         </div>
-                                        
+                                        <small class="text-muted">per {{ $plan->billing_cycle }}</small>
                                         @if($plan->setup_fee > 0)
-                                        <div class="setup-fee">
-                                            <small class="text-muted">
-                                                + {{ config('shop.currency.symbol', '$') }}{{ number_format($plan->setup_fee, 2) }} setup fee
-                                            </small>
-                                        </div>
+                                            <div class="mt-1">
+                                                <small class="text-warning">
+                                                    + {{ config('shop.currency.symbol', '$') }}{{ number_format($plan->setup_fee, 2) }} setup
+                                                </small>
+                                            </div>
                                         @endif
                                     </div>
                                     
-                                    {{-- Resources --}}
-                                    <div class="plan-resources flex-grow-1">
-                                        <div class="row g-2">
-                                            <div class="col-6">
-                                                <div class="resource-item">
-                                                    <i class="fas fa-microchip text-primary"></i>
-                                                    <span class="resource-label">CPU</span>
-                                                    <span class="resource-value">{{ $plan->cpu }}%</span>
+                                    {{-- Resource Specifications --}}
+                                    <div class="mb-4">
+                                        <div class="row text-center g-2">
+                                            <div class="col-4">
+                                                <div class="p-2 bg-body-light rounded">
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="fas fa-memory text-info"></i>
+                                                        RAM
+                                                    </div>
+                                                    <div class="fw-semibold">{{ number_format($plan->memory/1024, 1) }}GB</div>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="resource-item">
-                                                    <i class="fas fa-memory text-info"></i>
-                                                    <span class="resource-label">RAM</span>
-                                                    <span class="resource-value">{{ number_format($plan->memory) }}MB</span>
+                                            <div class="col-4">
+                                                <div class="p-2 bg-body-light rounded">
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="fas fa-hdd text-success"></i>
+                                                        Storage
+                                                    </div>
+                                                    <div class="fw-semibold">{{ number_format($plan->storage/1024, 1) }}GB</div>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="resource-item">
-                                                    <i class="fas fa-hdd text-success"></i>
-                                                    <span class="resource-label">Storage</span>
-                                                    <span class="resource-value">{{ number_format($plan->storage) }}MB</span>
+                                            <div class="col-4">
+                                                <div class="p-2 bg-body-light rounded">
+                                                    <div class="text-muted small mb-1">
+                                                        <i class="fas fa-microchip text-primary"></i>
+                                                        CPU
+                                                    </div>
+                                                    <div class="fw-semibold">{{ $plan->cpu }}%</div>
                                                 </div>
                                             </div>
-                                            <div class="col-6">
-                                                <div class="resource-item">
-                                                    <i class="fas fa-database text-warning"></i>
-                                                    <span class="resource-label">Databases</span>
-                                                    <span class="resource-value">{{ $plan->databases }}</span>
-                                                </div>
-                                            </div>
-                                            @if($plan->backups > 0)
-                                            <div class="col-6">
-                                                <div class="resource-item">
-                                                    <i class="fas fa-save text-secondary"></i>
-                                                    <span class="resource-label">Backups</span>
-                                                    <span class="resource-value">{{ $plan->backups }}</span>
-                                                </div>
-                                            </div>
-                                            @endif
-                                            @if($plan->allocations > 1)
-                                            <div class="col-6">
-                                                <div class="resource-item">
-                                                    <i class="fas fa-network-wired text-info"></i>
-                                                    <span class="resource-label">Ports</span>
-                                                    <span class="resource-value">{{ $plan->allocations }}</span>
-                                                </div>
-                                            </div>
-                                            @endif
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div class="card-footer">
-                                    @if($plan->isAvailable())
-                                        @auth
-                                        <div class="d-flex align-items-center mb-2">
-                                            <label for="quantity-{{ $plan->id }}" class="form-label me-2 mb-0">Qty:</label>
-                                            <input type="number" class="form-control form-control-sm" 
-                                                   id="quantity-{{ $plan->id }}" value="1" min="1" max="10" style="width: 70px;">
-                                        </div>
-                                        <button type="button" class="btn btn-success btn-block add-to-cart-btn" 
-                                                data-plan-id="{{ $plan->id }}" data-plan-name="{{ $plan->name }}">
-                                            <i class="fas fa-plus"></i>
-                                            Add to Cart
-                                        </button>
-                                        @else
-                                        <a href="{{ route('auth.login') }}" class="btn btn-primary btn-block">
-                                            <i class="fas fa-sign-in-alt"></i>
-                                            Login to Order
-                                        </a>
-                                        @endauth
-                                    @else
-                                        <button type="button" class="btn btn-secondary btn-block" disabled>
-                                            <i class="fas fa-times"></i>
-                                            Not Available
-                                        </button>
+                                    
+                                    {{-- Description --}}
+                                    @if($plan->description && strlen($plan->description) < 100)
+                                        <p class="text-muted small mb-4">{{ $plan->description }}</p>
                                     @endif
+                                    
+                                    {{-- Action Buttons --}}
+                                    <div class="mt-auto">
+                                        @if($plan->isAvailable())
+                                            @auth
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-success btn-lg add-to-cart-btn" 
+                                                        data-plan-id="{{ $plan->id }}" data-plan-name="{{ $plan->name }}">
+                                                    <i class="fas fa-cart-plus me-2"></i>
+                                                    Add to Cart
+                                                </button>
+                                                
+                                                <a href="{{ route('shop.plan', $plan) }}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    View Details
+                                                </a>
+                                            </div>
+                                            @else
+                                            <div class="d-grid">
+                                                <a href="{{ route('auth.login') }}" class="btn btn-primary btn-lg">
+                                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                                    Login to Order
+                                                </a>
+                                            </div>
+                                            @endauth
+                                        @else
+                                            <div class="d-grid">
+                                                <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                                    <i class="fas fa-times me-2"></i>
+                                                    Not Available
+                                                </button>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -388,17 +394,25 @@
                     Related Categories
                 </h5>
             </div>
-            <div class="card-body">
-                @foreach($relatedCategories as $related)
-                <div class="related-product mb-3">
-                    <h6>{{ $related->name }}</h6>
-                    <p class="text-muted small">{{ Str::limit($related->description, 80) }}</p>
-                    <a href="{{ route('shop.category', $related) }}" class="btn btn-sm btn-outline-primary">
-                        View Category
-                    </a>
-                    @if(!$loop->last)<hr>@endif
+            <div class="block-content">
+                <div class="d-flex flex-column gap-3">
+                    @foreach($relatedCategories as $related)
+                    <div class="related-product">
+                        <div class="d-flex align-items-center justify-content-between p-3 bg-body-light rounded">
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold text-primary mb-1">{{ $related->name }}</h5>
+                                <p class="text-muted small mb-0">{{ Str::limit($related->description, 80) }}</p>
+                            </div>
+                            <div class="flex-shrink-0 ms-3">
+                                <a href="{{ route('shop.category', $related) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-arrow-right me-1"></i>
+                                    View Category
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
                 </div>
-                @endforeach
             </div>
         </div>
         @endif

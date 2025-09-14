@@ -1,6 +1,6 @@
 <?php
 
-namespace PterodactylAddons\ShopSystem\Commands;
+namespace PterodactylAddons\ShopSystem\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -114,6 +114,36 @@ class ShopUninstallCommand extends Command
                 Schema::dropIfExists($table);
                 $this->line("  - Dropped table: {$table}");
             }
+        }
+
+        // Clean up migration records
+        $this->cleanupMigrationRecords();
+
+        return true;
+    }
+
+    /**
+     * Clean up migration records for shop tables
+     */
+    protected function cleanupMigrationRecords(): bool
+    {
+        $shopMigrations = [
+            '2025_09_12_000001_create_shop_categories_table',
+            '2025_09_12_000002_create_shop_plans_table',
+            '2025_09_12_000003_create_user_wallets_table',
+            '2025_09_12_000004_create_wallet_transactions_table',
+            '2025_09_12_000005_add_updated_at_to_wallet_transactions_table',
+            '2025_09_12_000005_create_shop_coupons_table',
+            '2025_09_12_000006_create_shop_orders_table',
+            '2025_09_12_000007_create_shop_payments_table',
+            '2025_09_12_000008_create_shop_coupon_usage_table',
+            '2025_09_12_000009_create_shop_cart_table',
+            '2025_09_12_000010_create_shop_cart_items_table',
+            '2025_09_12_000011_create_shop_settings_table',
+        ];
+
+        foreach ($shopMigrations as $migration) {
+            \DB::table('migrations')->where('migration', $migration)->delete();
         }
 
         return true;

@@ -13,6 +13,11 @@ class InjectShopNavigation
     {
         $response = $next($request);
         
+        // Only inject navigation if shop is installed and enabled
+        if (!$this->isShopInstalled()) {
+            return $response;
+        }
+        
         // Only inject navigation on HTML responses
         if ($response->headers->get('Content-Type') && 
             strpos($response->headers->get('Content-Type'), 'text/html') !== false) {
@@ -22,6 +27,15 @@ class InjectShopNavigation
         }
         
         return $response;
+    }
+    
+    /**
+     * Check if shop is installed
+     */
+    private function isShopInstalled(): bool
+    {
+        return config('shop') !== null && 
+               \Illuminate\Support\Facades\Schema::hasTable('shop_settings');
     }
     
     private function injectAdminNavigation($response, Request $request)
@@ -181,29 +195,34 @@ class InjectShopNavigation
         
         // Try multiple patterns to inject shop navigation (match Pterodactyl structure)
         $patterns = [
-            // Pattern 1: After SERVICE MANAGEMENT section
-            '/(<li class="header">SERVICE MANAGEMENT<\/li>.*?<\/li>)(\s*<li class="header">)/s',
-            // Pattern 2: After MANAGEMENT section  
+            // Pattern 1: After the last item in SERVICE MANAGEMENT section (Nests)
+            '/(<a href="[^"]*\/admin\/nests[^"]*">[^<]*<i class="fa fa-th-large"><\/i>[^<]*<span>Nests<\/span>[^<]*<\/a>\s*<\/li>)/s',
+            // Pattern 2: After SERVICE MANAGEMENT section  
+            '/(<li class="header">SERVICE MANAGEMENT<\/li>.*?<\/li>)(\s*<\/ul>)/s',
+            // Pattern 3: After MANAGEMENT section
             '/(<li class="header">MANAGEMENT<\/li>.*?<\/li>)(\s*<li class="header">)/s',
-            // Pattern 3: After any management section with users
+            // Pattern 4: After any management section with users
             '/(<a href="[^"]*\/admin\/users[^"]*">[^<]*<\/a>\s*<\/li>)/s',
-            // Pattern 4: After settings menu item
+            // Pattern 5: After settings menu item
             '/(<a href="[^"]*\/admin\/settings[^"]*">[^<]*<\/a>\s*<\/li>)/s',
-            // Pattern 5: Fallback - before closing ul in sidebar
+            // Pattern 6: Fallback - before closing ul in sidebar
             '/(<\/ul>\s*<\/section>)/s'
         ];
         
         $injected = false;
         foreach ($patterns as $i => $pattern) {
             if (preg_match($pattern, $content)) {
-                if ($i <= 1) {
-                    // Patterns 0-1: Inject between sections
+                if ($i == 0) {
+                    // Pattern 0: Inject after Nests item
+                    $content = preg_replace($pattern, '$1' . $shopNavigation, $content);
+                } elseif ($i == 1) {
+                    // Pattern 1: Inject before closing ul after SERVICE MANAGEMENT
                     $content = preg_replace($pattern, '$1' . $shopNavigation . '$2', $content);
-                } elseif ($i <= 3) {
-                    // Patterns 2-3: Inject after specific menu items
+                } elseif ($i <= 4) {
+                    // Patterns 2-4: Inject after specific menu items
                     $content = preg_replace($pattern, '$1' . $shopNavigation, $content);
                 } else {
-                    // Pattern 4: Fallback - inject before closing element
+                    // Pattern 5: Fallback - inject before closing element
                     $content = preg_replace($pattern, $shopNavigation . '$1', $content);
                 }
                 $injected = true;

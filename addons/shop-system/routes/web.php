@@ -9,52 +9,12 @@ use PterodactylAddons\ShopSystem\Http\Controllers\WebhookController;
 
 /*
 |--------------------------------------------------------------------------
-| Shop Asset Routes
-|--------------------------------------------------------------------------
-|
-| These routes serve CSS and JS assets directly from the addon directory
-| to keep everything self-contained within the addon structure.
-|
-*/
-
-// Serve shop CSS
-Route::get('shop/assets/css/shop.css', function () {
-    $path = base_path('addons/shop-system/resources/assets/css/shop.css');
-    if (!file_exists($path)) {
-        abort(404);
-    }
-    return response(file_get_contents($path))
-        ->header('Content-Type', 'text/css');
-})->name('shop.assets.css');
-
-// oneui theme CSS
-Route::get('shop/assets/css/oneui.css', function () {
-    $path = base_path('addons/shop-system/resources/assets/css/oneui.css');
-    if (!file_exists($path)) {
-        abort(404);
-    }
-    return response(file_get_contents($path))
-        ->header('Content-Type', 'text/css');
-})->name('shop.assets.oneui.css');
-
-
-// Serve shop JS
-Route::get('shop/assets/js/shop.js', function () {
-    $path = base_path('addons/shop-system/resources/assets/js/shop.js');
-    if (!file_exists($path)) {
-        abort(404);
-    }
-    return response(file_get_contents($path))
-        ->header('Content-Type', 'application/javascript');
-})->name('shop.assets.js');
-
-/*
-|--------------------------------------------------------------------------
 | Shop Web Routes
 |--------------------------------------------------------------------------
 |
 | Here are the web routes for the shop system. These routes handle
 | the user-facing shop interface with proper authentication and middleware.
+| Note: Asset routes are handled separately in ShopServiceProvider.php
 |
 */
 

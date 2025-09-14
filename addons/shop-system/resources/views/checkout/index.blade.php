@@ -3,186 +3,199 @@
 @section('shop-title', 'Checkout')
 
 @section('shop-content')
-<div class="checkout-container">
-    <div class="row">
-        <div class="col-12">
-            <div class="checkout-header mb-4">
-                <div class="d-flex align-items-center justify-content-between">
-                    <h1>
-                        <i class="fas fa-lock"></i>
-                        Secure Checkout
-                    </h1>
-                    
-                    <div class="checkout-steps">
-                        <span class="step active" data-step="1">
-                            <i class="fas fa-shopping-cart"></i>
-                            Cart
-                        </span>
-                        <span class="step-divider">></span>
-                        <span class="step active" data-step="2">
-                            <i class="fas fa-credit-card"></i>
-                            Payment
-                        </span>
-                        <span class="step-divider">></span>
-                        <span class="step" data-step="3">
-                            <i class="fas fa-check"></i>
-                            Complete
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="content content-boxed content-full overflow-hidden">
+    <!-- Header -->
+    <div class="py-5 text-center">
+        <h1 class="h3 fw-bold mt-3 mb-2">
+            <i class="fas fa-lock text-primary me-2"></i>
+            Secure Checkout
+        </h1>
+        <h2 class="fs-base fw-medium text-muted mb-0">
+            Complete your order securely and get your server hosting ready.
+        </h2>
     </div>
-    
+    <!-- END Header -->
+
     <form id="checkout-form" class="needs-validation" novalidate>
         <div class="row">
             {{-- Main Checkout Form --}}
-            <div class="col-lg-8">
+            <div class="col-xl-7">
                 {{-- Billing Information --}}
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-user"></i>
-                            Billing Information
-                        </h5>
+                <div class="block block-rounded">
+                    <div class="block-header">
+                        <h3 class="block-title">
+                            <i class="fas fa-user me-2"></i>
+                            1. Billing Information
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="first_name" class="form-label">First Name *</label>
-                                <input type="text" class="form-control" id="first_name" name="first_name" 
-                                       value="{{ auth()->user()->name_first ?? '' }}" required>
-                                <div class="invalid-feedback">Please provide a valid first name.</div>
+                    <div class="block-content">
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="first_name" name="first_name" 
+                                           value="{{ auth()->user()->name_first ?? '' }}" placeholder="Enter your first name" required>
+                                    <label for="first_name">First Name *</label>
+                                    <div class="invalid-feedback">Please provide a valid first name.</div>
+                                </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="last_name" class="form-label">Last Name *</label>
-                                <input type="text" class="form-control" id="last_name" name="last_name" 
-                                       value="{{ auth()->user()->name_last ?? '' }}" required>
-                                <div class="invalid-feedback">Please provide a valid last name.</div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="last_name" name="last_name" 
+                                           value="{{ auth()->user()->name_last ?? '' }}" placeholder="Enter your last name" required>
+                                    <label for="last_name">Last Name *</label>
+                                    <div class="invalid-feedback">Please provide a valid last name.</div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Address *</label>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   value="{{ auth()->user()->email ?? '' }}" required>
-                            <div class="invalid-feedback">Please provide a valid email address.</div>
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ auth()->user()->email ?? '' }}" placeholder="Enter your email" required>
+                                <label for="email">Email Address *</label>
+                                <div class="invalid-feedback">Please provide a valid email address.</div>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="company" class="form-label">Company (Optional)</label>
-                            <input type="text" class="form-control" id="company" name="company">
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="company" name="company" placeholder="Enter your company">
+                                <label for="company">Company (Optional)</label>
+                            </div>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-8 mb-3">
-                                <label for="address" class="form-label">Address *</label>
-                                <input type="text" class="form-control" id="address" name="address" required>
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="address" name="address" placeholder="Enter your address" required>
+                                <label for="address">Street Address *</label>
                                 <div class="invalid-feedback">Please provide a valid address.</div>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label for="address2" class="form-label">Apt/Suite</label>
-                                <input type="text" class="form-control" id="address2" name="address2">
+                        </div>
+
+                        <div class="mb-4">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="address2" name="address2" placeholder="Enter apartment/suite">
+                                <label for="address2">Apartment/Suite (Optional)</label>
                             </div>
                         </div>
                         
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="city" class="form-label">City *</label>
-                                <input type="text" class="form-control" id="city" name="city" required>
-                                <div class="invalid-feedback">Please provide a valid city.</div>
+                        <div class="row mb-4">
+                            <div class="col-7">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="city" name="city" placeholder="Enter your city" required>
+                                    <label for="city">City *</label>
+                                    <div class="invalid-feedback">Please provide a valid city.</div>
+                                </div>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="state" class="form-label">State/Province *</label>
-                                <input type="text" class="form-control" id="state" name="state" required>
-                                <div class="invalid-feedback">Please provide a valid state.</div>
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="postal_code" class="form-label">ZIP/Postal Code *</label>
-                                <input type="text" class="form-control" id="postal_code" name="postal_code" required>
-                                <div class="invalid-feedback">Please provide a valid postal code.</div>
+                            <div class="col-5">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="postal_code" name="postal_code" placeholder="Enter postal code" required>
+                                    <label for="postal_code">ZIP/Postal Code *</label>
+                                    <div class="invalid-feedback">Please provide a valid postal code.</div>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="country" class="form-label">Country *</label>
-                            <select class="form-select" id="country" name="country" required>
-                                <option value="">Select Country</option>
-                                <option value="US">United States</option>
-                                <option value="CA">Canada</option>
-                                <option value="GB">United Kingdom</option>
-                                <option value="DE">Germany</option>
-                                <option value="FR">France</option>
-                                <option value="AU">Australia</option>
-                                {{-- Add more countries as needed --}}
-                            </select>
-                            <div class="invalid-feedback">Please select a country.</div>
+
+                        <div class="row mb-4">
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="state" name="state" placeholder="Enter state/province" required>
+                                    <label for="state">State/Province *</label>
+                                    <div class="invalid-feedback">Please provide a valid state.</div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="country" name="country" required>
+                                        <option value="">Select Country</option>
+                                        <option value="US">United States</option>
+                                        <option value="CA">Canada</option>
+                                        <option value="GB">United Kingdom</option>
+                                        <option value="DE">Germany</option>
+                                        <option value="FR">France</option>
+                                        <option value="AU">Australia</option>
+                                        {{-- Add more countries as needed --}}
+                                    </select>
+                                    <label for="country">Country *</label>
+                                    <div class="invalid-feedback">Please select a country.</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 {{-- Payment Method --}}
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-credit-card"></i>
-                            Payment Method
-                        </h5>
+                <div class="block block-rounded">
+                    <div class="block-header">
+                        <h3 class="block-title">
+                            <i class="fas fa-credit-card me-2"></i>
+                            2. Payment Method
+                        </h3>
                     </div>
-                    <div class="card-body">
+                    <div class="block-content block-content-full">
                         {{-- Payment Gateway Selection --}}
-                        <div class="payment-methods mb-4">
-                            <div class="form-check payment-method-option">
-                                <input class="form-check-input" type="radio" name="payment_gateway" 
-                                       id="stripe" value="stripe" checked>
-                                <label class="form-check-label d-flex align-items-center" for="stripe">
-                                    <div class="payment-icon me-3">
-                                        <i class="fab fa-cc-stripe fa-2x text-primary"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold">Credit/Debit Card</div>
-                                        <small class="text-muted">Visa, Mastercard, American Express</small>
-                                        <br>
-                                        <span class="badge badge-{{ ($shopConfig['stripe_mode'] ?? 'test') === 'live' ? 'success' : 'warning' }} badge-sm">
-                                            {{ strtoupper($shopConfig['stripe_mode'] ?? 'test') }} MODE
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <div class="form-check form-block">
+                                    <input class="form-check-input" type="radio" name="payment_gateway" 
+                                           id="stripe" value="stripe" checked>
+                                    <label class="form-check-label" for="stripe">
+                                        <span class="d-block fw-normal p-3">
+                                            <span class="d-flex align-items-center">
+                                                <i class="fab fa-cc-stripe fa-2x text-primary me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold mb-1">Credit/Debit Card</div>
+                                                    <div class="fs-sm text-muted">Visa, Mastercard, American Express</div>
+                                                    <span class="badge bg-{{ ($shopConfig['stripe_mode'] ?? 'test') === 'live' ? 'success' : 'warning' }} mt-1">
+                                                        {{ strtoupper($shopConfig['stripe_mode'] ?? 'test') }} MODE
+                                                    </span>
+                                                </div>
+                                            </span>
                                         </span>
-                                    </div>
-                                </label>
+                                    </label>
+                                </div>
                             </div>
                             
-                            <div class="form-check payment-method-option">
-                                <input class="form-check-input" type="radio" name="payment_gateway" 
-                                       id="paypal" value="paypal">
-                                <label class="form-check-label d-flex align-items-center" for="paypal">
-                                    <div class="payment-icon me-3">
-                                        <i class="fab fa-paypal fa-2x text-primary"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="fw-bold">PayPal</div>
-                                        <small class="text-muted">Pay with your PayPal account</small>
-                                        <br>
-                                        <span class="badge badge-{{ ($shopConfig['paypal_mode'] ?? 'sandbox') === 'live' ? 'success' : 'warning' }} badge-sm">
-                                            {{ strtoupper($shopConfig['paypal_mode'] ?? 'sandbox') }} MODE
+                            <div class="col-12">
+                                <div class="form-check form-block">
+                                    <input class="form-check-input" type="radio" name="payment_gateway" 
+                                           id="paypal" value="paypal">
+                                    <label class="form-check-label" for="paypal">
+                                        <span class="d-block fw-normal p-3">
+                                            <span class="d-flex align-items-center">
+                                                <i class="fab fa-paypal fa-2x text-primary me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold mb-1">PayPal</div>
+                                                    <div class="fs-sm text-muted">Pay with your PayPal account</div>
+                                                    <span class="badge bg-{{ ($shopConfig['paypal_mode'] ?? 'sandbox') === 'live' ? 'success' : 'warning' }} mt-1">
+                                                        {{ strtoupper($shopConfig['paypal_mode'] ?? 'sandbox') }} MODE
+                                                    </span>
+                                                </div>
+                                            </span>
                                         </span>
-                                    </div>
-                                </label>
+                                    </label>
+                                </div>
                             </div>
                             
                             @if(isset($paymentMethods['wallet']) && $userWallet && $userWallet->balance > 0)
-                            <div class="form-check payment-method-option">
-                                <input class="form-check-input" type="radio" name="payment_gateway" 
-                                       id="wallet" value="wallet">
-                                <label class="form-check-label d-flex align-items-center" for="wallet">
-                                    <div class="payment-icon me-3">
-                                        <i class="fas fa-wallet fa-2x text-success"></i>
-                                    </div>
-                                    <div>
-                                        <div class="fw-bold">Account Credit</div>
-                                        <small class="text-muted">
-                                            Available: {{ $shopConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance, 2) }}
-                                        </small>
-                                    </div>
-                                </label>
+                            <div class="col-12">
+                                <div class="form-check form-block">
+                                    <input class="form-check-input" type="radio" name="payment_gateway" 
+                                           id="wallet" value="wallet">
+                                    <label class="form-check-label" for="wallet">
+                                        <span class="d-block fw-normal p-3">
+                                            <span class="d-flex align-items-center">
+                                                <i class="fas fa-wallet fa-2x text-success me-3"></i>
+                                                <div class="flex-grow-1">
+                                                    <div class="fw-semibold mb-1">Account Credit</div>
+                                                    <div class="fs-sm text-muted">
+                                                        Available: {{ $shopConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance, 2) }}
+                                                    </div>
+                                                </div>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
                             @endif
                         </div>
@@ -228,51 +241,33 @@
                 </div>
                 
                 {{-- Order Notes --}}
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-sticky-note"></i>
-                            Order Notes (Optional)
-                        </h5>
+                <div class="block block-rounded">
+                    <div class="block-header">
+                        <h3 class="block-title">
+                            <i class="fas fa-sticky-note me-2"></i>
+                            3. Order Notes (Optional)
+                        </h3>
                     </div>
-                    <div class="card-body">
-                        <textarea class="form-control" id="notes" name="notes" rows="3" 
-                                  placeholder="Any special instructions or notes for your order..."></textarea>
-                    </div>
-                </div>
-                
-                {{-- Terms and Conditions --}}
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="terms-accept" name="terms_accept" required>
-                            <label class="form-check-label" for="terms-accept">
-                                I agree to the <a href="#" target="_blank">Terms of Service</a> and 
-                                <a href="#" target="_blank">Privacy Policy</a> *
-                            </label>
-                            <div class="invalid-feedback">You must agree to the terms and conditions.</div>
-                        </div>
-                        
-                        <div class="form-check mt-2">
-                            <input class="form-check-input" type="checkbox" id="marketing-opt-in" name="marketing_opt_in">
-                            <label class="form-check-label" for="marketing-opt-in">
-                                I would like to receive marketing communications and special offers
-                            </label>
+                    <div class="block-content">
+                        <div class="form-floating">
+                            <textarea class="form-control" id="notes" name="notes" rows="3" style="height: 100px;"
+                                      placeholder="Any special instructions or notes for your order..."></textarea>
+                            <label for="notes">Special Instructions</label>
                         </div>
                     </div>
                 </div>
             </div>
             
             {{-- Order Summary Sidebar --}}
-            <div class="col-lg-4">
-                <div class="card sticky-top" style="top: 20px;">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="fas fa-receipt"></i>
+            <div class="col-xl-5">
+                <div class="block block-rounded sticky-top" style="top: 20px;">
+                    <div class="block-header block-header-default">
+                        <h3 class="block-title">
+                            <i class="fas fa-receipt me-2"></i>
                             Order Summary
-                        </h5>
+                        </h3>
                     </div>
-                    <div class="card-body">
+                    <div class="block-content">
                         <div id="checkout-summary">
                             {{-- Summary will be loaded via JavaScript --}}
                             <div class="text-center py-3">
@@ -282,22 +277,41 @@
                         </div>
                     </div>
                     
-                    <div class="card-footer">
+                    {{-- Terms and Conditions Section --}}
+                    <div class="block-content bg-body-light">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="terms-accept" name="terms_accept" required>
+                            <label class="form-check-label fw-medium" for="terms-accept">
+                                I agree to the <a href="#" target="_blank" class="link-fx">Terms of Service</a> and 
+                                <a href="#" target="_blank" class="link-fx">Privacy Policy</a> *
+                            </label>
+                            <div class="invalid-feedback">You must agree to the terms and conditions.</div>
+                        </div>
+                        
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="marketing-opt-in" name="marketing_opt_in">
+                            <label class="form-check-label fw-medium" for="marketing-opt-in">
+                                I would like to receive marketing communications and special offers
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="block-content block-content-full">
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-success btn-lg" id="place-order-btn">
-                                <i class="fas fa-lock"></i>
+                                <i class="fas fa-lock me-2"></i>
                                 <span id="order-btn-text">Complete Order</span>
                             </button>
                             
                             <a href="{{ route('shop.cart') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left"></i>
+                                <i class="fas fa-arrow-left me-2"></i>
                                 Back to Cart
                             </a>
                         </div>
                         
                         <div class="security-info mt-3 text-center">
                             <small class="text-muted">
-                                <i class="fas fa-shield-alt text-success"></i>
+                                <i class="fas fa-shield-alt text-success me-1"></i>
                                 Your payment information is encrypted and secure
                             </small>
                         </div>
@@ -355,15 +369,20 @@ window.Shop = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🎯 DOM loaded for checkout page');
     
-    // Initialize Stripe
-    const stripe = Stripe('{{ $shopConfig['stripe_publishable_key'] ?? '' }}');
-    const elements = stripe.elements();
+    // Initialize Stripe only if publishable key is available
+    const stripePublishableKey = '{{ $shopConfig['stripe_publishable_key'] ?? '' }}';
+    let stripe = null;
+    let cardElement = null;
     
-    // Create card element
-    const cardElement = elements.create('card', {
-        style: {
-            base: {
-                fontSize: '16px',
+    if (stripePublishableKey && stripePublishableKey.trim() !== '') {
+        stripe = Stripe(stripePublishableKey);
+        const elements = stripe.elements();
+        
+        // Create card element
+        cardElement = elements.create('card', {
+            style: {
+                base: {
+                    fontSize: '16px',
                 color: '#424770',
                 '::placeholder': {
                     color: '#aab7c4',
@@ -372,17 +391,25 @@ document.addEventListener('DOMContentLoaded', function() {
         },
     });
     
-    cardElement.mount('#card-element');
-    
-    // Handle real-time validation errors from the card Element
-    cardElement.on('change', ({error}) => {
-        const displayError = document.getElementById('card-errors');
-        if (error) {
-            displayError.textContent = error.message;
-        } else {
-            displayError.textContent = '';
+        cardElement.mount('#card-element');
+        
+        // Handle real-time validation errors from the card Element
+        cardElement.on('change', ({error}) => {
+            const displayError = document.getElementById('card-errors');
+            if (error) {
+                displayError.textContent = error.message;
+            } else {
+                displayError.textContent = '';
+            }
+        });
+    } else {
+        console.warn('⚠️ Stripe publishable key not configured. Stripe payments will not work.');
+        // Hide Stripe payment option if key is not configured
+        const stripeOption = document.getElementById('stripe');
+        if (stripeOption) {
+            stripeOption.closest('.form-check').style.display = 'none';
         }
-    });
+    }
     
     // Payment method switching
     document.querySelectorAll('input[name="payment_gateway"]').forEach(input => {
@@ -595,6 +622,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Process Stripe payment
     async function processStripePayment() {
+        // Check if Stripe is properly initialized
+        if (!stripe || !cardElement) {
+            console.error('❌ Stripe not properly initialized');
+            showAlert('Stripe payment is not properly configured. Please contact support.', 'error');
+            return;
+        }
+        
         const formData = new FormData(document.getElementById('checkout-form'));
         
         // Create payment method
@@ -636,6 +670,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (result.success && result.data) {
             if (result.data.requires_payment_action && result.data.payment_intent) {
                 // Handle 3D secure
+                if (!stripe) {
+                    throw new Error('Stripe not properly initialized for payment confirmation');
+                }
                 const {error: confirmError} = await stripe.confirmCardPayment(result.data.payment_intent.client_secret);
                 if (confirmError) {
                     throw new Error(confirmError.message);

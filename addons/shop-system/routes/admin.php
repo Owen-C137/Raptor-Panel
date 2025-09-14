@@ -41,6 +41,7 @@ Route::name('admin.shop.')->middleware(['auth', 'admin'])->group(function () {
         Route::put('/{category}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
         Route::post('/{category}/toggle-status', [CategoryController::class, 'toggleStatus'])->name('toggle-status');
+        Route::post('/batch-action', [CategoryController::class, 'batchAction'])->name('batch-action');
     });
 
     // Plan Management (now category-based)
@@ -58,6 +59,8 @@ Route::name('admin.shop.')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [PlanController::class, 'index'])->name('index');
         Route::get('/create', [PlanController::class, 'create'])->name('create');
         Route::post('/', [PlanController::class, 'store'])->name('store');
+        Route::post('/import', [PlanController::class, 'import'])->name('import');
+        Route::post('/batch-action', [PlanController::class, 'batchAction'])->name('batch');
         Route::get('/{plan}', [PlanController::class, 'show'])->name('show');
         Route::get('/{plan}/edit', [PlanController::class, 'edit'])->name('edit');
         Route::put('/{plan}', [PlanController::class, 'update'])->name('update');
