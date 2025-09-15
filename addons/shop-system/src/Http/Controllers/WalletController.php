@@ -41,8 +41,10 @@ class WalletController extends Controller
         
         $statistics = $this->walletRepository->getUserStatistics(auth()->id());
         $monthlySpending = $statistics['monthly_spending'] ?? 0;
+        $shopConfig = $this->shopConfig->getShopConfig();
 
-        return view('shop::wallet.index', compact('wallet', 'transactions', 'statistics', 'monthlySpending'));
+        return view('shop::wallet.index', compact('wallet', 'transactions', 'statistics', 'monthlySpending'))
+            ->with('shopConfig', $shopConfig);
     }
 
     /**
@@ -57,13 +59,14 @@ class WalletController extends Controller
         $maximumBalance = config('shop.wallet.maximum_balance', 10000.00);
         
         $currentBalance = $this->walletService->getBalance(auth()->user());
+        $shopConfig = $this->shopConfig->getShopConfig();
 
         return view('shop::wallet.add-funds', compact(
             'paymentMethods', 
             'minimumDeposit', 
             'maximumBalance',
             'currentBalance'
-        ));
+        ))->with('shopConfig', $shopConfig);
     }
 
     /**

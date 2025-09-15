@@ -11,6 +11,7 @@ use PterodactylAddons\ShopSystem\Repositories\ShopOrderRepository;
 use PterodactylAddons\ShopSystem\Services\ShopOrderService;
 use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
 use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
@@ -19,7 +20,8 @@ class OrderController extends Controller
         private ShopOrderRepository $orderRepository,
         private ShopOrderService $orderService,
         private PaymentGatewayManager $paymentManager,
-        private WalletService $walletService
+        private WalletService $walletService,
+        private ShopConfigService $shopConfigService
     ) {}
 
     /**
@@ -36,7 +38,10 @@ class OrderController extends Controller
             perPage: 15
         );
 
-        return view('shop::orders.index', compact('orders', 'filters'));
+        $shopConfig = $this->shopConfigService->getShopConfig();
+
+        return view('shop::orders.index', compact('orders', 'filters'))
+            ->with('shopConfig', $shopConfig);
     }
 
     /**
@@ -54,8 +59,10 @@ class OrderController extends Controller
         }
 
         $isSuccessView = $request->has('success');
+        $shopConfig = $this->shopConfigService->getShopConfig();
 
-        return view('shop::orders.show', compact('order', 'paymentMethods', 'isSuccessView'));
+        return view('shop::orders.show', compact('order', 'paymentMethods', 'isSuccessView'))
+            ->with('shopConfig', $shopConfig);
     }
 
     /**

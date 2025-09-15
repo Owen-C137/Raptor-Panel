@@ -14,14 +14,16 @@ use PterodactylAddons\ShopSystem\Services\CartService;
 use Pterodactyl\Models\Location;
 use Pterodactyl\Models\Node;
 
-class ShopController extends Controller
+class ShopController extends BaseShopController
 {
     public function __construct(
         private ShopCategoryRepository $categoryRepository,
         private ShopPlanRepository $planRepository,
         private ShopOrderService $orderService,
         private CartService $cartService
-    ) {}
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Display the main shop catalog.
@@ -42,7 +44,7 @@ class ShopController extends Controller
         $categories = $this->categoryRepository->getCategoryNames();
         $featured = $this->categoryRepository->getFeaturedCategories(5);
 
-        return view('shop::catalog.index', compact('products', 'categories', 'featured'));
+        return $this->view('shop::catalog.index', compact('products', 'categories', 'featured'));
     }
 
     /**

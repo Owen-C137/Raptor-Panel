@@ -108,7 +108,8 @@ class ShopServiceProvider extends ServiceProvider
      */
     protected function registerShopConfigComposer()
     {
-        View::composer([
+        // Use app('view') instead of View facade to ensure it's available
+        $this->app['view']->composer([
             'shop::*',  // All shop views
             'catalog.*',  // Legacy catalog views 
             'checkout.*',  // Checkout views

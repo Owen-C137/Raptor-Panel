@@ -26,7 +26,6 @@
             <!-- Right Section -->
             <div class="d-flex align-items-center">
                 <!-- Logo -->
-                {{-- DEBUG: {{ var_export($shopConfig ?? 'MISSING', true) }} --}}
                 <a class="fw-semibold fs-5 tracking-wider text-dual ms-3" href="{{ route('shop.index') }}">
                     @if(!empty($shopConfig['logo_url']))
                         <img src="{{ $shopConfig['logo_url'] }}" alt="{{ $shopConfig['shop_name'] ?? 'Server Shop' }}" class="shop-logo me-2" style="height: 32px;">
