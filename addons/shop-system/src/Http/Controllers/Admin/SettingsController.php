@@ -267,6 +267,20 @@ class SettingsController extends Controller
                             'is_public' => in_array($settingKey, ['currency']) // Only currency is public
                         ]
                     );
+
+                    // If currency is being updated, also update shop_currency to keep them synchronized
+                    if ($formField === 'currency') {
+                        \Log::info("Synchronizing shop_currency with currency:", ['value' => $storedValue]);
+                        ShopSettings::updateOrCreate(
+                            ['key' => 'shop_currency'],
+                            [
+                                'value' => $storedValue,
+                                'type' => 'string',
+                                'group' => 'general',
+                                'is_public' => 1
+                            ]
+                        );
+                    }
                 }
             }
 

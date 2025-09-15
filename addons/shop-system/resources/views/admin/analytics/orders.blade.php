@@ -52,7 +52,7 @@
             <div class="box-body">
                 <div class="info-box">
                     <span class="info-box-icon bg-blue">
-                        <i class="fas fa-shopping-cart"></i>
+                        <i class="fa fa-shopping-cart"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Orders</span>
@@ -76,7 +76,7 @@
             <div class="box-body">
                 <div class="info-box">
                     <span class="info-box-icon bg-green">
-                        <i class="fas fa-calendar-day"></i>
+                        <i class="fa fa-calendar-day"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Average Daily Orders</span>
@@ -112,7 +112,7 @@
                                 @else bg-gray
                                 @endif
                             ">
-                                <i class="fas fa-
+                                <i class="fa fa-
                                     @if($status == 'active') check-circle
                                     @elseif($status == 'pending') clock
                                     @elseif($status == 'suspended') pause-circle
@@ -145,19 +145,19 @@
             <div class="box-body">
                 <div class="btn-group" role="group">
                     <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-default">
-                        <i class="fas fa-arrow-left"></i> Back to Analytics Overview
+                        <i class="fa fa-arrow-left"></i> Back to Analytics Overview
                     </a>
                     <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-success">
-                        <i class="fas fa-dollar-sign"></i> View Revenue Report
+                        <i class="fa fa-money"></i> View Revenue Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-info">
-                        <i class="fas fa-users"></i> View Customers Report
+                        <i class="fa fa-users"></i> View Customers Report
                     </a>
                     <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-primary">
-                        <i class="fas fa-list"></i> Manage Orders
+                        <i class="fa fa-list"></i> Manage Orders
                     </a>
                     <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-warning">
-                        <i class="fas fa-download"></i> Export All Data
+                        <i class="fa fa-download"></i> Export All Data
                     </a>
                 </div>
             </div>
@@ -190,7 +190,7 @@
                             <td>{{ $order['id'] ?? 'N/A' }}</td>
                             <td>{{ $order['customer'] ?? 'Unknown' }}</td>
                             <td>{{ $order['plan'] ?? 'N/A' }}</td>
-                            <td>${{ number_format($order['amount'] ?? 0, 2) }}</td>
+                            <td>{{ $currencySymbol }}{{ number_format($order['amount'] ?? 0, 2) }}</td>
                             <td>
                                 <span class="label 
                                     @if($order['status'] == 'active') label-success

@@ -50,10 +50,10 @@
                     <h3 class="box-title">Wallet Summary</h3>
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-sm btn-success" onclick="addFunds()">
-                            <i class="fas fa-plus"></i> Add Funds
+                            <i class="fa fa-plus"></i> Add Funds
                         </button>
                         <button type="button" class="btn btn-sm btn-danger" onclick="removeFunds()">
-                            <i class="fas fa-minus"></i> Remove Funds
+                            <i class="fa fa-minus"></i> Remove Funds
                         </button>
                     </div>
                 </div>
@@ -62,7 +62,7 @@
                         <div class="col-sm-4">
                             <div class="description-block border-right">
                                 <span class="description-percentage text-green">
-                                    <i class="fas fa-dollar-sign"></i>
+                                    <i class="fa fa-money"></i>
                                 </span>
                                 <h5 class="description-header">${{ number_format($wallet->balance, 2) }}</h5>
                                 <span class="description-text">CURRENT BALANCE</span>
@@ -71,7 +71,7 @@
                         <div class="col-sm-4">
                             <div class="description-block border-right">
                                 <span class="description-percentage text-blue">
-                                    <i class="fas fa-arrow-up"></i>
+                                    <i class="fa fa-arrow-up"></i>
                                 </span>
                                 <h5 class="description-header">${{ number_format($wallet->total_deposited, 2) }}</h5>
                                 <span class="description-text">TOTAL DEPOSITED</span>
@@ -80,7 +80,7 @@
                         <div class="col-sm-4">
                             <div class="description-block">
                                 <span class="description-percentage text-red">
-                                    <i class="fas fa-arrow-down"></i>
+                                    <i class="fa fa-arrow-down"></i>
                                 </span>
                                 <h5 class="description-header">${{ number_format($wallet->total_spent, 2) }}</h5>
                                 <span class="description-text">TOTAL SPENT</span>
@@ -100,7 +100,7 @@
                     <h3 class="box-title">Transaction History</h3>
                     <div class="box-tools pull-right">
                         <button type="button" class="btn btn-sm btn-primary" onclick="exportTransactions()">
-                            <i class="fas fa-download"></i> Export
+                            <i class="fa fa-download"></i> Export
                         </button>
                     </div>
                 </div>
@@ -125,19 +125,19 @@
                                     <td>
                                         @if($transaction->type === 'deposit')
                                             <span class="label label-success">
-                                                <i class="fas fa-plus"></i> Deposit
+                                                <i class="fa fa-plus"></i> Deposit
                                             </span>
                                         @elseif($transaction->type === 'withdrawal')
                                             <span class="label label-warning">
-                                                <i class="fas fa-minus"></i> Withdrawal
+                                                <i class="fa fa-minus"></i> Withdrawal
                                             </span>
                                         @elseif($transaction->type === 'purchase')
                                             <span class="label label-primary">
-                                                <i class="fas fa-shopping-cart"></i> Purchase
+                                                <i class="fa fa-shopping-cart"></i> Purchase
                                             </span>
                                         @elseif($transaction->type === 'refund')
                                             <span class="label label-info">
-                                                <i class="fas fa-undo"></i> Refund
+                                                <i class="fa fa-undo"></i> Refund
                                             </span>
                                         @else
                                             <span class="label label-default">{{ ucfirst($transaction->type) }}</span>
@@ -196,16 +196,16 @@
                 <div class="box-body">
                     <div class="btn-group" role="group">
                         <a href="{{ route('admin.shop.wallets.index') }}" class="btn btn-default">
-                            <i class="fas fa-arrow-left"></i> Back to Wallet Management
+                            <i class="fa fa-arrow-left"></i> Back to Wallet Management
                         </a>
                         <a href="{{ route('admin.users.view', $user) }}" class="btn btn-info">
-                            <i class="fas fa-user"></i> View User Profile
+                            <i class="fa fa-user"></i> View User Profile
                         </a>
                         <a href="{{ route('admin.shop.payments.index') }}" class="btn btn-success">
-                            <i class="fas fa-list"></i> All Payments
+                            <i class="fa fa-list"></i> All Payments
                         </a>
                         <button type="button" class="btn btn-warning" onclick="exportTransactions()">
-                            <i class="fas fa-download"></i> Export Transactions
+                            <i class="fa fa-download"></i> Export Transactions
                         </button>
                     </div>
                 </div>

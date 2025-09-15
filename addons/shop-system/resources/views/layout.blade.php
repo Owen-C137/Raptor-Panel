@@ -97,7 +97,7 @@
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <span class="fw-semibold">Total:</span>
                                         <span class="h5 mb-0 text-primary fw-bold" id="cart-total-amount">
-                                            {{ $paymentConfig['currency_symbol'] ?? '$' }}0.00
+                                            {{ $currencySymbol }}0.00
                                         </span>
                                     </div>
                                     <div class="d-grid gap-2">
@@ -120,8 +120,8 @@
                         <div class="me-2">
                             <span class="badge bg-success">
                                 <i class="fas fa-wallet me-1"></i>
-                                <span class="wallet-balance" data-balance="{{ $userWallet->balance ?? 0 }}">
-                                    {{ $paymentConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance ?? 0, 2) }}
+                                <span class="wallet-balance" data-balance="{{ $userWallet?->balance ?? 0 }}">
+                                    {{ $currencySymbol }}{{ number_format($userWallet?->balance ?? 0, 2) }}
                                 </span>
                             </span>
                         </div>
@@ -334,6 +334,13 @@
 
 @push('scripts')
 <script>
+// Global shop configuration
+window.shopConfig = {
+    currencySymbol: '{{ $currencySymbol }}',
+    shopName: '{{ $shopConfig['shop_name'] ?? 'Server Shop' }}',
+    walletEnabled: {{ $shopConfig['wallet_enabled'] ?? true ? 'true' : 'false' }}
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Check if Shop object exists and has required methods
     if (typeof Shop !== 'undefined' && typeof Shop.init === 'function') {
@@ -364,11 +371,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update wallet balance periodically for authenticated users
     @auth
+    // Temporarily disable automatic wallet updates to debug visibility issue
+    // TODO: Re-enable once wallet balance visibility is stable
     if (typeof Shop !== 'undefined' && typeof Shop.updateWalletBalance === 'function') {
-        Shop.updateWalletBalance();
-        setInterval(function() {
-            Shop.updateWalletBalance();
-        }, 30000);
+        // Only update if wallet balance is initially visible
+        const initialBalance = document.querySelector('.wallet-balance');
+        if (initialBalance && initialBalance.textContent && initialBalance.textContent.trim() !== '') {
+            console.log('🔄 Initial wallet balance detected, enabling updates');
+            setTimeout(() => Shop.updateWalletBalance(), 2000); // Delay initial update
+            setInterval(function() {
+                Shop.updateWalletBalance();
+            }, 30000);
+        } else {
+            console.log('❌ No initial wallet balance detected, skipping updates');
+        }
     }
     @endauth
     

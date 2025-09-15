@@ -189,7 +189,7 @@
                                                 <div class="flex-grow-1">
                                                     <div class="fw-semibold mb-1">Account Credit</div>
                                                     <div class="fs-sm text-muted">
-                                                        Available: {{ $shopConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance, 2) }}
+                                                        Available: {{ $currencySymbol }}{{ number_format($userWallet->balance, 2) }}
                                                     </div>
                                                 </div>
                                             </span>
@@ -221,7 +221,7 @@
                         <div id="wallet-payment-form" class="payment-form" style="display: none;">
                             <div class="alert alert-success">
                                 <i class="fas fa-wallet"></i>
-                                <strong>Available Credit: {{ $shopConfig['currency_symbol'] ?? '$' }}{{ number_format($userWallet->balance, 2) }}</strong>
+                                <strong>Available Credit: {{ $currencySymbol }}{{ number_format($userWallet->balance, 2) }}</strong>
                             </div>
                             
                             <div id="wallet-insufficient" class="alert alert-warning" style="display: none;">
@@ -334,7 +334,7 @@ console.log('🚀 Checkout script starting...');
 // Global shop configuration
 window.shopConfig = {
     currency: '{{ $shopConfig['currency'] ?? 'USD' }}',
-    currencySymbol: '{{ $shopConfig['currency_symbol'] ?? '$' }}',
+    currencySymbol: '{{ $currencySymbol }}',
     taxRate: {{ $shopConfig['tax_rate'] ?? 0 }},
     stripeEnabled: {{ ($shopConfig['stripe_enabled'] ?? false) ? 'true' : 'false' }},
     paypalEnabled: {{ ($shopConfig['paypal_enabled'] ?? false) ? 'true' : 'false' }}
@@ -510,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
         html += `
             <div class="summary-line">
                 <span>Subtotal:</span>
-                <span>{{ config('shop.currency.symbol', '$') }}${summary.subtotal.toFixed(2)}</span>
+                <span>${window.shopConfig.currencySymbol}${summary.subtotal.toFixed(2)}</span>
             </div>
         `;
         
@@ -518,7 +518,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="summary-line">
                     <span>Setup Fees:</span>
-                    <span>{{ config('shop.currency.symbol', '$') }}${summary.setup_total.toFixed(2)}</span>
+                    <span>${window.shopConfig.currencySymbol}${summary.setup_total.toFixed(2)}</span>
                 </div>
             `;
         }
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="summary-line text-success">
                     <span>Discount:</span>
-                    <span>-{{ config('shop.currency.symbol', '$') }}${summary.discount.toFixed(2)}</span>
+                    <span>-${window.shopConfig.currencySymbol}${summary.discount.toFixed(2)}</span>
                 </div>
             `;
         }
@@ -536,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
             html += `
                 <div class="summary-line">
                     <span>Tax:</span>
-                    <span>{{ config('shop.currency.symbol', '$') }}${summary.tax.toFixed(2)}</span>
+                    <span>${window.shopConfig.currencySymbol}${summary.tax.toFixed(2)}</span>
                 </div>
             `;
         }
@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="summary-line total">
                 <strong>
                     <span>Total:</span>
-                    <span>{{ config('shop.currency.symbol', '$') }}${summary.total.toFixed(2)}</span>
+                    <span>${window.shopConfig.currencySymbol}${summary.total.toFixed(2)}</span>
                 </strong>
             </div>
         `;

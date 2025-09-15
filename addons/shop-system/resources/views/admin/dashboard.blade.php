@@ -23,14 +23,14 @@
     <div class="col-lg-3 col-6">
         <div class="small-box bg-success">
             <div class="inner">
-                <h3>{{ config('shop.currency.symbol', '$') }}{{ number_format($metrics['total_revenue'], 2) }}</h3>
+                <h3>{{ $currencySymbol }}{{ number_format($metrics['total_revenue'], 2) }}</h3>
                 <p>Total Revenue</p>
             </div>
             <div class="icon">
-                <i class="fas fa-dollar-sign"></i>
+                <i class="fa fa-money"></i>
             </div>
             <a href="{{ route('admin.shop.orders.index') }}" class="small-box-footer">
-                View Orders <i class="fas fa-arrow-circle-right"></i>
+                View Orders <i class="fa fa-arrow-circle-right"></i>
             </a>
         </div>
     </div>
@@ -42,10 +42,10 @@
                 <p>Total Orders</p>
             </div>
             <div class="icon">
-                <i class="fas fa-shopping-cart"></i>
+                <i class="fa fa-shopping-cart"></i>
             </div>
             <a href="{{ route('admin.shop.orders.index') }}" class="small-box-footer">
-                Manage Orders <i class="fas fa-arrow-circle-right"></i>
+                Manage Orders <i class="fa fa-arrow-circle-right"></i>
             </a>
         </div>
     </div>
@@ -57,10 +57,10 @@
                 <p>Active Subscriptions</p>
             </div>
             <div class="icon">
-                <i class="fas fa-sync-alt"></i>
+                <i class="fa fa-sync-alt"></i>
             </div>
             <a href="{{ route('admin.shop.orders.index', ['status' => 'active']) }}" class="small-box-footer">
-                View Active <i class="fas fa-arrow-circle-right"></i>
+                View Active <i class="fa fa-arrow-circle-right"></i>
             </a>
         </div>
     </div>
@@ -72,10 +72,10 @@
                 <p>Pending Orders</p>
             </div>
             <div class="icon">
-                <i class="fas fa-clock"></i>
+                <i class="fa fa-clock"></i>
             </div>
             <a href="{{ route('admin.shop.orders.index', ['status' => 'pending']) }}" class="small-box-footer">
-                Review Pending <i class="fas fa-arrow-circle-right"></i>
+                Review Pending <i class="fa fa-arrow-circle-right"></i>
             </a>
         </div>
     </div>
@@ -87,7 +87,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-chart-line"></i>
+                    <i class="fa fa-chart-line"></i>
                     Revenue Overview
                 </h3>
                 <div class="card-tools">
@@ -109,13 +109,13 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-tachometer-alt"></i>
+                    <i class="fa fa-tachometer-alt"></i>
                     Today's Activity
                 </h3>
             </div>
             <div class="card-body">
                 <div class="info-box mb-3">
-                    <span class="info-box-icon bg-success"><i class="fas fa-shopping-bag"></i></span>
+                    <span class="info-box-icon bg-success"><i class="fa fa-shopping-bag"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">New Orders Today</span>
                         <span class="info-box-number">{{ $todayStats['orders'] }}</span>
@@ -123,15 +123,15 @@
                 </div>
 
                 <div class="info-box mb-3">
-                    <span class="info-box-icon bg-info"><i class="fas fa-dollar-sign"></i></span>
+                    <span class="info-box-icon bg-info"><i class="fa fa-money"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Revenue Today</span>
-                        <span class="info-box-number">{{ config('shop.currency.symbol', '$') }}{{ number_format($todayStats['revenue'], 2) }}</span>
+                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($todayStats['revenue'], 2) }}</span>
                     </div>
                 </div>
 
                 <div class="info-box mb-3">
-                    <span class="info-box-icon bg-warning"><i class="fas fa-server"></i></span>
+                    <span class="info-box-icon bg-warning"><i class="fa fa-server"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Servers Created</span>
                         <span class="info-box-number">{{ $todayStats['servers'] }}</span>
@@ -139,7 +139,7 @@
                 </div>
 
                 <div class="info-box">
-                    <span class="info-box-icon bg-danger"><i class="fas fa-exclamation-triangle"></i></span>
+                    <span class="info-box-icon bg-danger"><i class="fa fa-exclamation-triangle"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Failed Payments</span>
                         <span class="info-box-number">{{ $todayStats['failed_payments'] }}</span>
@@ -156,12 +156,12 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-list"></i>
+                    <i class="fa fa-list"></i>
                     Recent Orders
                 </h3>
                 <div class="card-tools">
                     <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-tool">
-                        <i class="fas fa-external-link-alt"></i>
+                        <i class="fa fa-external-link-alt"></i>
                     </a>
                 </div>
             </div>
@@ -219,7 +219,7 @@
                                 </td>
                                 <td>
                                     <strong class="text-success">
-                                        {{ config('shop.currency.symbol', '$') }}{{ number_format($order->total, 2) }}
+                                        {{ $currencySymbol }}{{ number_format($order->total, 2) }}
                                     </strong>
                                 </td>
                                 <td>{{ $order->created_at->format('M d, H:i') }}</td>
@@ -227,12 +227,12 @@
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ route('admin.shop.orders.show', $order) }}" 
                                            class="btn btn-outline-primary">
-                                            <i class="fas fa-eye"></i>
+                                            <i class="fa fa-eye"></i>
                                         </a>
                                         @if($order->canProcess())
                                         <button class="btn btn-outline-success process-order-btn" 
                                                 data-order-id="{{ $order->id }}">
-                                            <i class="fas fa-play"></i>
+                                            <i class="fa fa-play"></i>
                                         </button>
                                         @endif
                                     </div>
@@ -244,7 +244,7 @@
                 </div>
                 @else
                 <div class="text-center py-4">
-                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <i class="fa fa-shopping-cart fa-3x text-muted mb-3"></i>
                     <p class="text-muted">No recent orders</p>
                 </div>
                 @endif
@@ -258,7 +258,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-star"></i>
+                    <i class="fa fa-star"></i>
                     Top Categories
                 </h3>
             </div>
@@ -271,7 +271,7 @@
                         <small class="text-muted">{{ $category->order_count }} orders</small>
                     </div>
                     <span class="badge badge-primary">
-                        {{ config('shop.currency.symbol', '$') }}{{ number_format($category->total_revenue, 0) }}
+                        {{ $currencySymbol }}{{ number_format($category->total_revenue, 0) }}
                     </span>
                 </div>
                 @endforeach
@@ -285,7 +285,7 @@
         <div class="card mt-3">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-heartbeat"></i>
+                    <i class="fa fa-heartbeat"></i>
                     System Health
                 </h3>
             </div>
@@ -330,7 +330,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-bolt"></i>
+                    <i class="fa fa-bolt"></i>
                     Quick Actions
                 </h3>
             </div>
@@ -338,28 +338,28 @@
                 <div class="row">
                     <div class="col-md-3 mb-3">
                         <a href="{{ route('admin.shop.categories.create') }}" class="btn btn-success btn-lg btn-block">
-                            <i class="fas fa-plus"></i>
+                            <i class="fa fa-plus"></i>
                             Add Category
                         </a>
                     </div>
                     
                     <div class="col-md-3 mb-3">
                         <a href="{{ route('admin.shop.coupons.create') }}" class="btn btn-info btn-lg btn-block">
-                            <i class="fas fa-ticket-alt"></i>
+                            <i class="fa fa-ticket-alt"></i>
                             Create Coupon
                         </a>
                     </div>
                     
                     <div class="col-md-3 mb-3">
                         <button class="btn btn-warning btn-lg btn-block" onclick="AdminShop.processRenewals()">
-                            <i class="fas fa-sync-alt"></i>
+                            <i class="fa fa-sync-alt"></i>
                             Process Renewals
                         </button>
                     </div>
                     
                     <div class="col-md-3 mb-3">
                         <a href="{{ route('admin.shop.reports.index') }}" class="btn btn-secondary btn-lg btn-block">
-                            <i class="fas fa-chart-bar"></i>
+                            <i class="fa fa-chart-bar"></i>
                             View Reports
                         </a>
                     </div>
@@ -384,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
             revenueChart.destroy();
         }
         
-        fetch(`/admin/shop/dashboard/chart-data?period=${period}`)
+        fetch(`/admin/shop/ajax/dashboard/revenue-chart?period=${period}`)
             .then(response => response.json())
             .then(data => {
                 revenueChart = new Chart(ctx, {
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 position: 'left',
                                 ticks: {
                                     callback: function(value) {
-                                        return '{{ config("shop.currency.symbol", "$") }}' + value;
+                                        return '{{ $currencySymbol }}' + value;
                                     }
                                 }
                             },
@@ -435,7 +435,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 callbacks: {
                                     label: function(context) {
                                         if (context.datasetIndex === 0) {
-                                            return 'Revenue: {{ config("shop.currency.symbol", "$") }}' + context.parsed.y;
+                                            return 'Revenue: {{ $currencySymbol }}' + context.parsed.y;
                                         } else {
                                             return 'Orders: ' + context.parsed.y;
                                         }
@@ -473,7 +473,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (confirm('Are you sure you want to process this order?')) {
                 this.disabled = true;
-                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                this.innerHTML = '<i class="fa fa-spinner fa-spin"></i>';
                 
                 fetch(`/admin/shop/orders/${orderId}/process`, {
                     method: 'POST',
@@ -490,14 +490,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         swal('Error!', data.message, 'error');
                         this.disabled = false;
-                        this.innerHTML = '<i class="fas fa-play"></i>';
+                        this.innerHTML = '<i class="fa fa-play"></i>';
                     }
                 })
                 .catch(error => {
                     console.error('Error processing order:', error);
                     swal('Error!', 'Failed to process order.', 'error');
                     this.disabled = false;
-                    this.innerHTML = '<i class="fas fa-play"></i>';
+                    this.innerHTML = '<i class="fa fa-play"></i>';
                 });
             }
         });

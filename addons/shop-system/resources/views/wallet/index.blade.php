@@ -31,7 +31,7 @@
                         <i class="fas fa-coins fa-3x text-success"></i>
                     </div>
                     <h3 class="balance-amount">
-                        {{ config('shop.currency.symbol', '$') }}{{ number_format($wallet->balance, 2) }}
+                        {{ $currencySymbol }}{{ number_format($wallet->balance, 2) }}
                     </h3>
                     <p class="text-muted mb-0">Available Balance</p>
                 </div>
@@ -44,7 +44,7 @@
                     <div class="stat-icon mb-3">
                         <i class="fas fa-chart-line fa-2x text-primary"></i>
                     </div>
-                    <h4>{{ config('shop.currency.symbol', '$') }}{{ number_format($monthlySpending, 2) }}</h4>
+                    <h4>{{ $currencySymbol }}{{ number_format($monthlySpending, 2) }}</h4>
                     <p class="text-muted mb-0">This Month's Spending</p>
                 </div>
             </div>
@@ -181,12 +181,12 @@
                                     </td>
                                     <td>
                                         <span class="amount {{ $transaction->type === 'credit' ? 'text-success' : 'text-danger' }}">
-                                            {{ $transaction->type === 'credit' ? '+' : '-' }}{{ config('shop.currency.symbol', '$') }}{{ number_format(abs($transaction->amount), 2) }}
+                                            {{ $transaction->type === 'credit' ? '+' : '-' }}{{ $currencySymbol }}{{ number_format(abs($transaction->amount), 2) }}
                                         </span>
                                     </td>
                                     <td>
                                         <span class="balance-after">
-                                            {{ config('shop.currency.symbol', '$') }}{{ number_format($transaction->balance_after, 2) }}
+                                            {{ $currencySymbol }}{{ number_format($transaction->balance_after, 2) }}
                                         </span>
                                     </td>
                                     <td>
@@ -248,44 +248,44 @@
                                     <div class="row g-2">
                                         <div class="col-4">
                                             <button type="button" class="btn btn-outline-primary w-100 amount-btn" data-amount="10">
-                                                $10
+                                                {{ $currencySymbol }}10
                                             </button>
                                         </div>
                                         <div class="col-4">
                                             <button type="button" class="btn btn-outline-primary w-100 amount-btn" data-amount="25">
-                                                $25
+                                                {{ $currencySymbol }}25
                                             </button>
                                         </div>
                                         <div class="col-4">
                                             <button type="button" class="btn btn-outline-primary w-100 amount-btn" data-amount="50">
-                                                $50
+                                                {{ $currencySymbol }}50
                                             </button>
                                         </div>
                                         <div class="col-4">
                                             <button type="button" class="btn btn-outline-primary w-100 amount-btn" data-amount="100">
-                                                $100
+                                                {{ $currencySymbol }}100
                                             </button>
                                         </div>
                                         <div class="col-4">
                                             <button type="button" class="btn btn-outline-primary w-100 amount-btn" data-amount="250">
-                                                $250
+                                                {{ $currencySymbol }}250
                                             </button>
                                         </div>
                                         <div class="col-4">
                                             <button type="button" class="btn btn-outline-primary w-100 amount-btn" data-amount="500">
-                                                $500
+                                                {{ $currencySymbol }}500
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <div class="input-group">
-                                    <span class="input-group-text">{{ config('shop.currency.symbol', '$') }}</span>
+                                    <span class="input-group-text">{{ $currencySymbol }}</span>
                                     <input type="number" class="form-control" id="customAmount" 
                                            placeholder="Enter custom amount" min="5" max="1000" step="0.01">
                                 </div>
                                 <div class="form-text">
-                                    Minimum: $5.00 | Maximum: $1,000.00
+                                    Minimum: {{ $currencySymbol }}5.00 | Maximum: {{ $currencySymbol }}1,000.00
                                 </div>
                             </div>
                             
@@ -334,21 +334,21 @@
                                     <div class="card-body">
                                         <div class="summary-line">
                                             <span>Current Balance:</span>
-                                            <span>{{ config('shop.currency.symbol', '$') }}{{ number_format($wallet->balance, 2) }}</span>
+                                            <span>{{ $currencySymbol }}{{ number_format($wallet->balance, 2) }}</span>
                                         </div>
                                         <div class="summary-line">
                                             <span>Deposit Amount:</span>
-                                            <span id="depositAmount">$0.00</span>
+                                            <span id="depositAmount">{{ $currencySymbol }}0.00</span>
                                         </div>
                                         <div class="summary-line" id="processing-fee-line" style="display: none;">
                                             <span>Processing Fee:</span>
-                                            <span id="processing-fee-display">$0.00</span>
+                                            <span id="processing-fee-display">{{ $currencySymbol }}0.00</span>
                                         </div>
                                         <hr>
                                         <div class="summary-line total">
                                             <strong>
                                                 <span>New Balance:</span>
-                                                <span id="new-balance-display">{{ config('shop.currency.symbol', '$') }}{{ number_format($wallet->balance, 2) }}</span>
+                                                <span id="new-balance-display">{{ $currencySymbol }}{{ number_format($wallet->balance, 2) }}</span>
                                             </strong>
                                         </div>
                                     </div>
@@ -411,7 +411,7 @@
                         <div class="mb-3">
                             <label for="topup-threshold" class="form-label">Minimum Balance Threshold</label>
                             <div class="input-group">
-                                <span class="input-group-text">{{ config('shop.currency.symbol', '$') }}</span>
+                                <span class="input-group-text">{{ $currencySymbol }}</span>
                                 <input type="number" class="form-control" id="topup-threshold" 
                                        value="{{ $wallet->auto_topup_threshold ?? 10 }}" 
                                        min="5" max="100" step="0.01">
@@ -424,7 +424,7 @@
                         <div class="mb-3">
                             <label for="topup-amount" class="form-label">Top-Up Amount</label>
                             <div class="input-group">
-                                <span class="input-group-text">{{ config('shop.currency.symbol', '$') }}</span>
+                                <span class="input-group-text">{{ $currencySymbol }}</span>
                                 <input type="number" class="form-control" id="topup-amount" 
                                        value="{{ $wallet->auto_topup_amount ?? 25 }}" 
                                        min="10" max="500" step="0.01">
@@ -459,6 +459,9 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Set currency symbol globally for JavaScript use
+    window.currencySymbol = '{{ $currencySymbol }}';
+    
     let selectedAmount = 0;
     
     // Amount button selection
@@ -504,11 +507,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const newBalanceElement = document.getElementById('new-balance-display');
         
         if (depositAmountElement) {
-            depositAmountElement.textContent = '{{ config("shop.currency.symbol", "$") }}' + selectedAmount.toFixed(2);
+            depositAmountElement.textContent = window.currencySymbol + selectedAmount.toFixed(2);
         }
         
         if (newBalanceElement) {
-            newBalanceElement.textContent = '{{ config("shop.currency.symbol", "$") }}' + newBalance.toFixed(2);
+            newBalanceElement.textContent = window.currencySymbol + newBalance.toFixed(2);
         }
         
         // Enable/disable deposit button
@@ -529,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Process deposit button clicked, selected amount:', selectedAmount);
         
         if (selectedAmount < 5) {
-            Shop.showNotification('Minimum deposit amount is $5.00', 'error');
+            Shop.showNotification(`Minimum deposit amount is ${window.currencySymbol}5.00`, 'error');
             return;
         }
         

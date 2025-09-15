@@ -127,14 +127,14 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Price ($)</label>
+                                        <label>Price ({{ $currencySymbol }})</label>
                                         <input type="number" name="billing_cycles[0][price]" class="form-control" 
                                                step="0.01" min="0" value="{{ old('billing_cycles.0.price', '9.99') }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Setup Fee ($)</label>
+                                        <label>Setup Fee ({{ $currencySymbol }})</label>
                                         <input type="number" name="billing_cycles[0][setup_fee]" class="form-control" 
                                                step="0.01" min="0" value="{{ old('billing_cycles.0.setup_fee', '0') }}">
                                     </div>
@@ -637,14 +637,14 @@
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Price ($)</label>
+                                <label>Price ({{ $currencySymbol }})</label>
                                 <input type="number" name="billing_cycles[${cycleCount}][price]" class="form-control" 
                                        step="0.01" min="0" placeholder="0.00">
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Setup Fee ($)</label>
+                                <label>Setup Fee ({{ $currencySymbol }})</label>
                                 <input type="number" name="billing_cycles[${cycleCount}][setup_fee]" class="form-control" 
                                        step="0.01" min="0" placeholder="0.00">
                             </div>

@@ -260,7 +260,7 @@
                                             $monthly = collect($cycles)->where('cycle', 'monthly')->first();
                                         @endphp
                                         @if($monthly)
-                                            <strong>${{ number_format($monthly['price'], 2) }}/mo</strong>
+                                            <strong>{{ $currencySymbol }}{{ number_format($monthly['price'], 2) }}/mo</strong>
                                             @if(count($cycles) > 1)
                                                 @php
                                                     $otherCycles = collect($cycles)->reject(function($cycle) {
@@ -281,9 +281,9 @@
                                                         $label = $cycleLabels[$cycle['cycle']] ?? $cycle['cycle'];
                                                         $price = number_format($cycle['price'], 2);
                                                         $setup = isset($cycle['setup_fee']) && $cycle['setup_fee'] > 0 
-                                                            ? ' (+$' . number_format($cycle['setup_fee'], 2) . ' setup)'
+                                                            ? ' (+' . $currencySymbol . number_format($cycle['setup_fee'], 2) . ' setup)'
                                                             : '';
-                                                        $popoverContent .= "<div><strong>$" . $price . "/{$label}</strong>{$setup}</div>";
+                                                        $popoverContent .= "<div><strong>" . $currencySymbol . $price . "/{$label}</strong>{$setup}</div>";
                                                     }
                                                 @endphp
                                                 <br><small>

@@ -39,7 +39,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-blue">
-                                <i class="fas fa-users"></i>
+                                <i class="fa fa-users"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">New Customers</span>
@@ -51,7 +51,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-green">
-                                <i class="fas fa-user-check"></i>
+                                <i class="fa fa-user-plus"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Active Customers</span>
@@ -63,7 +63,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-yellow">
-                                <i class="fas fa-dollar-sign"></i>
+                                <i class="fa fa-usd"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Avg Lifetime Value</span>
@@ -75,7 +75,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-red">
-                                <i class="fas fa-chart-bar"></i>
+                                <i class="fa fa-bar-chart"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Growth Rate</span>

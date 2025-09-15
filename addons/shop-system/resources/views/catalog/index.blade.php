@@ -141,7 +141,6 @@
                 @php 
                     $plan = $item['plan'];
                     $category = $item['category'];
-                    $currency = config('shop.currency.symbol', '$');
                 @endphp
                 <div class="featured-plan mb-3 p-3 rounded-3 bg-gradient-light border position-relative overflow-hidden">
                     {{-- Value Badge --}}
@@ -193,7 +192,7 @@
                                     <small class="text-muted">{{ $category->name }}</small>
                                 </div>
                                 <div class="text-end">
-                                    <div class="h6 text-primary fw-bold mb-0">{{ $currency }}{{ number_format($plan->price, 2) }}</div>
+                                    <div class="h6 text-primary fw-bold mb-0">{{ $currencySymbol }}{{ number_format($plan->price, 2) }}</div>
                                     <small class="text-muted">{{ $plan->billing_cycle ?? 'monthly' }}</small>
                                 </div>
                             </div>
@@ -360,15 +359,14 @@
                                     @php
                                         $minPrice = $product->plans->min('price');
                                         $maxPrice = $product->plans->max('price');
-                                        $currency = config('shop.currency.symbol', '$');
                                     @endphp
                                     
                                     <div class="price-display text-center p-3 bg-light rounded-3">
                                         @if($minPrice == $maxPrice)
-                                            <div class="h4 text-primary fw-bold mb-0">{{ $currency }}{{ number_format($minPrice, 2) }}</div>
+                                            <div class="h4 text-primary fw-bold mb-0">{{ $currencySymbol }}{{ number_format($minPrice, 2) }}</div>
                                         @else
                                             <div class="h5 text-primary fw-bold mb-0">
-                                                {{ $currency }}{{ number_format($minPrice, 2) }} - {{ $currency }}{{ number_format($maxPrice, 2) }}
+                                                {{ $currencySymbol }}{{ number_format($minPrice, 2) }} - {{ $currencySymbol }}{{ number_format($maxPrice, 2) }}
                                             </div>
                                         @endif
                                         <small class="text-muted">per {{ $product->plans->first()->billing_cycle ?? 'month' }}</small>
@@ -391,7 +389,7 @@
                                             <button type="button" class="btn btn-outline-success quick-add-btn" 
                                                     data-plan-id="{{ $plan->id }}" data-plan-name="{{ $plan->name }}">
                                                 <i class="fas fa-cart-plus me-2"></i>
-                                                Quick Add - {{ $currency }}{{ number_format($plan->price, 2) }}
+                                                Quick Add - {{ $currencySymbol }}{{ number_format($plan->price, 2) }}
                                             </button>
                                         @else
                                             <button type="button" class="btn btn-outline-secondary" disabled>

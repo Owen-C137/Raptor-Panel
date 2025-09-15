@@ -3,16 +3,24 @@
 namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
-use PterodactylAddons\ShopSystem\Http\Controllers\Controller;
+use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 
-class PaymentManagementController extends Controller
+class PaymentManagementController extends BaseShopController
 {
     protected PaymentGatewayManager $paymentGatewayManager;
 
-    public function __construct(PaymentGatewayManager $paymentGatewayManager)
-    {
+    public function __construct(
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService,
+        PaymentGatewayManager $paymentGatewayManager
+    ) {
+        parent::__construct($shopConfigService, $walletService, $currencyService);
         $this->paymentGatewayManager = $paymentGatewayManager;
     }
 
@@ -37,7 +45,7 @@ class PaymentManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(25);
 
-        return view('shop::admin.payments.index', compact('payments'));
+        return $this->view('shop::admin.payments.index', compact('payments'));
     }
 
     /**
@@ -47,7 +55,7 @@ class PaymentManagementController extends Controller
     {
         $payment->load(['order', 'order.user', 'order.plan']);
         
-        return view('shop::admin.payments.show', compact('payment'));
+        return $this->view('shop::admin.payments.show', compact('payment'));
     }
 
     /**
@@ -96,6 +104,6 @@ class PaymentManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(50);
 
-        return view('shop::admin.payments.gateway', compact('payments', 'gateway'));
+        return $this->view('shop::admin.payments.gateway', compact('payments', 'gateway'));
     }
 }

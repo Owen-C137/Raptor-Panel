@@ -53,7 +53,7 @@ class ReportsController extends Controller
     {
         $period = $request->get('period', '30');
         
-        $orderStats = ShopOrder::where('created_at', '>=', now()->subDays($period))
+        $dailyOrderStats = ShopOrder::where('created_at', '>=', now()->subDays($period))
             ->select(
                 DB::raw('DATE(created_at) as date'),
                 DB::raw('COUNT(*) as total_orders'),
@@ -65,12 +65,25 @@ class ReportsController extends Controller
             ->orderBy('date', 'desc')
             ->get();
 
+        // Calculate summary statistics
+        $orderStats = [
+            'total_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->count(),
+            'active_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->where('status', 'active')->count(),
+            'completed_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->where('status', 'completed')->count(),
+            'pending_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->where('status', 'pending')->count(),
+            'suspended_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->where('status', 'suspended')->count(),
+            'cancelled_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->where('status', 'cancelled')->count(),
+            'failed_orders' => ShopOrder::where('created_at', '>=', now()->subDays($period))->where('status', 'failed')->count(),
+        ];
+
         $statusBreakdown = ShopOrder::where('created_at', '>=', now()->subDays($period))
             ->select('status', DB::raw('COUNT(*) as count'))
             ->groupBy('status')
-            ->get();
+            ->get()
+            ->pluck('count', 'status')
+            ->toArray();
 
-        return view('shop::admin.reports.orders', compact('orderStats', 'statusBreakdown', 'period'));
+        return view('shop::admin.reports.orders', compact('orderStats', 'dailyOrderStats', 'statusBreakdown', 'period'));
     }
 
     /**
@@ -108,7 +121,7 @@ class ReportsController extends Controller
             ->count();
 
         // Customer lifetime value
-        $lifetimeValues = ShopPayment::where('status', 'completed')
+        $lifetimeValues = ShopPayment::where('shop_payments.status', 'completed')
             ->join('shop_orders', 'shop_payments.order_id', '=', 'shop_orders.id')
             ->select('shop_orders.user_id', DB::raw('SUM(shop_payments.amount) as lifetime_value'))
             ->groupBy('shop_orders.user_id')

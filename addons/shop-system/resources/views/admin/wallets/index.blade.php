@@ -26,11 +26,11 @@
                                        placeholder="Search by email or username..." class="form-control" style="width: 300px;">
                             </div>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search"></i> Search
+                                <i class="fa fa-search"></i> Search
                             </button>
                             @if(request('search'))
                                 <a href="{{ route('admin.shop.wallets.index') }}" class="btn btn-default">
-                                    <i class="fas fa-times"></i> Clear
+                                    <i class="fa fa-times"></i> Clear
                                 </a>
                             @endif
                         </form>
@@ -79,11 +79,11 @@
                                     <td>
                                         <a href="{{ route('admin.shop.wallets.show', $wallet->user) }}" 
                                            class="btn btn-xs btn-primary">
-                                            <i class="fas fa-eye"></i> View Details
+                                            <i class="fa fa-eye"></i> View Details
                                         </a>
                                         <a href="{{ route('admin.shop.wallets.manage', $wallet->user) }}" 
                                            class="btn btn-xs btn-warning">
-                                            <i class="fas fa-cog"></i> Manage
+                                            <i class="fa fa-cog"></i> Manage
                                         </a>
                                     </td>
                                 </tr>
@@ -115,7 +115,7 @@
     <div class="row">
         <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="info-box">
-                <span class="info-box-icon bg-aqua"><i class="fas fa-wallet"></i></span>
+                <span class="info-box-icon bg-aqua"><i class="fa fa-wallet"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Total Wallets</span>
                     <span class="info-box-number">{{ $wallets->total() }}</span>
@@ -124,7 +124,7 @@
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="info-box">
-                <span class="info-box-icon bg-green"><i class="fas fa-dollar-sign"></i></span>
+                <span class="info-box-icon bg-green"><i class="fa fa-money"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Total Balance</span>
                     <span class="info-box-number">${{ number_format($wallets->sum('balance'), 2) }}</span>
@@ -133,7 +133,7 @@
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="info-box">
-                <span class="info-box-icon bg-yellow"><i class="fas fa-chart-line"></i></span>
+                <span class="info-box-icon bg-yellow"><i class="fa fa-chart-line"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Total Spent</span>
                     <span class="info-box-number">${{ number_format($wallets->sum('total_spent'), 2) }}</span>
@@ -142,7 +142,7 @@
         </div>
         <div class="col-md-3 col-sm-6 col-xs-12">
             <div class="info-box">
-                <span class="info-box-icon bg-red"><i class="fas fa-arrow-up"></i></span>
+                <span class="info-box-icon bg-red"><i class="fa fa-arrow-up"></i></span>
                 <div class="info-box-content">
                     <span class="info-box-text">Total Deposited</span>
                     <span class="info-box-number">${{ number_format($wallets->sum('total_deposited'), 2) }}</span>
@@ -161,16 +161,16 @@
                 <div class="box-body">
                     <div class="btn-group" role="group">
                         <a href="{{ route('admin.shop.index') }}" class="btn btn-default">
-                            <i class="fas fa-arrow-left"></i> Back to Shop Management
+                            <i class="fa fa-arrow-left"></i> Back to Shop Management
                         </a>
                         <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-info">
-                            <i class="fas fa-chart-bar"></i> View Analytics
+                            <i class="fa fa-chart-bar"></i> View Analytics
                         </a>
                         <a href="{{ route('admin.shop.payments.index') }}" class="btn btn-success">
-                            <i class="fas fa-list"></i> All Payments
+                            <i class="fa fa-list"></i> All Payments
                         </a>
                         <button type="button" class="btn btn-warning" onclick="exportWalletData()">
-                            <i class="fas fa-download"></i> Export Wallet Data
+                            <i class="fa fa-download"></i> Export Wallet Data
                         </button>
                     </div>
                 </div>

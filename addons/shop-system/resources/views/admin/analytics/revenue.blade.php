@@ -52,11 +52,11 @@
             <div class="box-body">
                 <div class="info-box">
                     <span class="info-box-icon bg-green">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fa fa-money"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Revenue</span>
-                        <span class="info-box-number">${{ number_format($revenueData['total'] ?? 0, 2) }}</span>
+                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($revenueData['total'] ?? 0, 2) }}</span>
                         <div class="progress">
                             <div class="progress-bar bg-green" style="width: 100%"></div>
                         </div>
@@ -76,7 +76,7 @@
             <div class="box-body">
                 <div class="info-box">
                     <span class="info-box-icon {{ ($revenueData['growth'] ?? 0) >= 0 ? 'bg-green' : 'bg-red' }}">
-                        <i class="fas fa-{{ ($revenueData['growth'] ?? 0) >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
+                        <i class="fa fa-{{ ($revenueData['growth'] ?? 0) >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Growth Rate</span>
@@ -102,11 +102,11 @@
             <div class="box-body">
                 <div class="info-box">
                     <span class="info-box-icon bg-blue">
-                        <i class="fas fa-calendar-day"></i>
+                        <i class="fa fa-calendar-day"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Average Daily Revenue</span>
-                        <span class="info-box-number">${{ number_format($revenueData['average_daily'] ?? 0, 2) }}</span>
+                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($revenueData['average_daily'] ?? 0, 2) }}</span>
                         <div class="progress">
                             <div class="progress-bar bg-blue" style="width: 70%"></div>
                         </div>
@@ -126,16 +126,16 @@
             <div class="box-body">
                 <div class="btn-group-vertical btn-group-sm" style="width: 100%">
                     <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-default">
-                        <i class="fas fa-arrow-left"></i> Back to Analytics Overview
+                        <i class="fa fa-arrow-left"></i> Back to Analytics Overview
                     </a>
                     <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-info">
-                        <i class="fas fa-shopping-cart"></i> View Orders Report
+                        <i class="fa fa-shopping-cart"></i> View Orders Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-success">
-                        <i class="fas fa-users"></i> View Customers Report
+                        <i class="fa fa-users"></i> View Customers Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-warning">
-                        <i class="fas fa-download"></i> Export All Data
+                        <i class="fa fa-download"></i> Export All Data
                     </a>
                 </div>
             </div>
@@ -164,9 +164,9 @@
                         @foreach($revenueData['breakdown'] as $item)
                         <tr>
                             <td>{{ $item['period'] ?? 'N/A' }}</td>
-                            <td>${{ number_format($item['revenue'] ?? 0, 2) }}</td>
+                            <td>{{ $currencySymbol }}{{ number_format($item['revenue'] ?? 0, 2) }}</td>
                             <td>{{ number_format($item['transactions'] ?? 0) }}</td>
-                            <td>${{ number_format(($item['revenue'] ?? 0) / max(1, $item['transactions'] ?? 1), 2) }}</td>
+                            <td>{{ $currencySymbol }}{{ number_format(($item['revenue'] ?? 0) / max(1, $item['transactions'] ?? 1), 2) }}</td>
                         </tr>
                         @endforeach
                     </tbody>

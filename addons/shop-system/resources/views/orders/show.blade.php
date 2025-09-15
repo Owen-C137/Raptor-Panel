@@ -40,9 +40,9 @@
                                 <div class="info-item">
                                     <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
                                     <h6>Total Amount</h6>
-                                    <strong class="text-success">
-                                        ${{ number_format($order->total_amount, 2) }}
-                                    </strong>
+                                                                        <p class="text-success fs-4 fw-bold mb-0">
+                                        {{ $currencySymbol }}{{ number_format($order->total_amount, 2) }}
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -78,11 +78,11 @@
                                 <div class="col-md-3 text-center">
                                     <div class="item-pricing">
                                         <div class="unit-price">
-                                            ${{ number_format($order->amount, 2) }}
+                                            {{ $currencySymbol }}{{ number_format($order->amount, 2) }}
                                         </div>
                                         @if($order->setup_fee > 0)
                                             <small class="text-muted">
-                                                +${{ number_format($order->setup_fee, 2) }} setup
+                                                +{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }} setup
                                             </small>
                                         @endif
                                     </div>
@@ -91,7 +91,7 @@
                                 <div class="col-md-3 text-end">
                                     <div class="item-total">
                                         <strong class="text-success">
-                                            ${{ number_format($order->total_amount, 2) }}
+                                            {{ $currencySymbol }}{{ number_format($order->total_amount, 2) }}
                                         </strong>
                                     </div>
                                 </div>
@@ -135,27 +135,27 @@
                                 <div class="totals-breakdown">
                                     <div class="total-line">
                                         <span>Subtotal:</span>
-                                        <span>${{ number_format($order->amount, 2) }}</span>
+                                        <span>{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</span>
                                     </div>
                                     
                                     @if($order->setup_fee > 0)
                                     <div class="total-line">
                                         <span>Setup Fees:</span>
-                                        <span>${{ number_format($order->setup_fee, 2) }}</span>
+                                        <span>{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</span>
                                     </div>
                                     @endif
                                     
                                     @if($order->discount > 0)
                                     <div class="total-line text-success">
                                         <span>Discount:</span>
-                                        <span>-${{ number_format($order->discount, 2) }}</span>
+                                        <span>-{{ $currencySymbol }}{{ number_format($order->discount, 2) }}</span>
                                     </div>
                                     @endif
                                     
                                     @if($order->tax > 0)
                                     <div class="total-line">
                                         <span>Tax:</span>
-                                        <span>${{ number_format($order->tax, 2) }}</span>
+                                        <span>{{ $currencySymbol }}{{ number_format($order->tax, 2) }}</span>
                                     </div>
                                     @endif
                                     
@@ -163,7 +163,7 @@
                                     <div class="total-line total-amount">
                                         <strong>
                                             <span>Total:</span>
-                                            <span class="text-success">${{ number_format($order->total_amount, 2) }}</span>
+                                            <span class="text-success">{{ $currencySymbol }}{{ number_format($order->total_amount, 2) }}</span>
                                         </strong>
                                     </div>
                                 </div>
@@ -414,8 +414,8 @@
                                     <td class="text-center">
                                         <span class="badge rounded-pill bg-primary">1</span>
                                     </td>
-                                    <td class="text-end">${{ number_format($order->amount, 2) }}</td>
-                                    <td class="text-end">${{ number_format($order->amount, 2) }}</td>
+                                    <td class="text-end">{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</td>
+                                    <td class="text-end">{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</td>
                                 </tr>
                                 @if($order->setup_fee > 0)
                                 <tr>
@@ -427,21 +427,21 @@
                                     <td class="text-center">
                                         <span class="badge rounded-pill bg-primary">1</span>
                                     </td>
-                                    <td class="text-end">${{ number_format($order->setup_fee, 2) }}</td>
-                                    <td class="text-end">${{ number_format($order->setup_fee, 2) }}</td>
+                                    <td class="text-end">{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</td>
+                                    <td class="text-end">{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</td>
                                 </tr>
                                 @endif
                                 <tr>
                                     <td colspan="4" class="fw-semibold text-end">Subtotal</td>
-                                    <td class="text-end">${{ number_format($order->total_amount, 2) }}</td>
+                                    <td class="text-end">{{ $currencySymbol }}{{ number_format($order->total_amount, 2) }}</td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="fw-semibold text-end">Tax</td>
-                                    <td class="text-end">$0.00</td>
+                                    <td class="text-end">{{ $currencySymbol }}0.00</td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="fw-bold text-uppercase text-end bg-body-light">Total Due</td>
-                                    <td class="fw-bold text-end bg-body-light">${{ number_format($order->total_amount, 2) }}</td>
+                                    <td class="fw-bold text-end bg-body-light">{{ $currencySymbol }}{{ number_format($order->total_amount, 2) }}</td>
                                 </tr>
                             </tbody>
                         </table>

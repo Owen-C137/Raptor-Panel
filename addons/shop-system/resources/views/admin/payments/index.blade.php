@@ -105,9 +105,9 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <strong>${{ number_format($payment->amount, 2) }}</strong>
+                                    <strong>{{ $currencySymbol }}{{ number_format($payment->amount, 2) }}</strong>
                                     @if($payment->fee > 0)
-                                        <br><small class="text-muted">Fee: ${{ number_format($payment->fee, 2) }}</small>
+                                        <br><small class="text-muted">Fee: {{ $currencySymbol }}{{ number_format($payment->fee, 2) }}</small>
                                     @endif
                                 </td>
                                 <td>
@@ -202,7 +202,7 @@
     <div class="col-lg-3 col-xs-6">
         <div class="small-box bg-green">
             <div class="inner">
-                <h3>${{ number_format($stats['total_revenue'] ?? 0, 0) }}</h3>
+                <h3>{{ $currencySymbol }}{{ number_format($stats['total_revenue'] ?? 0, 0) }}</h3>
                 <p>Total Revenue</p>
             </div>
             <div class="icon">

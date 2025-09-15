@@ -3,11 +3,11 @@
 namespace PterodactylAddons\ShopSystem\Http\Controllers\Client;
 
 use Illuminate\Http\Request;
-use Pterodactyl\Http\Controllers\Controller;
+use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
 
-class OrderController extends Controller
+class OrderController extends BaseShopController
 {
     /**
      * Display user's order history
@@ -186,9 +186,12 @@ class OrderController extends Controller
         
         $order->load(['product', 'user', 'payments']);
         
+        // Get currency symbol for PDF
+        $currencySymbol = $this->currencyService->getCurrentCurrencySymbol();
+        
         // Generate PDF invoice (simplified version)
         $pdf = app('dompdf.wrapper');
-        $pdf->loadView('client.shop.invoice', compact('order'));
+        $pdf->loadView('client.shop.invoice', compact('order', 'currencySymbol'));
         
         return $pdf->download("invoice-{$order->id}.pdf");
     }

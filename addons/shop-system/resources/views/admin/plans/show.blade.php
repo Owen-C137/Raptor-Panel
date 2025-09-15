@@ -123,10 +123,10 @@
                                         {{ ucfirst(str_replace('_', ' ', $cycle['cycle'])) }}
                                     </span>
                                 </td>
-                                <td>${{ number_format($cycle['price'], 2) }}</td>
+                                <td>{{ $currencySymbol }}{{ number_format($cycle['price'], 2) }}</td>
                                 <td>
                                     @if($cycle['setup_fee'] > 0)
-                                        ${{ number_format($cycle['setup_fee'], 2) }}
+                                        {{ $currencySymbol }}{{ number_format($cycle['setup_fee'], 2) }}
                                     @else
                                         <span class="text-success">Free</span>
                                     @endif
@@ -134,16 +134,16 @@
                                 <td>
                                     @switch($cycle['cycle'])
                                         @case('monthly')
-                                            ${{ number_format($cycle['price'], 2) }}/month
+                                            {{ $currencySymbol }}{{ number_format($cycle['price'], 2) }}/month
                                             @break
                                         @case('quarterly')
-                                            ${{ number_format($cycle['price'] / 3, 2) }}/month
+                                            {{ $currencySymbol }}{{ number_format($cycle['price'] / 3, 2) }}/month
                                             @break
                                         @case('semi_annually')
-                                            ${{ number_format($cycle['price'] / 6, 2) }}/month
+                                            {{ $currencySymbol }}{{ number_format($cycle['price'] / 6, 2) }}/month
                                             @break
                                         @case('annually')
-                                            ${{ number_format($cycle['price'] / 12, 2) }}/month
+                                            {{ $currencySymbol }}{{ number_format($cycle['price'] / 12, 2) }}/month
                                             @break
                                         @case('one_time')
                                             One-time payment
@@ -362,11 +362,11 @@
                 </div>
                 
                 <div class="info-box">
-                    <span class="info-box-icon bg-green"><i class="fa fa-dollar"></i></span>
+                    <span class="info-box-icon bg-green"><i class="fa fa-money"></i></span>
                     <div class="info-box-content">
                         <span class="info-box-text">Revenue</span>
                         <span class="info-box-number">
-                            ${{ number_format($plan->orders()->sum('amount'), 2) }}
+                            {{ $currencySymbol }}{{ number_format($plan->orders()->sum('amount'), 2) }}
                         </span>
                     </div>
                 </div>

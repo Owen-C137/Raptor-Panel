@@ -60,11 +60,11 @@
                     </dd>
                     
                     <dt>Amount:</dt>
-                    <dd>${{ number_format($payment->amount, 2) }}</dd>
+                    <dd>{{ $currencySymbol }}{{ number_format($payment->amount, 2) }}</dd>
                     
                     @if($payment->fee_amount > 0)
                     <dt>Gateway Fee:</dt>
-                    <dd>${{ number_format($payment->fee_amount, 2) }}</dd>
+                    <dd>{{ $currencySymbol }}{{ number_format($payment->fee_amount, 2) }}</dd>
                     @endif
                     
                     <dt>Currency:</dt>
@@ -152,7 +152,7 @@
                     </dd>
                     
                     <dt>Order Amount:</dt>
-                    <dd>${{ number_format($payment->order->amount, 2) }}</dd>
+                    <dd>{{ $currencySymbol }}{{ number_format($payment->order->amount, 2) }}</dd>
                 </dl>
             </div>
         </div>

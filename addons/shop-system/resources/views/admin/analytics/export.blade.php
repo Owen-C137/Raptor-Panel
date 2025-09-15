@@ -41,7 +41,7 @@
                     <div class="form-group">
                         <div class="col-sm-offset-2 col-sm-10">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-refresh"></i> Update Data
+                                <i class="fa fa-refresh"></i> Update Data
                             </button>
                         </div>
                     </div>
@@ -60,25 +60,25 @@
             </div>
             <div class="box-body">
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
+                    <i class="fa fa-info-circle"></i>
                     <strong>Note:</strong> Export functionality will generate downloadable files. This feature can be enhanced to create CSV, PDF, or Excel exports.
                 </div>
                 
                 <div class="btn-group-vertical btn-group-lg" style="width: 100%">
                     <button class="btn btn-success" onclick="exportData('revenue')">
-                        <i class="fas fa-dollar-sign"></i> Export Revenue Data (JSON)
+                        <i class="fa fa-money"></i> Export Revenue Data (JSON)
                     </button>
                     <button class="btn btn-info" onclick="exportData('orders')">
-                        <i class="fas fa-shopping-cart"></i> Export Orders Data (JSON)
+                        <i class="fa fa-shopping-cart"></i> Export Orders Data (JSON)
                     </button>
                     <button class="btn btn-warning" onclick="exportData('customers')">
-                        <i class="fas fa-users"></i> Export Customer Data (JSON)
+                        <i class="fa fa-users"></i> Export Customer Data (JSON)
                     </button>
                     <button class="btn btn-primary" onclick="exportData('plans')">
-                        <i class="fas fa-list"></i> Export Plans Data (JSON)
+                        <i class="fa fa-list"></i> Export Plans Data (JSON)
                     </button>
                     <button class="btn btn-default" onclick="exportData('all')">
-                        <i class="fas fa-download"></i> Export All Data (JSON)
+                        <i class="fa fa-download"></i> Export All Data (JSON)
                     </button>
                 </div>
             </div>
@@ -145,16 +145,16 @@
             <div class="box-body">
                 <div class="btn-group" role="group">
                     <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-default">
-                        <i class="fas fa-arrow-left"></i> Back to Analytics Overview
+                        <i class="fa fa-arrow-left"></i> Back to Analytics Overview
                     </a>
                     <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-success">
-                        <i class="fas fa-dollar-sign"></i> Revenue Report
+                        <i class="fa fa-money"></i> Revenue Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-info">
-                        <i class="fas fa-shopping-cart"></i> Orders Report
+                        <i class="fa fa-shopping-cart"></i> Orders Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-warning">
-                        <i class="fas fa-users"></i> Customers Report
+                        <i class="fa fa-users"></i> Customers Report
                     </a>
                 </div>
             </div>

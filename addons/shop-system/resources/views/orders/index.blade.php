@@ -190,7 +190,7 @@
                                             </a>
                                         </td>
                                         <td class="d-none d-sm-table-cell text-end fs-sm">
-                                            <strong>${{ number_format($order->total_amount ?? 0, 2) }}</strong>
+                                            <strong>{{ $currencySymbol }}{{ number_format($order->total_amount ?? 0, 2) }}</strong>
                                         </td>
                                         <td class="text-center">
                                             <a class="btn btn-sm btn-alt-secondary js-bs-tooltip-enabled" href="{{ route('shop.orders.show', $order) }}" data-bs-toggle="tooltip" aria-label="View" data-bs-original-title="View Order">

@@ -19,17 +19,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
-class CheckoutController extends Controller
+class CheckoutController extends BaseShopController
 {
     public function __construct(
         private ShopPlanRepository $planRepository,
         private ShopCouponRepository $couponRepository,
         private ShopOrderService $orderService,
         private PaymentGatewayManager $paymentManager,
-        private WalletService $walletService,
-        private CartService $cartService,
-        private ShopConfigService $shopConfig
-    ) {}
+        private CartService $cartService
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Display checkout page.
@@ -59,17 +59,17 @@ class CheckoutController extends Controller
         $userWallet = null;
         
         // Only fetch wallet if credits are enabled
-        $settings = $this->shopConfig->getShopConfig();
+        $settings = $this->shopConfigService->getShopConfig();
         if ($settings['credits_enabled'] ?? false) {
             $userWallet = $this->walletService->getWallet(auth()->id());
         }
 
-        return view('shop::checkout.index', compact(
+        return $this->view('shop::checkout.index', compact(
             'cartItems',
             'total', 
             'paymentMethods',
             'userWallet'
-        ))->with('shopConfig', $settings);
+        ));
     }
 
     /**
@@ -424,7 +424,7 @@ class CheckoutController extends Controller
      */
     private function getAvailablePaymentMethods(): array
     {
-        $settings = $this->shopConfig->getShopConfig();
+        $settings = $this->shopConfigService->getShopConfig();
         $methods = [];
 
         if ($settings['stripe_enabled'] ?? false) {

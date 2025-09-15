@@ -383,8 +383,8 @@
                         @endif
                     </td>
                     <td class="text-center">1</td>
-                    <td class="text-right">${{ number_format($order->amount, 2) }}</td>
-                    <td class="text-right">${{ number_format($order->amount, 2) }}</td>
+                    <td class="text-right">{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</td>
+                    <td class="text-right">{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</td>
                 </tr>
                 
                 @if($order->setup_fee > 0)
@@ -394,8 +394,8 @@
                         <br><small style="color: #666;">One-time setup charge</small>
                     </td>
                     <td class="text-center">1</td>
-                    <td class="text-right">${{ number_format($order->setup_fee, 2) }}</td>
-                    <td class="text-right">${{ number_format($order->setup_fee, 2) }}</td>
+                    <td class="text-right">{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</td>
+                    <td class="text-right">{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</td>
                 </tr>
                 @endif
             </tbody>
@@ -406,33 +406,33 @@
             <div class="summary-table">
                 <div class="summary-row">
                     <span class="summary-label">Subtotal:</span>
-                    <span class="summary-value">${{ number_format($order->amount, 2) }}</span>
+                    <span class="summary-value">{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</span>
                 </div>
                 
                 @if($order->setup_fee > 0)
                 <div class="summary-row">
                     <span class="summary-label">Setup Fee:</span>
-                    <span class="summary-value">${{ number_format($order->setup_fee, 2) }}</span>
+                    <span class="summary-value">{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</span>
                 </div>
                 @endif
                 
                 @if(isset($order->tax_amount) && $order->tax_amount > 0)
                 <div class="summary-row">
                     <span class="summary-label">Tax:</span>
-                    <span class="summary-value">${{ number_format($order->tax_amount, 2) }}</span>
+                    <span class="summary-value">{{ $currencySymbol }}{{ number_format($order->tax_amount, 2) }}</span>
                 </div>
                 @endif
                 
                 @if(isset($order->discount_amount) && $order->discount_amount > 0)
                 <div class="summary-row">
                     <span class="summary-label">Discount:</span>
-                    <span class="summary-value">-${{ number_format($order->discount_amount, 2) }}</span>
+                    <span class="summary-value">-{{ $currencySymbol }}{{ number_format($order->discount_amount, 2) }}</span>
                 </div>
                 @endif
                 
                 <div class="summary-row">
                     <span class="summary-label">Total:</span>
-                    <span class="summary-value">${{ number_format($order->total_amount, 2) }}</span>
+                    <span class="summary-value">{{ $currencySymbol }}{{ number_format($order->total_amount, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -446,7 +446,7 @@
                 <div class="info-row">
                     <span class="info-label">{{ $payment->created_at->format('M j, Y') }}:</span>
                     <span class="info-value">
-                        ${{ number_format($payment->amount, 2) }} via {{ ucfirst($payment->gateway) }}
+                        {{ $currencySymbol }}{{ number_format($payment->amount, 2) }} via {{ ucfirst($payment->gateway) }}
                         @if($payment->status === 'completed')
                             <span style="color: #28a745;">(Paid)</span>
                         @else

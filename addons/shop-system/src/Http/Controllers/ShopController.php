@@ -59,7 +59,7 @@ class ShopController extends BaseShopController
         $plans = $this->planRepository->getByCategory($category->id, onlyEnabled: true);
         $relatedCategories = $this->categoryRepository->getRelatedCategories($category, limit: 4);
 
-        return view('shop::catalog.category', compact('category', 'plans', 'relatedCategories'));
+        return $this->view('shop::catalog.category', compact('category', 'plans', 'relatedCategories'));
     }
 
     /**
@@ -74,7 +74,7 @@ class ShopController extends BaseShopController
         $plans = $this->planRepository->getByCategory($product->id, onlyEnabled: true);
         $relatedProducts = $this->categoryRepository->getRelatedCategories($product, limit: 4);
 
-        return view('shop::catalog.category', [
+        return $this->view('shop::catalog.category', [
             'category' => $product,
             'plans' => $plans,
             'relatedCategories' => $relatedProducts
@@ -98,7 +98,7 @@ class ShopController extends BaseShopController
             ->where('id', '!=', $plan->id)
             ->take(3);
 
-        return view('shop::catalog.plan', [
+        return $this->view('shop::catalog.plan', [
             'plan' => $plan,
             'category' => $category,
             'relatedPlans' => $relatedPlans
@@ -160,7 +160,7 @@ class ShopController extends BaseShopController
     public function cart(): View
     {
         $cartData = $this->cartService->getCartSummary();
-        return view('shop::cart.index', $cartData);
+        return $this->view('shop::cart.index', $cartData);
     }
 
     /**
@@ -287,7 +287,7 @@ class ShopController extends BaseShopController
                     'items' => [],
                     'total_items' => 0,
                     'total_amount' => '0.00',
-                    'currency_symbol' => config('shop.currency_symbol', '$')
+                    'currency_symbol' => $this->currencyService->getCurrentCurrencySymbol()
                 ]
             ]);
         }
@@ -300,7 +300,7 @@ class ShopController extends BaseShopController
                 'total_amount' => number_format($cartData['total'], 2),
                 'subtotal' => number_format($cartData['subtotal'], 2),
                 'tax' => number_format($cartData['tax'], 2),
-                'currency_symbol' => config('shop.currency_symbol', '$')
+                'currency_symbol' => $this->currencyService->getCurrentCurrencySymbol()
             ]
         ]);
     }

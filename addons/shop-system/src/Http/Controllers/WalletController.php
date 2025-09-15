@@ -17,14 +17,14 @@ use Illuminate\Support\Facades\Mail;
 use PterodactylAddons\ShopSystem\Mail\WalletFundsAddedMail;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 
-class WalletController extends Controller
+class WalletController extends BaseShopController
 {
     public function __construct(
         private UserWalletRepository $walletRepository,
-        private WalletService $walletService,
-        private PaymentGatewayManager $paymentGatewayManager,
-        private ShopConfigService $shopConfig
-    ) {}
+        private PaymentGatewayManager $paymentGatewayManager
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Display wallet dashboard.
@@ -41,10 +41,8 @@ class WalletController extends Controller
         
         $statistics = $this->walletRepository->getUserStatistics(auth()->id());
         $monthlySpending = $statistics['monthly_spending'] ?? 0;
-        $shopConfig = $this->shopConfig->getShopConfig();
 
-        return view('shop::wallet.index', compact('wallet', 'transactions', 'statistics', 'monthlySpending'))
-            ->with('shopConfig', $shopConfig);
+        return $this->view('shop::wallet.index', compact('wallet', 'transactions', 'statistics', 'monthlySpending'));
     }
 
     /**
@@ -59,14 +57,13 @@ class WalletController extends Controller
         $maximumBalance = config('shop.wallet.maximum_balance', 10000.00);
         
         $currentBalance = $this->walletService->getBalance(auth()->user());
-        $shopConfig = $this->shopConfig->getShopConfig();
 
-        return view('shop::wallet.add-funds', compact(
+        return $this->view('shop::wallet.add-funds', compact(
             'paymentMethods', 
             'minimumDeposit', 
             'maximumBalance',
             'currentBalance'
-        ))->with('shopConfig', $shopConfig);
+        ));
     }
 
     /**
@@ -245,7 +242,7 @@ class WalletController extends Controller
     /**
      * Get available payment methods for deposits.
      */
-    private function getAvailablePaymentMethods(): array
+    protected function getAvailablePaymentMethods(): array
     {
         $methods = [];
 
@@ -304,7 +301,7 @@ class WalletController extends Controller
     {
         try {
             $gateway = $this->paymentGatewayManager->gateway('stripe');
-            $currency = $this->shopConfig->getSetting('currency', 'USD');
+            $currency = $this->shopConfigService->getSetting('currency', 'USD');
             
             // Get Stripe configuration
             $stripeConfig = $gateway->getConfig();
@@ -359,7 +356,7 @@ class WalletController extends Controller
     {
         try {
             $gateway = $this->paymentGatewayManager->gateway('paypal');
-            $currency = $this->shopConfig->getSetting('currency', 'USD');
+            $currency = $this->shopConfigService->getSetting('currency', 'USD');
             
             // Get PayPal configuration
             $paypalConfig = $gateway->getConfig();
@@ -391,7 +388,7 @@ class WalletController extends Controller
                     "description" => "Wallet deposit - " . $this->formatCurrency($transaction->amount)
                 ]],
                 "application_context" => [
-                    "brand_name" => $this->shopConfig->getSetting('shop_name', 'Game Server Shop'),
+                    "brand_name" => $this->shopConfigService->getSetting('shop_name', 'Game Server Shop'),
                     "cancel_url" => route('shop.wallet.index'),
                     "return_url" => route('shop.wallet.deposit.paypal.return', ['transaction' => $transaction->id]),
                 ]

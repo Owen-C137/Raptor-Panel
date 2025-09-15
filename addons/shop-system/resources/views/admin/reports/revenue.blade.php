@@ -39,7 +39,7 @@
                     <div class="col-md-4">
                         <div class="info-box">
                             <span class="info-box-icon bg-green">
-                                <i class="fas fa-dollar-sign"></i>
+                                <i class="fa fa-usd"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Total Revenue</span>
@@ -51,7 +51,7 @@
                     <div class="col-md-4">
                         <div class="info-box">
                             <span class="info-box-icon bg-blue">
-                                <i class="fas fa-chart-line"></i>
+                                <i class="fa fa-line-chart"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Average Order Value</span>
@@ -63,7 +63,7 @@
                     <div class="col-md-4">
                         <div class="info-box">
                             <span class="info-box-icon bg-yellow">
-                                <i class="fas fa-calendar"></i>
+                                <i class="fa fa-calendar"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Daily Average</span>

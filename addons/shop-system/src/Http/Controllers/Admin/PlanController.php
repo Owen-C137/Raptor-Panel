@@ -5,19 +5,30 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Pterodactyl\Http\Controllers\Controller;
+use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopPlan;
 use PterodactylAddons\ShopSystem\Models\ShopCategory;
 use PterodactylAddons\ShopSystem\Http\Requests\PlanStoreRequest;
 use PterodactylAddons\ShopSystem\Http\Requests\PlanUpdateRequest;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use Pterodactyl\Models\Node;
 use Pterodactyl\Models\Location;
 use Pterodactyl\Models\Egg;
 use Pterodactyl\Models\Server;
 use Pterodactyl\Services\Servers\ServerDeletionService;
 
-class PlanController extends Controller
+class PlanController extends BaseShopController
 {
+    public function __construct(
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
+    ) {
+        parent::__construct($shopConfigService, $walletService, $currencyService);
+    }
+
     /**
      * Display a listing of plans
      */
@@ -46,7 +57,7 @@ class PlanController extends Controller
         })->toArray();
         $availableNodes = Node::orderBy('name')->pluck('name')->toArray();
 
-        return view('shop::admin.plans.index', compact(
+        return $this->view('shop::admin.plans.index', compact(
             'plans', 
             'categories', 
             'availableCategories', 
@@ -66,7 +77,7 @@ class PlanController extends Controller
         $locations = Location::orderBy('long')->get();
         $eggs = Egg::with('nest')->orderBy('name')->get();
         
-        return view('shop::admin.plans.create', compact('categories', 'nodes', 'locations', 'eggs'));
+        return $this->view('shop::admin.plans.create', compact('categories', 'nodes', 'locations', 'eggs'));
     }
 
     /**
@@ -107,7 +118,7 @@ class PlanController extends Controller
     {
         $plan->load(['category', 'orders.user']);
         
-        return view('shop::admin.plans.show', compact('plan'));
+        return $this->view('shop::admin.plans.show', compact('plan'));
     }
 
     /**
@@ -124,7 +135,7 @@ class PlanController extends Controller
         $limits = $plan->server_limits ?? [];
         $featureLimits = $plan->server_feature_limits ?? [];
         
-        return view('shop::admin.plans.edit', compact('plan', 'categories', 'nodes', 'locations', 'eggs', 'limits', 'featureLimits'));
+        return $this->view('shop::admin.plans.edit', compact('plan', 'categories', 'nodes', 'locations', 'eggs', 'limits', 'featureLimits'));
     }
 
     /**

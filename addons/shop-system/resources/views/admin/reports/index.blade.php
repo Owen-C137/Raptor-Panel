@@ -28,7 +28,7 @@
                     <div class="col-md-6 col-sm-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-blue">
-                                <i class="fas fa-chart-line"></i>
+                                <i class="fa fa-line-chart"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Revenue Reports</span>
@@ -45,7 +45,7 @@
                     <div class="col-md-6 col-sm-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-green">
-                                <i class="fas fa-shopping-cart"></i>
+                                <i class="fa fa-shopping-cart"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Order Reports</span>
@@ -62,7 +62,7 @@
                     <div class="col-md-6 col-sm-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-yellow">
-                                <i class="fas fa-users"></i>
+                                <i class="fa fa-users"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Customer Reports</span>
@@ -79,7 +79,7 @@
                     <div class="col-md-6 col-sm-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-red">
-                                <i class="fas fa-download"></i>
+                                <i class="fa fa-download"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Export Data</span>
@@ -113,7 +113,7 @@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-aqua">
-                                <i class="fas fa-dollar-sign"></i>
+                                <i class="fa fa-usd"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">This Month</span>
@@ -125,7 +125,7 @@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-green">
-                                <i class="fas fa-shopping-bag"></i>
+                                <i class="fa fa-shopping-bag"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">This Month</span>
@@ -137,7 +137,7 @@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-yellow">
-                                <i class="fas fa-user-plus"></i>
+                                <i class="fa fa-user-plus"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">New</span>
@@ -149,7 +149,7 @@
                     <div class="col-md-3 col-sm-6 col-xs-12">
                         <div class="info-box">
                             <span class="info-box-icon bg-red">
-                                <i class="fas fa-chart-bar"></i>
+                                <i class="fa fa-bar-chart"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Average</span>

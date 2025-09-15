@@ -5,16 +5,26 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
-use Pterodactyl\Http\Controllers\Controller;
+use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopCategory;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use PterodactylAddons\ShopSystem\Models\ShopPlan;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use Carbon\Carbon;
 
-class DashboardController extends Controller
+class DashboardController extends BaseShopController
 {
+    public function __construct(
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
+    ) {
+        parent::__construct($shopConfigService, $walletService, $currencyService);
+    }
     /**
      * Display the admin shop dashboard
      */
@@ -44,7 +54,7 @@ class DashboardController extends Controller
         // Get top categories
         $topCategories = $this->getTopCategories();
         
-        return view('shop::admin.dashboard', compact('metrics', 'todayStats', 'recentOrders', 'revenueData', 'topPlans', 'systemHealth', 'topCategories'));
+        return $this->view('shop::admin.dashboard', compact('metrics', 'todayStats', 'recentOrders', 'revenueData', 'topPlans', 'systemHealth', 'topCategories'));
     }
 
     /**
@@ -129,6 +139,91 @@ class DashboardController extends Controller
         return response()->json([
             'stats' => $this->getDashboardStats(),
             'revenue_data' => $this->getRevenueData(),
+        ]);
+    }
+
+    /**
+     * Get revenue chart data via AJAX
+     */
+    public function getRevenueChart(Request $request): JsonResponse
+    {
+        $period = $request->get('period', 7);
+        $period = intval($period);
+        
+        // Validate period
+        if (!in_array($period, [7, 14, 30, 90])) {
+            $period = 7;
+        }
+        
+        $startDate = Carbon::now()->subDays($period);
+        
+        // Get revenue and order data by day
+        $data = [];
+        $labels = [];
+        $revenue = [];
+        $orders = [];
+        
+        for ($i = $period - 1; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $labels[] = $date->format('M j');
+            
+            // Get revenue for this date (amount + setup_fee)
+            $dailyRevenue = ShopOrder::whereIn('status', ['processing', 'active', 'completed'])
+                ->whereDate('created_at', $date->toDateString())
+                ->selectRaw('SUM(amount + setup_fee) as total_revenue')
+                ->value('total_revenue') ?? 0;
+                
+            // Get order count for this date
+            $dailyOrders = ShopOrder::whereIn('status', ['processing', 'active', 'completed'])
+                ->whereDate('created_at', $date->toDateString())
+                ->count();
+                
+            $revenue[] = floatval($dailyRevenue);
+            $orders[] = $dailyOrders;
+        }
+        
+        return response()->json([
+            'labels' => $labels,
+            'revenue' => $revenue,
+            'orders' => $orders,
+        ]);
+    }
+
+    /**
+     * Get dashboard stats via AJAX
+     */
+    public function getStats(Request $request): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'stats' => $this->getDashboardStats(),
+        ]);
+    }
+
+    /**
+     * Get recent orders via AJAX
+     */
+    public function getRecentOrders(Request $request): JsonResponse
+    {
+        $recentOrders = ShopOrder::with(['user', 'plan.category'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'orders' => $recentOrders,
+        ]);
+    }
+
+    /**
+     * Get top plans via AJAX (make public since it's used in routes)
+     */
+    public function getTopPlansAjax(Request $request): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'plans' => $this->getTopPlans(),
         ]);
     }
 

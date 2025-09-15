@@ -5,21 +5,30 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-use Pterodactyl\Http\Controllers\Controller;
+use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use Pterodactyl\Models\User;
 use Pterodactyl\Models\Server;
 use PterodactylAddons\ShopSystem\Services\OrderService;
 use Pterodactyl\Services\Servers\ServerDeletionService;
 
-class OrderController extends Controller
+class OrderController extends BaseShopController
 {
     protected OrderService $orderService;
     protected ServerDeletionService $serverDeletionService;
 
-    public function __construct(OrderService $orderService, ServerDeletionService $serverDeletionService)
-    {
+    public function __construct(
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService,
+        OrderService $orderService, 
+        ServerDeletionService $serverDeletionService
+    ) {
+        parent::__construct($shopConfigService, $walletService, $currencyService);
         $this->orderService = $orderService;
         $this->serverDeletionService = $serverDeletionService;
     }
@@ -53,7 +62,7 @@ class OrderController extends Controller
         $users = User::orderBy('username')->get();
         $statuses = ShopOrder::getStatuses();
         
-        return view('shop::admin.orders.index', compact('orders', 'users', 'statuses', 'search', 'status', 'user'));
+        return $this->view('shop::admin.orders.index', compact('orders', 'users', 'statuses', 'search', 'status', 'user'));
     }
 
     /**
@@ -63,7 +72,7 @@ class OrderController extends Controller
     {
         $order->load(['user', 'plan.category', 'server', 'payments']);
         
-        return view('shop::admin.orders.show', compact('order'));
+        return $this->view('shop::admin.orders.show', compact('order'));
     }
 
     /**

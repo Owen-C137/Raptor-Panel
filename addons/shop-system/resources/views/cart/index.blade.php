@@ -141,6 +141,9 @@
 <script>
     console.log('🛒 Cart script initializing...');
     
+    // Set currency symbol globally for JavaScript use
+    window.currencySymbol = '{{ $currencySymbol }}';
+    
     // Create Shop object if it doesn't exist to bridge with global functions
     if (typeof Shop === 'undefined') {
         window.Shop = {
@@ -309,13 +312,13 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="item-pricing">
-                                        <div class="item-price">$${parseFloat(item.plan.price).toFixed(2)}</div>
-                                        ${parseFloat(item.plan.setup_fee) > 0 ? `<small class="text-muted">+$${parseFloat(item.plan.setup_fee).toFixed(2)} setup</small>` : ''}
+                                        <div class="item-price">${window.currencySymbol}${parseFloat(item.plan.price).toFixed(2)}</div>
+                                        ${parseFloat(item.plan.setup_fee) > 0 ? `<small class="text-muted">+${window.currencySymbol}${parseFloat(item.plan.setup_fee).toFixed(2)} setup</small>` : ''}
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-center">
-                                        <strong>$${parseFloat(item.subtotal).toFixed(2)}</strong>
+                                        <strong>${window.currencySymbol}${parseFloat(item.subtotal).toFixed(2)}</strong>
                                     </div>
                                 </div>
                             </div>

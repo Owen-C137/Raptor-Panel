@@ -73,7 +73,8 @@ function initWalletModal() {
         console.log('Updating deposit display with amount:', selectedAmount);
         
         if (depositAmountDisplay) {
-            depositAmountDisplay.textContent = selectedAmount > 0 ? `$${selectedAmount.toFixed(2)}` : '$0.00';
+            const currencySymbol = (window.shopConfig && window.shopConfig.currencySymbol) || '$';
+            depositAmountDisplay.textContent = selectedAmount > 0 ? `${currencySymbol}${selectedAmount.toFixed(2)}` : `${currencySymbol}0.00`;
             console.log('Updated deposit display to:', depositAmountDisplay.textContent);
         } else {
             console.error('Deposit amount display element not found');
@@ -948,9 +949,22 @@ window.Shop = {
     },
     
     updateWalletBalance: function() {
+        console.log('🔄 Updating wallet balance via AJAX');
+        
+        // Store original balance as fallback
+        const balanceElements = document.querySelectorAll('.wallet-balance');
+        const originalBalances = [];
+        balanceElements.forEach((element, index) => {
+            originalBalances[index] = {
+                text: element.textContent,
+                balance: element.dataset.balance
+            };
+        });
+        
         // Fetch updated wallet balance - using the correct API route
         fetch('/shop/wallet/balance')
             .then(response => {
+                console.log('💰 Wallet balance response status:', response.status);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -961,16 +975,26 @@ window.Shop = {
                 return response.json();
             })
             .then(data => {
-                if (data.success) {
-                    const balanceElements = document.querySelectorAll('.wallet-balance');
+                console.log('💰 Wallet balance response data:', data);
+                if (data.success && data.formatted_balance) {
                     balanceElements.forEach(element => {
                         element.textContent = data.formatted_balance;
                         element.dataset.balance = data.balance;
                     });
+                    console.log('💰 Wallet balance updated successfully to:', data.formatted_balance);
+                } else {
+                    console.warn('💰 Wallet balance update failed, keeping original balance');
                 }
             })
             .catch(error => {
-                console.error('Error updating wallet balance:', error);
+                console.error('💰 Error updating wallet balance, restoring original:', error);
+                // Restore original balance if update fails
+                balanceElements.forEach((element, index) => {
+                    if (originalBalances[index]) {
+                        element.textContent = originalBalances[index].text;
+                        element.dataset.balance = originalBalances[index].balance;
+                    }
+                });
             });
     },
     
@@ -1090,7 +1114,7 @@ window.Shop = {
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="text-muted">Qty: ${quantity}</span>
-                                <span class="fw-semibold text-primary">$${itemTotal.toFixed(2)}</span>
+                                <span class="fw-semibold text-primary">${(window.shopConfig && window.shopConfig.currencySymbol) || '$'}${itemTotal.toFixed(2)}</span>
                             </div>
                         </div>
                     </div>
@@ -1102,7 +1126,8 @@ window.Shop = {
         
         // Update total
         if (cartTotalAmount) {
-            cartTotalAmount.textContent = `$${totalAmount.toFixed(2)}`;
+            const currencySymbol = (window.shopConfig && window.shopConfig.currencySymbol) || '$';
+            cartTotalAmount.textContent = `${currencySymbol}${totalAmount.toFixed(2)}`;
         }
     },
     

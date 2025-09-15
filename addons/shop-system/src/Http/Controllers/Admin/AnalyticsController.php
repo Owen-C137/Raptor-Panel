@@ -4,16 +4,27 @@ namespace PterodactylAddons\ShopSystem\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Pterodactyl\Http\Controllers\Controller;
+use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use PterodactylAddons\ShopSystem\Models\ShopCategory;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use Carbon\Carbon;
 use DB;
 
-class AnalyticsController extends Controller
+class AnalyticsController extends BaseShopController
 {
+    public function __construct(
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
+    ) {
+        parent::__construct($shopConfigService, $walletService, $currencyService);
+    }
+
     /**
      * Display analytics dashboard
      */
@@ -28,7 +39,7 @@ class AnalyticsController extends Controller
             'customers' => $this->getCustomerAnalytics($period),
         ];
         
-        return view('shop::admin.analytics.index', compact('analytics', 'period'));
+        return $this->view('shop::admin.analytics.index', compact('analytics', 'period'));
     }
 
     /**
@@ -91,7 +102,7 @@ class AnalyticsController extends Controller
         $period = $request->get('period', '30');
         $analytics = $this->getRevenueAnalytics($period);
         
-        return view('shop::admin.analytics.revenue', compact('analytics', 'period'));
+        return $this->view('shop::admin.analytics.revenue', compact('analytics', 'period'));
     }
 
     /**
@@ -102,7 +113,7 @@ class AnalyticsController extends Controller
         $period = $request->get('period', '30');
         $analytics = $this->getOrderAnalytics($period);
         
-        return view('shop::admin.analytics.orders', compact('analytics', 'period'));
+        return $this->view('shop::admin.analytics.orders', compact('analytics', 'period'));
     }
 
     /**
@@ -113,7 +124,7 @@ class AnalyticsController extends Controller
         $period = $request->get('period', '30');
         $analytics = $this->getCustomerAnalytics($period);
         
-        return view('shop::admin.analytics.customers', compact('analytics', 'period'));
+        return $this->view('shop::admin.analytics.customers', compact('analytics', 'period'));
     }
 
     /**
@@ -131,7 +142,7 @@ class AnalyticsController extends Controller
             'customers' => $this->getCustomerAnalytics($period),
         ];
         
-        return view('shop::admin.analytics.export', compact('analytics', 'period', 'type'));
+        return $this->view('shop::admin.analytics.export', compact('analytics', 'period', 'type'));
     }
 
     /**

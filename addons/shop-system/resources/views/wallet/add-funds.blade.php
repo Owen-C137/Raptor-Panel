@@ -28,7 +28,7 @@
                                    step="0.01" 
                                    required>
                         </div>
-                        <div class="form-text">Minimum amount: $5.00</div>
+                        <div class="form-text">Minimum amount: {{ $currencySymbol }}5.00</div>
                     </div>
                     
                     <div class="mb-3">

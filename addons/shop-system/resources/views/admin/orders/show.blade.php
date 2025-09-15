@@ -76,9 +76,9 @@
                     
                     <dt>Amount:</dt>
                     <dd>
-                        <strong>${{ number_format($order->amount, 2) }}</strong>
+                        <strong>{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</strong>
                         @if($order->setup_fee > 0)
-                            <br><small>Setup Fee: ${{ number_format($order->setup_fee, 2) }}</small>
+                            <br><small>Setup Fee: {{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</small>
                         @endif
                     </dd>
                     
@@ -229,7 +229,7 @@
                         <div class="media">
                             <div class="media-body">
                                 <h5 class="media-heading">
-                                    ${{ number_format($payment->amount, 2) }}
+                                    {{ $currencySymbol }}{{ number_format($payment->amount, 2) }}
                                     <small class="text-muted">{{ $payment->created_at->format('M d, Y') }}</small>
                                 </h5>
                                 <p class="margin-bottom-5">

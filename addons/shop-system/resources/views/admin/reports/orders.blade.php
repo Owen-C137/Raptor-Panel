@@ -39,7 +39,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-blue">
-                                <i class="fas fa-shopping-cart"></i>
+                                <i class="fa fa-shopping-cart"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Total Orders</span>
@@ -51,7 +51,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-green">
-                                <i class="fas fa-check-circle"></i>
+                                <i class="fa fa-check-circle"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Completed</span>
@@ -63,7 +63,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-yellow">
-                                <i class="fas fa-clock"></i>
+                                <i class="fa fa-clock-o"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Pending</span>
@@ -75,7 +75,7 @@
                     <div class="col-md-3">
                         <div class="info-box">
                             <span class="info-box-icon bg-red">
-                                <i class="fas fa-times-circle"></i>
+                                <i class="fa fa-times-circle"></i>
                             </span>
                             <div class="info-box-content">
                                 <span class="info-box-text">Failed</span>

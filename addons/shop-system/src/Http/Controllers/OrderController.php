@@ -14,15 +14,15 @@ use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
 use Illuminate\Support\Facades\Gate;
 
-class OrderController extends Controller
+class OrderController extends BaseShopController
 {
     public function __construct(
         private ShopOrderRepository $orderRepository,
         private ShopOrderService $orderService,
-        private PaymentGatewayManager $paymentManager,
-        private WalletService $walletService,
-        private ShopConfigService $shopConfigService
-    ) {}
+        private PaymentGatewayManager $paymentManager
+    ) {
+        parent::__construct();
+    }
 
     /**
      * Display user's orders.
@@ -38,10 +38,7 @@ class OrderController extends Controller
             perPage: 15
         );
 
-        $shopConfig = $this->shopConfigService->getShopConfig();
-
-        return view('shop::orders.index', compact('orders', 'filters'))
-            ->with('shopConfig', $shopConfig);
+        return $this->view('shop::orders.index', compact('orders', 'filters'));
     }
 
     /**
@@ -59,10 +56,8 @@ class OrderController extends Controller
         }
 
         $isSuccessView = $request->has('success');
-        $shopConfig = $this->shopConfigService->getShopConfig();
 
-        return view('shop::orders.show', compact('order', 'paymentMethods', 'isSuccessView'))
-            ->with('shopConfig', $shopConfig);
+        return $this->view('shop::orders.show', compact('order', 'paymentMethods', 'isSuccessView'));
     }
 
     /**
@@ -172,9 +167,12 @@ class OrderController extends Controller
 
         // Get the domain for the support email
         $domain = request()->getHost();
+        
+        // Get currency symbol for PDF
+        $currencySymbol = $this->currencyService->getCurrentCurrencySymbol();
 
         // Render the view first to ensure Blade processing
-        $html = view('shop::invoice', compact('order', 'domain'))->render();
+        $html = view('shop::invoice', compact('order', 'domain', 'currencySymbol'))->render();
 
         // Generate PDF invoice using DomPDF
         $pdf = app('dompdf.wrapper');
@@ -246,7 +244,7 @@ class OrderController extends Controller
     /**
      * Get available payment methods.
      */
-    private function getAvailablePaymentMethods(): array
+    protected function getAvailablePaymentMethods(): array
     {
         $methods = [];
 

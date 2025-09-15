@@ -168,7 +168,7 @@ Route::name('admin.shop.')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/dashboard/stats', [AdminDashboardController::class, 'getStats'])->name('dashboard.stats');
         Route::get('/dashboard/recent-orders', [AdminDashboardController::class, 'getRecentOrders'])->name('dashboard.recent-orders');
         Route::get('/dashboard/revenue-chart', [AdminDashboardController::class, 'getRevenueChart'])->name('dashboard.revenue-chart');
-        Route::get('/dashboard/top-plans', [AdminDashboardController::class, 'getTopPlans'])->name('dashboard.top-plans');
+        Route::get('/dashboard/top-plans', [AdminDashboardController::class, 'getTopPlansAjax'])->name('dashboard.top-plans');
         
         // Category quick actions
         Route::post('/categories/{category}/toggle', [CategoryController::class, 'toggleStatus'])->name('categories.toggle');

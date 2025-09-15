@@ -52,11 +52,11 @@
                 @if(isset($analytics['revenue']))
                 <div class="info-box">
                     <span class="info-box-icon bg-green">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fa fa-money"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Revenue</span>
-                        <span class="info-box-number">${{ number_format($analytics['revenue']['total'] ?? 0, 2) }}</span>
+                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($analytics['revenue']['total'] ?? 0, 2) }}</span>
                         <div class="progress">
                             <div class="progress-bar" style="width: 100%"></div>
                         </div>
@@ -80,7 +80,7 @@
                 @if(isset($analytics['orders']))
                 <div class="info-box">
                     <span class="info-box-icon bg-blue">
-                        <i class="fas fa-shopping-cart"></i>
+                        <i class="fa fa-shopping-cart"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Orders</span>
@@ -110,7 +110,7 @@
                 @if(isset($analytics['categories']))
                 <div class="info-box">
                     <span class="info-box-icon bg-yellow">
-                        <i class="fas fa-tags"></i>
+                        <i class="fa fa-tags"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Active Categories</span>
@@ -138,7 +138,7 @@
                 @if(isset($analytics['customers']))
                 <div class="info-box">
                     <span class="info-box-icon bg-red">
-                        <i class="fas fa-users"></i>
+                        <i class="fa fa-users"></i>
                     </span>
                     <div class="info-box-content">
                         <span class="info-box-text">Total Customers</span>
@@ -167,16 +167,16 @@
             <div class="box-body">
                 <div class="btn-group" role="group">
                     <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-primary">
-                        <i class="fas fa-chart-line"></i> Revenue Report
+                        <i class="fa fa-chart-line"></i> Revenue Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-info">
-                        <i class="fas fa-shopping-cart"></i> Orders Report
+                        <i class="fa fa-shopping-cart"></i> Orders Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-success">
-                        <i class="fas fa-users"></i> Customers Report
+                        <i class="fa fa-users"></i> Customers Report
                     </a>
                     <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-warning">
-                        <i class="fas fa-download"></i> Export Data
+                        <i class="fa fa-download"></i> Export Data
                     </a>
                 </div>
             </div>

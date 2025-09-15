@@ -120,9 +120,9 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <strong>${{ number_format($order->amount, 2) }}</strong>
+                                        <strong>{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</strong>
                                         @if($order->setup_fee > 0)
-                                            <br><small class="text-muted">+${{ number_format($order->setup_fee, 2) }} setup</small>
+                                            <br><small class="text-muted">+{{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }} setup</small>
                                         @endif
                                     </td>
                                     <td>

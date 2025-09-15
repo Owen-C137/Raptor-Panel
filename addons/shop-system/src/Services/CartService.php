@@ -9,6 +9,12 @@ use PterodactylAddons\ShopSystem\Models\ShopPlan;
 
 class CartService
 {
+    protected $currencyService;
+
+    public function __construct(CurrencyService $currencyService)
+    {
+        $this->currencyService = $currencyService;
+    }
     /**
      * Get or create cart for current user.
      */
@@ -196,7 +202,9 @@ class CartService
             'discount' => $discount,
             'tax' => $tax,
             'total' => $finalTotal,
-            'formatted_total' => '$' . number_format($finalTotal, 2),
+            'total_amount' => number_format($finalTotal, 2),
+            'formatted_total' => $this->currencyService->getCurrentCurrencySymbol() . number_format($finalTotal, 2),
+            'currency_symbol' => $this->currencyService->getCurrentCurrencySymbol(),
             'applied_coupon' => $appliedCoupon,
         ];
     }

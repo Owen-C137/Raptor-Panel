@@ -76,7 +76,7 @@
                                             <div class="bg-success-light rounded p-3">
                                                 <div class="text-muted small mb-1">Starting from</div>
                                                 <div class="h4 fw-bold text-success mb-0">
-                                                    <span class="price-amount">{{ config('shop.currency.symbol', '$') }}{{ number_format($minPrice, 2) }}</span>
+                                                    <span class="price-amount">{{ $currencySymbol }}{{ number_format($minPrice, 2) }}</span>
                                                     <span class="text-muted fs-6">/ month</span>
                                                 </div>
                                             </div>
@@ -84,7 +84,7 @@
                                             <div class="bg-success-light rounded p-3">
                                                 <div class="text-muted small mb-1">Starting from</div>
                                                 <div class="h4 fw-bold text-success mb-0">
-                                                    <span class="price-amount">{{ config('shop.currency.symbol', '$') }}{{ number_format($minPrice, 2) }}</span>
+                                                    <span class="price-amount">{{ $currencySymbol }}{{ number_format($minPrice, 2) }}</span>
                                                     <span class="text-muted fs-6">/ month</span>
                                                 </div>
                                             </div>
@@ -179,7 +179,7 @@
                                 
                                 <div class="block-header block-header-default text-center">
                                     <h3 class="block-title">
-                                        {{ $plan->name }} <small class="text-success">{{ config('shop.currency.symbol', '$') }}{{ number_format($plan->price, 2) }}/{{ $plan->billing_cycle }}</small>
+                                        {{ $plan->name }} <small class="text-success">{{ $currencySymbol }}{{ number_format($plan->price, 2) }}/{{ $plan->billing_cycle }}</small>
                                     </h3>
                                 </div>
                                 
@@ -188,13 +188,13 @@
                                     {{-- Pricing Display --}}
                                     <div class="mb-4">
                                         <div class="h2 fw-bold text-success mb-1">
-                                            {{ config('shop.currency.symbol', '$') }}{{ number_format($plan->price, 2) }}
+                                            {{ $currencySymbol }}{{ number_format($plan->price, 2) }}
                                         </div>
                                         <small class="text-muted">per {{ $plan->billing_cycle }}</small>
                                         @if($plan->setup_fee > 0)
                                             <div class="mt-1">
                                                 <small class="text-warning">
-                                                    + {{ config('shop.currency.symbol', '$') }}{{ number_format($plan->setup_fee, 2) }} setup
+                                                    + {{ $currencySymbol }}{{ number_format($plan->setup_fee, 2) }} setup
                                                 </small>
                                             </div>
                                         @endif
@@ -305,7 +305,7 @@
                                         data-price="{{ $plan->price }}" 
                                         data-setup="{{ $plan->setup_fee }}"
                                         data-billing="{{ $plan->billing_cycle }}">
-                                    {{ $plan->name }} - {{ config('shop.currency.symbol', '$') }}{{ number_format($plan->price, 2) }}
+                                    {{ $plan->name }} - {{ $currencySymbol }}{{ number_format($plan->price, 2) }}
                                 </option>
                                 @endif
                             @endforeach
@@ -322,16 +322,16 @@
                         <hr>
                         <div class="summary-row">
                             <span>Plan Cost:</span>
-                            <span id="summary-plan-cost">{{ config('shop.currency.symbol', '$') }}0.00</span>
+                            <span id="summary-plan-cost">{{ $currencySymbol }}0.00</span>
                         </div>
                         <div class="summary-row" id="summary-setup-row" style="display: none;">
                             <span>Setup Fee:</span>
-                            <span id="summary-setup-cost">{{ config('shop.currency.symbol', '$') }}0.00</span>
+                            <span id="summary-setup-cost">{{ $currencySymbol }}0.00</span>
                         </div>
                         <div class="summary-row total">
                             <strong>
                                 <span>Total:</span>
-                                <span id="summary-total">{{ config('shop.currency.symbol', '$') }}0.00</span>
+                                <span id="summary-total">{{ $currencySymbol }}0.00</span>
                             </strong>
                         </div>
                         <hr>
@@ -444,18 +444,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const total = planCost + setupCost;
         
         document.getElementById('summary-plan-cost').textContent = 
-            '{{ config("shop.currency.symbol", "$") }}' + planCost.toFixed(2);
+            '{{ $currencySymbol }}' + planCost.toFixed(2);
         
         if (setupFee > 0) {
             document.getElementById('summary-setup-cost').textContent = 
-                '{{ config("shop.currency.symbol", "$") }}' + setupCost.toFixed(2);
+                '{{ $currencySymbol }}' + setupCost.toFixed(2);
             document.getElementById('summary-setup-row').style.display = 'flex';
         } else {
             document.getElementById('summary-setup-row').style.display = 'none';
         }
         
         document.getElementById('summary-total').textContent = 
-            '{{ config("shop.currency.symbol", "$") }}' + total.toFixed(2);
+            '{{ $currencySymbol }}' + total.toFixed(2);
         
         orderSummary.style.display = 'block';
     }

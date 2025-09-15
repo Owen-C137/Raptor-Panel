@@ -57,14 +57,14 @@
                                 <div class="py-2">
                                     <h5 class="text-primary mb-2">{{ ucfirst(str_replace('_', ' ', $cycle['cycle'])) }}</h5>
                                     <div class="price-display">
-                                        <span class="h3 fw-bold text-success">${{ number_format($cycle['price'], 2) }}</span>
+                                        <span class="h3 fw-bold text-success">{{ $currencySymbol }}{{ number_format($cycle['price'], 2) }}</span>
                                         @if($cycle['cycle'] !== 'one_time')
                                             <span class="text-muted">/ {{ $cycle['cycle'] }}</span>
                                         @endif
                                     </div>
                                     @if(!empty($cycle['setup_fee']) && $cycle['setup_fee'] > 0)
                                     <div class="setup-fee mt-1">
-                                        <small class="text-warning">+ ${{ number_format($cycle['setup_fee'], 2) }} setup fee</small>
+                                        <small class="text-warning">+ {{ $currencySymbol }}{{ number_format($cycle['setup_fee'], 2) }} setup fee</small>
                                     </div>
                                     @endif
                                 </div>
@@ -199,10 +199,10 @@
                         <select class="form-select" id="billing-cycle">
                             @foreach($plan->billing_cycles as $cycle)
                             <option value="{{ $cycle['cycle'] }}" data-price="{{ $cycle['price'] }}" data-setup="{{ $cycle['setup_fee'] ?? 0 }}">
-                                {{ ucfirst(str_replace('_', ' ', $cycle['cycle'])) }} - ${{ number_format($cycle['price'], 2) }}
+                                {{ ucfirst(str_replace('_', ' ', $cycle['cycle'])) }} - {{ $currencySymbol }}{{ number_format($cycle['price'], 2) }}
                                 @if($cycle['cycle'] !== 'one_time') / {{ $cycle['cycle'] }} @endif
                                 @if(!empty($cycle['setup_fee']) && $cycle['setup_fee'] > 0)
-                                    (+ ${{ number_format($cycle['setup_fee'], 2) }} setup)
+                                    (+ {{ $currencySymbol }}{{ number_format($cycle['setup_fee'], 2) }} setup)
                                 @endif
                             </option>
                             @endforeach
@@ -265,7 +265,7 @@
                         <div class="text-muted small mb-1">
                             @php $cheapest = $relatedPlan->getCheapestCycle(); @endphp
                             @if($cheapest)
-                                Starting at <span class="fw-semibold text-success">${{ number_format($cheapest['price'], 2) }}</span>
+                                Starting at <span class="fw-semibold text-success">{{ $currencySymbol }}{{ number_format($cheapest['price'], 2) }}</span>
                                 @if($cheapest['cycle'] !== 'one_time') / {{ $cheapest['cycle'] }} @endif
                             @endif
                         </div>
