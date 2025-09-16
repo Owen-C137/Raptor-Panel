@@ -51,7 +51,6 @@ class CartService
 
         $unitPrice = (float) $cycleData['price'];
         $setupFee = (float) ($cycleData['setup_fee'] ?? 0);
-        $totalUnitPrice = $unitPrice + $setupFee;
 
         // Check if item already exists in cart
         $existingItem = $cart->items()->where('plan_id', $planId)->first();
@@ -59,18 +58,19 @@ class CartService
         if ($existingItem) {
             // Update existing item
             $existingItem->quantity += $quantity;
-            $existingItem->total_price = $existingItem->quantity * $totalUnitPrice;
+            $existingItem->total_price = $existingItem->quantity * ($unitPrice + $setupFee);
             $existingItem->save();
         } else {
-            // Create new item
+            // Create new item - store unit price and setup fee separately
             $cart->items()->create([
                 'plan_id' => $planId,
                 'quantity' => $quantity,
-                'unit_price' => $totalUnitPrice,
-                'total_price' => $quantity * $totalUnitPrice,
+                'unit_price' => $unitPrice,  // Store only the recurring price
+                'total_price' => $quantity * ($unitPrice + $setupFee), // Total includes setup fee
                 'plan_options' => [
                     'billing_cycle' => $billingCycle,
                     'plan_name' => $plan->name,
+                    'setup_fee' => $setupFee,  // Store setup fee in options
                 ],
                 'server_config' => null,
             ]);
@@ -145,41 +145,40 @@ class CartService
                 $options = $item->plan_options ?? [];
                 $billingCycle = $options['billing_cycle'] ?? 'monthly';
                 
-                // Get current price data (in case prices changed)
-                $billingCycles = $plan->billing_cycles ?? [];
-                $cycleData = collect($billingCycles)->firstWhere('cycle', $billingCycle) ?? $billingCycles[0] ?? null;
+                // Use stored pricing from cart item instead of current plan pricing
+                $unitPrice = (float) $item->unit_price;
+                $setupFee = (float) ($options['setup_fee'] ?? 0);
+                $planName = $options['plan_name'] ?? $plan->name;
                 
-                if ($cycleData) {
-                    $currentPrice = (float) $cycleData['price'];
-                    $currentSetupFee = (float) ($cycleData['setup_fee'] ?? 0);
-                    
-                    $items[] = [
-                        'plan_id' => $plan->id,
-                        'quantity' => $item->quantity,
+                $items[] = [
+                    'plan_id' => $plan->id,
+                    'plan_name' => $planName,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $unitPrice,
+                    'setup_fee' => $setupFee,
+                    'total_price' => $item->total_price,
+                    'billing_cycle' => $billingCycle,
+                    'plan' => [
+                        'id' => $plan->id,
+                        'name' => $planName,
+                        'description' => $plan->description,
+                        'price' => $unitPrice,
+                        'setup_fee' => $setupFee,
                         'billing_cycle' => $billingCycle,
-                        'plan' => [
-                            'id' => $plan->id,
-                            'name' => $plan->name,
-                            'description' => $plan->description,
-                            'price' => $currentPrice,
-                            'setup_fee' => $currentSetupFee,
-                            'billing_cycle' => $billingCycle,
-                            'billing_cycles' => $billingCycles,
-                            'features' => $plan->server_feature_limits ?? [],
-                            'resources' => [
-                                'cpu' => $plan->cpu,
-                                'memory' => $plan->memory,
-                                'disk' => $plan->disk,
-                                'swap' => $plan->swap,
-                                'io' => $plan->io,
-                            ],
+                        'features' => $plan->server_feature_limits ?? [],
+                        'resources' => [
+                            'cpu' => $plan->cpu,
+                            'memory' => $plan->memory,
+                            'disk' => $plan->disk,
+                            'swap' => $plan->swap,
+                            'io' => $plan->io,
                         ],
-                        'subtotal' => $item->total_price,
-                    ];
-                    
-                    $total += $item->total_price;
-                    $itemCount += $item->quantity;
-                }
+                    ],
+                    'subtotal' => $item->total_price,
+                ];
+                
+                $total += $item->total_price;
+                $itemCount += $item->quantity;
             }
         }
 

@@ -101,7 +101,7 @@ class ShopOrderService
             'plan_id' => $plan->id,
             'status' => ShopOrder::STATUS_PENDING,
             'billing_cycle' => $firstItem['billing_cycle'] ?? 'monthly',
-            'amount' => $totals['total'],
+            'amount' => $totals['subtotal'], // Use subtotal (recurring amount) instead of total
             'setup_fee' => $totals['setup_total'] ?? 0,
             'currency' => $currency,
             'server_config' => [

@@ -199,6 +199,7 @@ class ShopSystemServiceProvider extends ServiceProvider
                 \PterodactylAddons\ShopSystem\Commands\ShopUninstallCommand::class,
                 \PterodactylAddons\ShopSystem\Commands\ProcessShopOrdersCommand::class,
                 \PterodactylAddons\ShopSystem\Commands\CleanupCancelledServersCommand::class,
+                \PterodactylAddons\ShopSystem\Commands\FixWalletBalancesCommand::class,
             ]);
         }
     }

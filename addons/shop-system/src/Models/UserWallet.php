@@ -105,7 +105,7 @@ class UserWallet extends Model
 
         return $this->transactions()->create([
             'type' => $type,
-            'amount' => -$amount,
+            'amount' => $amount, // Store positive amount, let the 'type' indicate it's a debit
             'balance_before' => $balanceBefore,
             'balance_after' => $this->balance,
             'description' => $description,
