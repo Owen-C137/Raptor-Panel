@@ -1,5 +1,21 @@
 # Shop System Changelog
 
+## v1.2.1 (2025-09-16)
+### 🔧 Technical Improvements
+- Added proper versioning system with VERSION file
+- Implemented VersionService for dynamic version tracking
+- Updated addon creation instructions with version control workflow
+- Enhanced documentation with changelog requirements
+- Improved commit message standards with version prefixes
+
+### 📋 Documentation Updates
+- Updated addon creation guidelines with mandatory version control
+- Added version control workflow to development process
+- Established changelog maintenance requirements
+- Defined semantic versioning standards for addon development
+
+---
+
 ## v1.2.0 (2025-09-16)
 ### 🎉 Major Features
 - **Complete Server Plan Renewal System**

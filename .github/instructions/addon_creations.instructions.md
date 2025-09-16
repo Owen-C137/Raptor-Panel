@@ -2,16 +2,50 @@
 
 IMPORTANT: we have set up a repo you can use this to push changes when i ask to:
 
+## **📦 VERSION CONTROL & CHANGELOG WORKFLOW**
+
+**CRITICAL: Before every commit, you MUST:**
+
+### **1. Update Version**
+```bash
+# For minor changes (bug fixes, small features):
+echo "1.2.1" > addons/shop-system/VERSION
+
+# For major changes (new features, breaking changes):
+echo "1.3.0" > addons/shop-system/VERSION
+```
+
+### **2. Update Changelog**
+```bash
+# Always update addons/shop-system/CHANGELOG.md with:
+# - Version number
+# - Date
+# - What changed (features, fixes, improvements)
+# - Any breaking changes
+```
+
+### **3. Commit with Version**
+```bash
 # 1. Stage all changes
 git add .
 
-# 2. Commit them with a message
-git commit -m "Describe what you changed here"
+# 2. Commit with version and description
+git commit -m "v1.2.1: Describe what you changed here
+
+- Feature/fix details
+- Any breaking changes
+- Updated changelog and version"
 
 # 3. Push to GitHub
 git push origin main
+```
 
-give a short description on whats changed where it says: Describe what you changed here
+**✅ ALWAYS**: Include version number in commit message  
+**✅ ALWAYS**: Update CHANGELOG.md before committing  
+**✅ ALWAYS**: Update VERSION file before committing  
+**❌ NEVER**: Commit without updating version and changelog
+
+---
 
 *Comprehensive instructions for creating and maintaining self-contained Pterodactyl Panel addons*
 
