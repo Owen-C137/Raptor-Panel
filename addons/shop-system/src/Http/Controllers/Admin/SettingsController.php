@@ -17,8 +17,9 @@ class SettingsController extends Controller
     public function index()
     {
         $settings = $this->getSettings();
+        $version = \PterodactylAddons\ShopSystem\Services\VersionService::getVersion();
         
-        return view('shop::admin.settings.index', compact('settings'));
+        return view('shop::admin.settings.index', compact('settings', 'version'));
     }
 
     /**

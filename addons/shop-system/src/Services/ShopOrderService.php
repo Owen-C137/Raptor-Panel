@@ -16,6 +16,7 @@ use Pterodactyl\Services\Servers\ServerCreationService;
 use Pterodactyl\Services\Allocations\AssignmentService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ShopOrderService
@@ -152,12 +153,29 @@ class ShopOrderService
             'next_due_at' => $nextDueAt,
         ]);
 
-        // Update the corresponding payment record to completed
-        $payment = $order->payments()->where('type', 'order_payment')->first();
+        // Update the corresponding payment record to completed (get the latest one)
+        $payment = $order->payments()
+            ->where('type', 'order_payment')
+            ->orderBy('created_at', 'desc')
+            ->first();
+        
         if ($payment) {
+            Log::info('Marking payment as completed', [
+                'payment_id' => $payment->id,
+                'order_id' => $orderId,
+                'payment_status_before' => $payment->status,
+                'payment_method' => $paymentMethod
+            ]);
+            
             $payment->update([
                 'status' => ShopPayment::STATUS_COMPLETED,
                 'processed_at' => now(),
+            ]);
+        } else {
+            Log::warning('No payment record found for order', [
+                'order_id' => $orderId,
+                'payment_method' => $paymentMethod,
+                'payment_count' => $order->payments()->count()
             ]);
         }
 

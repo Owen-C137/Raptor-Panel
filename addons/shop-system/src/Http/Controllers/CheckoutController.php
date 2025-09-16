@@ -38,13 +38,20 @@ class CheckoutController extends BaseShopController
     /**
      * Display checkout page.
      */
-    public function index(): View|RedirectResponse
+    public function index(Request $request): View|RedirectResponse
     {
         $this->checkShopAvailability();
 
         if (!auth()->check()) {
             return redirect()->route('auth.login')
                 ->with('error', 'Please login to continue with checkout.');
+        }
+
+        // Check if this is a renewal request
+        $renewServerUuid = $request->query('renew');
+        
+        if ($renewServerUuid) {
+            return $this->handleRenewalCheckout($renewServerUuid);
         }
 
         // Use database-based cart instead of session
@@ -71,6 +78,51 @@ class CheckoutController extends BaseShopController
         return $this->view('shop::checkout.index', compact(
             'cartItems',
             'total', 
+            'paymentMethods',
+            'userWallet'
+        ));
+    }
+
+    /**
+     * Handle renewal checkout flow
+     */
+    private function handleRenewalCheckout(string $serverUuid): View|RedirectResponse
+    {
+        $user = auth()->user();
+        
+        // Find the cancelled order for this server
+        $cancelledOrder = ShopOrder::query()
+            ->where('user_id', $user->id)
+            ->where('status', ShopOrder::STATUS_CANCELLED)
+            ->whereHas('server', function($query) use ($serverUuid) {
+                $query->where('uuid', 'LIKE', $serverUuid . '%')
+                      ->orWhere('uuidShort', $serverUuid);
+            })
+            ->with(['server', 'plan'])
+            ->first();
+        
+        if (!$cancelledOrder) {
+            return redirect()->route('shop.index')->with('error', 'No cancelled server plan found for renewal.');
+        }
+        
+        $paymentMethods = $this->getAvailablePaymentMethods();
+        $userWallet = null;
+        
+        // Only fetch wallet if credits are enabled
+        $settings = $this->shopConfigService->getShopConfig();
+        if ($settings['credits_enabled'] ?? false) {
+            $userWallet = $this->walletService->getWallet(auth()->id());
+        }
+        
+        // Calculate renewal pricing (default to monthly, but could be extended)
+        $renewalPrice = $cancelledOrder->plan->price;
+        $timeRemaining = $cancelledOrder->auto_delete_at ? 
+            now()->diffInDays($cancelledOrder->auto_delete_at, false) : null;
+        
+        return $this->view('shop::checkout.renewal', compact(
+            'cancelledOrder',
+            'renewalPrice',
+            'timeRemaining',
             'paymentMethods',
             'userWallet'
         ));
@@ -213,8 +265,14 @@ class CheckoutController extends BaseShopController
         Log::info('🚀 Checkout process started', [
             'user_id' => auth()->id(),
             'payment_gateway' => $request->input('payment_gateway'),
+            'is_renewal' => $request->has('renewal_order_id'),
             'request_data' => $request->all(),
         ]);
+
+        // Check if this is a renewal
+        if ($request->has('renewal_order_id')) {
+            return $this->processRenewal($request);
+        }
 
         try {
             $request->validate([
@@ -709,19 +767,49 @@ class CheckoutController extends BaseShopController
             $result = $paypalGateway->captureOrder($token);
             
             if ($result['success']) {
-                // Mark order as paid
-                $this->orderService->markAsPaid($order->id, 'paypal');
+                // Check if this is a renewal payment
+                $renewalData = session('renewal_data');
                 
-                // Clear the cart since payment was successful
-                $this->cartService->clearCart();
-                
-                Log::info('✅ PayPal payment captured successfully', [
-                    'order_id' => $order->id,
-                    'capture_id' => $result['capture_id'] ?? null,
-                ]);
-                
-                return redirect()->route('shop.orders.show', $order->uuid)
-                    ->with('success', 'Payment completed successfully! Your order is now active.');
+                if ($renewalData && $renewalData['order_id'] == $order->id) {
+                    // This is a renewal completion - reactivate the order
+                    Log::info('✅ PayPal renewal payment captured successfully', [
+                        'order_id' => $order->id,
+                        'capture_id' => $result['capture_id'] ?? null,
+                        'renewal_data' => $renewalData
+                    ]);
+                    
+                    // Mark the order as paid first
+                    $this->orderService->markAsPaid($order->id, 'paypal');
+                    
+                    // Then reactivate the order with renewal data
+                    $this->reactivateOrder(
+                        $order, 
+                        $renewalData['billing_cycle'], 
+                        \Carbon\Carbon::parse($renewalData['next_due_at']), 
+                        $renewalData['amount']
+                    );
+                    
+                    // Clear renewal session data
+                    session()->forget('renewal_data');
+                    
+                    return redirect()->route('shop.orders.show', $order->uuid)
+                        ->with('success', 'Server plan renewed successfully! Your server is now active.');
+                        
+                } else {
+                    // Regular order completion
+                    $this->orderService->markAsPaid($order->id, 'paypal');
+                    
+                    // Clear the cart since payment was successful
+                    $this->cartService->clearCart();
+                    
+                    Log::info('✅ PayPal payment captured successfully', [
+                        'order_id' => $order->id,
+                        'capture_id' => $result['capture_id'] ?? null,
+                    ]);
+                    
+                    return redirect()->route('shop.orders.show', $order->uuid)
+                        ->with('success', 'Payment completed successfully! Your order is now active.');
+                }
             } else {
                 Log::error('❌ PayPal payment capture failed', [
                     'order_id' => $order->id,
@@ -756,12 +844,55 @@ class CheckoutController extends BaseShopController
                 ->with('error', 'Invalid Stripe return');
         }
 
-        // Here you would verify the Stripe session
-        // For now, just mark as paid
-        $this->orderService->markAsPaid($order->id, 'stripe');
-        
-        return redirect()->route('shop.orders.show', $order->uuid)
-            ->with('success', 'Payment completed successfully!');
+        try {
+            // Check if this is a renewal payment
+            $renewalData = session('renewal_data');
+            
+            if ($renewalData && $renewalData['order_id'] == $order->id) {
+                // This is a renewal completion - reactivate the order
+                Log::info('✅ Stripe renewal payment completed successfully', [
+                    'order_id' => $order->id,
+                    'session_id' => $sessionId,
+                    'renewal_data' => $renewalData
+                ]);
+                
+                // Mark the order as paid first
+                $this->orderService->markAsPaid($order->id, 'stripe');
+                
+                // Then reactivate the order with renewal data
+                $this->reactivateOrder(
+                    $order, 
+                    $renewalData['billing_cycle'], 
+                    \Carbon\Carbon::parse($renewalData['next_due_at']), 
+                    $renewalData['amount']
+                );
+                
+                // Clear renewal session data
+                session()->forget('renewal_data');
+                
+                return redirect()->route('shop.orders.show', $order->uuid)
+                    ->with('success', 'Server plan renewed successfully! Your server is now active.');
+                    
+            } else {
+                // Regular order completion
+                // Here you would verify the Stripe session
+                // For now, just mark as paid
+                $this->orderService->markAsPaid($order->id, 'stripe');
+                
+                return redirect()->route('shop.orders.show', $order->uuid)
+                    ->with('success', 'Payment completed successfully!');
+            }
+            
+        } catch (\Exception $e) {
+            Log::error('💥 Stripe return processing error', [
+                'order_id' => $order->id,
+                'session_id' => $sessionId,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()->route('shop.orders.show', $order->uuid)
+                ->with('error', 'Payment processing failed. Please contact support.');
+        }
     }
 
     /**
@@ -831,6 +962,268 @@ class CheckoutController extends BaseShopController
             
             return redirect()->route('shop.orders.show', $order->uuid)
                 ->with('error', 'Payment completion failed. Please contact support.');
+        }
+    }
+
+    /**
+     * Process renewal checkout
+     */
+    private function processRenewal(Request $request): JsonResponse
+    {
+        $request->validate([
+            'renewal_order_id' => 'required|integer|exists:shop_orders,id',
+            'billing_cycle' => 'required|string|in:monthly,quarterly,annually',
+            'payment_method' => 'required|string|in:stripe,paypal,wallet',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $user = auth()->user();
+
+            // Find the cancelled order to renew
+            $cancelledOrder = ShopOrder::query()
+                ->where('id', $request->renewal_order_id)
+                ->where('user_id', $user->id)
+                ->where('status', ShopOrder::STATUS_CANCELLED)
+                ->with(['plan', 'server'])
+                ->first();
+
+            if (!$cancelledOrder) {
+                return $this->errorResponse('Order not found or not eligible for renewal.');
+            }
+
+            // Calculate renewal amount
+            $plan = $cancelledOrder->plan;
+            $billingCycle = $request->billing_cycle;
+            $multiplier = match($billingCycle) {
+                'monthly' => 1,
+                'quarterly' => 3,
+                'annually' => 12,
+                default => 1,
+            };
+            $renewalAmount = $plan->price * $multiplier;
+
+            // Calculate next due date based on billing cycle
+            $nextDueAt = match($billingCycle) {
+                'monthly' => now()->addMonth(),
+                'quarterly' => now()->addMonths(3),
+                'annually' => now()->addYear(),
+                default => now()->addMonth(),
+            };
+
+            Log::info('Processing renewal', [
+                'order_id' => $cancelledOrder->id,
+                'billing_cycle' => $billingCycle,
+                'amount' => $renewalAmount,
+                'next_due_at' => $nextDueAt,
+                'payment_method' => $request->payment_method
+            ]);
+
+            // Process payment first
+            $paymentMethod = $request->payment_method;
+            $paymentData = [];
+
+            // Handle wallet payments immediately
+            if ($paymentMethod === 'wallet') {
+                $settings = $this->shopConfigService->getShopConfig();
+                if (!($settings['credits_enabled'] ?? false)) {
+                    return $this->errorResponse('Wallet payments are disabled.');
+                }
+
+                $userWallet = $this->walletService->getWallet($user->id);
+                if ($userWallet->balance < $renewalAmount) {
+                    return $this->errorResponse('Insufficient wallet balance.');
+                }
+
+                // Deduct from wallet
+                $transaction = $this->walletService->deductFunds(
+                    $userWallet, 
+                    $renewalAmount, 
+                    "Renewal payment for server {$cancelledOrder->server->uuidShort}", 
+                    'order_payment'
+                );
+
+                if (!$transaction) {
+                    return $this->errorResponse('Failed to process wallet payment.');
+                }
+
+                // Mark the order as paid first
+                $this->orderService->markAsPaid($cancelledOrder->id, 'wallet');
+
+                // Then reactivate the order immediately
+                $this->reactivateOrder($cancelledOrder, $billingCycle, $nextDueAt, $renewalAmount);
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Server plan renewed successfully!',
+                    'redirect' => route('shop.orders.show', $cancelledOrder->uuid)
+                ]);
+
+            } else {
+                // For external payment methods (Stripe/PayPal), create payment session
+                $paymentResult = $this->processRenewalPayment($cancelledOrder, $paymentMethod, $renewalAmount, $billingCycle, $nextDueAt);
+                
+                if (!$paymentResult['success']) {
+                    return $this->errorResponse($paymentResult['message']);
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'redirect' => $paymentResult['redirect_url']
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Renewal processing error', [
+                'order_id' => $request->renewal_order_id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->errorResponse('Renewal processing failed. Please try again.');
+        }
+    }
+
+    /**
+     * Reactivate cancelled order
+     */
+    private function reactivateOrder(ShopOrder $order, string $billingCycle, $nextDueAt, float $amount): void
+    {
+        // Update the order with new billing information
+        $order->update([
+            'status' => ShopOrder::STATUS_ACTIVE,
+            'billing_cycle' => $billingCycle,
+            'amount' => $amount,
+            'next_due_at' => $nextDueAt,
+            'last_renewed_at' => now(),
+            'auto_delete_at' => null, // Clear auto-deletion date
+            'suspended_at' => null,
+            'cancelled_at' => null,
+        ]);
+
+        Log::info('Order reactivated', [
+            'order_id' => $order->id,
+            'server_id' => $order->server_id,
+            'billing_cycle' => $billingCycle,
+            'next_due_at' => $nextDueAt
+        ]);
+    }
+
+    /**
+     * Process renewal payment for external gateways
+     */
+    private function processRenewalPayment(ShopOrder $order, string $paymentMethod, float $amount, string $billingCycle, $nextDueAt): array
+    {
+        try {
+            // Create a temporary renewal data session to handle callback
+            session([
+                'renewal_data' => [
+                    'order_id' => $order->id,
+                    'billing_cycle' => $billingCycle,
+                    'next_due_at' => $nextDueAt->toISOString(),
+                    'amount' => $amount
+                ]
+            ]);
+
+            // Use the existing payment processing logic but with renewal context
+            $paymentData = [
+                'amount' => $amount,
+                'currency' => config('shop.currency', 'USD'),
+                'description' => "Renewal for server {$order->server->uuidShort} - {$order->plan->name}",
+                'metadata' => [
+                    'type' => 'renewal',
+                    'order_id' => $order->id,
+                    'server_uuid' => $order->server->uuid,
+                    'billing_cycle' => $billingCycle
+                ]
+            ];
+
+            if ($paymentMethod === 'stripe') {
+                return $this->processStripeRenewalPayment($order, $paymentData);
+            } elseif ($paymentMethod === 'paypal') {
+                return $this->processPayPalRenewalPayment($order, $paymentData);
+            }
+
+            return ['success' => false, 'message' => 'Invalid payment method'];
+
+        } catch (\Exception $e) {
+            Log::error('Renewal payment processing error', [
+                'order_id' => $order->id,
+                'payment_method' => $paymentMethod,
+                'error' => $e->getMessage()
+            ]);
+            
+            return ['success' => false, 'message' => 'Payment processing failed'];
+        }
+    }
+
+    /**
+     * Process Stripe renewal payment
+     */
+    private function processStripeRenewalPayment(ShopOrder $order, array $paymentData): array
+    {
+        // Temporarily update order amount for renewal (no setup fees)
+        $originalAmount = $order->amount;
+        $originalSetupFee = $order->setup_fee;
+        
+        Log::info('Stripe renewal payment setup', [
+            'order_id' => $order->id,
+            'original_amount' => $originalAmount,
+            'original_setup_fee' => $originalSetupFee,
+            'renewal_amount' => $paymentData['amount']
+        ]);
+        
+        // Set renewal amount and clear setup fee
+        $order->amount = $paymentData['amount'];
+        $order->setup_fee = 0;
+        
+        try {
+            // Process payment with updated amounts
+            $stripeResult = $this->processStripePayment($order, $paymentData);
+            
+            return $stripeResult;
+        } finally {
+            // Restore original amounts regardless of success/failure
+            $order->amount = $originalAmount;
+            $order->setup_fee = $originalSetupFee;
+        }
+    }
+
+    /**
+     * Process PayPal renewal payment  
+     */
+    private function processPayPalRenewalPayment(ShopOrder $order, array $paymentData): array
+    {
+        // Temporarily update order amount for renewal (no setup fees)
+        $originalAmount = $order->amount;
+        $originalSetupFee = $order->setup_fee;
+        
+        Log::info('PayPal renewal payment setup', [
+            'order_id' => $order->id,
+            'original_amount' => $originalAmount,
+            'original_setup_fee' => $originalSetupFee,
+            'renewal_amount' => $paymentData['amount']
+        ]);
+        
+        // Set renewal amount and clear setup fee
+        $order->amount = $paymentData['amount'];
+        $order->setup_fee = 0;
+        
+        try {
+            // Process payment with updated amounts
+            $paypalResult = $this->processPayPalPayment($order, $paymentData);
+            
+            return $paypalResult;
+        } finally {
+            // Restore original amounts regardless of success/failure
+            $order->amount = $originalAmount;
+            $order->setup_fee = $originalSetupFee;
         }
     }
 }

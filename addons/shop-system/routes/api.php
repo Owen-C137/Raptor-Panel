@@ -45,7 +45,7 @@ Route::prefix('api/shop/public')->name('api.shop.public.')->middleware(['throttl
         return response()->json([
             'shop_enabled' => config('shop.enabled', false),
             'maintenance_mode' => config('shop.maintenance_mode', false),
-            'version' => '1.0.0',
+            'version' => \PterodactylAddons\ShopSystem\Services\VersionService::getVersion(),
             'timestamp' => now()->toISOString(),
         ]);
     })->name('status');

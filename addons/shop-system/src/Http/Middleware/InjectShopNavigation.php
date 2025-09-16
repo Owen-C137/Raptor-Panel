@@ -831,8 +831,8 @@ class InjectShopNavigation
             
             // Add proper event handlers
             modal.querySelector('#renew-btn').addEventListener('click', function() {
-                // For now, redirect to shop with renewal indication - we'll implement proper renewal later
-                window.location.href = '/shop?renew=' + server.uuidShort;
+                // Redirect directly to checkout with renewal parameter
+                window.location.href = '/shop/checkout?renew=' + server.uuidShort;
             });
             
             modal.querySelector('#purchase-btn').addEventListener('click', function() {

@@ -1,6 +1,7 @@
 {
     "name": "pterodactyl-addons/shop-system",
     "description": "Complete shop and billing system addon for Pterodactyl Panel",
+    "version": "1.2.0",
     "type": "library",
     "license": "MIT",
     "authors": [
