@@ -6,6 +6,8 @@ use PterodactylAddons\ShopSystem\Http\Controllers\CheckoutController;
 use PterodactylAddons\ShopSystem\Http\Controllers\OrderController;
 use PterodactylAddons\ShopSystem\Http\Controllers\WalletController;
 use PterodactylAddons\ShopSystem\Http\Controllers\WebhookController;
+use PterodactylAddons\ShopSystem\Http\Controllers\Server\PlanController as ServerPlanController;
+use PterodactylAddons\ShopSystem\Http\Controllers\Client\RenewalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -88,6 +90,12 @@ Route::prefix('shop')->name('shop.')->middleware(['auth', 'shop.enabled'])->grou
         });
     });
     
+    // Renewal management
+    Route::prefix('renewal')->name('renewal.')->group(function () {
+        Route::get('/', [RenewalController::class, 'show'])->name('show');
+        Route::post('/process', [RenewalController::class, 'renew'])->name('process');
+    });
+    
     // Wallet management
     Route::prefix('wallet')->name('wallet.')->middleware('shop.credits')->group(function () {
         Route::get('/', [WalletController::class, 'index'])->name('index');
@@ -120,6 +128,14 @@ Route::prefix('shop/api')->name('shop.api.')->middleware(['auth', 'shop.enabled'
     
     // Get wallet balance
     Route::get('/wallet/balance', [WalletController::class, 'getBalance'])->name('wallet.balance');
+});
+
+// Server plan management routes
+Route::prefix('server/{server}')->name('server.')->middleware(['auth', 'shop.enabled'])->group(function () {
+    Route::get('/manage-plan', [ServerPlanController::class, 'index'])->name('manage-plan');
+    Route::post('/manage-plan/renew', [ServerPlanController::class, 'renew'])->name('manage-plan.renew');
+    Route::post('/manage-plan/cancel', [ServerPlanController::class, 'cancel'])->name('manage-plan.cancel');
+    Route::get('/manage-plan/usage', [ServerPlanController::class, 'usage'])->name('manage-plan.usage');
 });
 
 /*

@@ -117,6 +117,12 @@ class ShopOrder extends Model
         'server_config',
         'billing_details',
         'payment_method',
+        'is_renewal',
+        'original_order_id',
+        'discount_amount',
+        'cancellation_reason',
+        'cancelled_at',
+        'auto_delete_at',
     ];
 
     /**
@@ -128,14 +134,45 @@ class ShopOrder extends Model
         'server_id' => 'integer',
         'amount' => 'decimal:2',
         'setup_fee' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'next_due_at' => 'datetime',
         'last_renewed_at' => 'datetime',
         'expires_at' => 'datetime',
         'suspended_at' => 'datetime',
         'terminated_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'auto_delete_at' => 'datetime',
         'server_config' => 'array',
         'billing_details' => 'array',
+        'is_renewal' => 'boolean',
     ];
+
+    /**
+     * Bootstrap the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Set auto-deletion date when order status changes to cancelled
+        static::updating(function ($order) {
+            if ($order->isDirty('status') && $order->status === self::STATUS_CANCELLED) {
+                // Set auto-deletion date to 7 days from now if not already set
+                if (!$order->auto_delete_at) {
+                    $order->auto_delete_at = now()->addDays(7);
+                }
+                // Also set cancelled_at if not already set
+                if (!$order->cancelled_at) {
+                    $order->cancelled_at = now();
+                }
+            }
+            
+            // Clear auto-deletion date if order becomes active again (renewal)
+            if ($order->isDirty('status') && $order->status === self::STATUS_ACTIVE) {
+                $order->auto_delete_at = null;
+            }
+        });
+    }
 
     /**
      * Rules verifying that the data being stored matches the expectations of the database.

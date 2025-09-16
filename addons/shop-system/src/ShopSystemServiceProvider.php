@@ -141,6 +141,12 @@ class ShopSystemServiceProvider extends ServiceProvider
                 ->dailyAt('11:00')
                 ->name('shop:terminate-overdue')
                 ->withoutOverlapping();
+
+            // Cleanup cancelled servers daily at 12 PM (noon)
+            $schedule->command('shop:cleanup-cancelled-servers')
+                ->dailyAt('12:00')
+                ->name('shop:cleanup-cancelled-servers')
+                ->withoutOverlapping();
         });
     }
     
@@ -192,6 +198,7 @@ class ShopSystemServiceProvider extends ServiceProvider
                 \PterodactylAddons\ShopSystem\Commands\ShopInstallCommand::class,
                 \PterodactylAddons\ShopSystem\Commands\ShopUninstallCommand::class,
                 \PterodactylAddons\ShopSystem\Commands\ProcessShopOrdersCommand::class,
+                \PterodactylAddons\ShopSystem\Commands\CleanupCancelledServersCommand::class,
             ]);
         }
     }
@@ -206,6 +213,7 @@ class ShopSystemServiceProvider extends ServiceProvider
         // Register middleware aliases
         $router->aliasMiddleware('shop.enabled', \PterodactylAddons\ShopSystem\Http\Middleware\CheckShopEnabled::class);
         $router->aliasMiddleware('shop.credits', \PterodactylAddons\ShopSystem\Http\Middleware\CheckCreditsEnabled::class);
+        $router->aliasMiddleware('shop.server-access', \PterodactylAddons\ShopSystem\Http\Middleware\CheckServerPlanAccess::class);
     }
 }
 

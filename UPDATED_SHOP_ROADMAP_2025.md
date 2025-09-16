@@ -99,6 +99,80 @@
 
 ---
 
+## 🔄 **SERVER PLAN RENEWAL SYSTEM** ✅ **NEW**
+
+**STATUS**: Complete renewal system with 7-day auto-deletion protection implemented
+
+✅ **Database Schema Enhancement** (IMPLEMENTED 2025-09-16)
+- Added `auto_delete_at` timestamp column to `shop_orders` table
+- Migration created: `2025_09_16_101758_add_auto_delete_at_to_shop_orders_table.php`
+- **Database Changes**:
+  - `auto_delete_at` tracks 7-day deletion deadline for cancelled orders
+  - Field automatically set when order status changes to 'cancelled'
+  - Field cleared when order becomes active again (renewal)
+
+✅ **Model Enhancement** (IMPLEMENTED 2025-09-16)
+- Added `auto_delete_at` to ShopOrder fillable fields and casts
+- Implemented model boot method with status change observers
+- **Model Features**:
+  - Automatic `auto_delete_at` setting (7 days from cancellation)
+  - Auto-clear deletion date on renewal/reactivation
+  - Automatic `cancelled_at` timestamp setting
+
+✅ **Auto-Deletion System** (IMPLEMENTED 2025-09-16)
+- Created `CleanupCancelledServersCommand` for automatic server deletion
+- Command scheduled daily at 12:00 PM to check for expired servers
+- Integrated with Pterodactyl's ServerDeletionService for safe deletion
+- **Command Features**:
+  - Finds orders past auto_delete_at date
+  - Uses official Pterodactyl deletion service
+  - Updates order status to 'terminated' after deletion
+  - Comprehensive logging for audit trail
+  - Error handling and reporting
+
+✅ **Dashboard Overlay Enhancement** (IMPLEMENTED 2025-09-16)
+- Updated dashboard server overlays to include auto-deletion data
+- Modal now shows real-time countdown to deletion
+- Added 7-day warning with visual countdown timer
+- **Modal Features**:
+  - Real-time countdown (days, hours, minutes)
+  - "EXPIRED" status for overdue servers
+  - Prominent deletion warning with auto-refresh
+  - Renewal and purchase options
+
+✅ **Renewal Controller & Routes** (IMPLEMENTED 2025-09-16)
+- Created `RenewalController` for handling plan renewals
+- Added renewal routes: `/shop/renewal/` (show) and `/shop/renewal/process` (POST)
+- Renewal view with billing cycle selection
+- **Controller Features**:
+  - Finds cancelled orders by server UUID
+  - Calculates renewal pricing by billing cycle
+  - Creates new order with renewal flag
+  - Redirects to checkout for payment processing
+
+✅ **Renewal Interface** (IMPLEMENTED 2025-09-16)
+- Created dedicated renewal page (`client/renewal/show.blade.php`)
+- Billing cycle selection (monthly, quarterly, annually)
+- Time remaining display with color-coded warnings
+- **Interface Features**:
+  - Visual countdown display
+  - Multiple billing cycle options with pricing
+  - Clear warning messages about data loss
+  - AJAX form submission with loading states
+
+✅ **Server Blocking Enhancement** (IMPLEMENTED 2025-09-16)
+- Updated server access blocking with proper database queries
+- Fixed SQL errors in server blocking middleware
+- Enhanced logging for server blocking activities
+- **Blocking Features**:
+  - Proper server-to-order relationship queries
+  - Complete server page replacement for blocked access
+  - Enhanced error handling and debugging
+
+**RESULT**: Complete renewal system with automated deletion protection, user-friendly renewal process, and robust server access control!
+
+---
+
 ## 📊 **IMPLEMENTATION STATUS OVERVIEW**
 
 ### **✅ COMPLETED MAJOR COMPONENTS**
@@ -349,11 +423,58 @@
   - API access permission levels
   - Shop feature access control
 
-- [ ] **Navigation Integration**
-  - Register navigation injection middleware with Pterodactyl
-  - Integrate admin sidebar with shop navigation items
-  - Implement client navigation injection for shop links
-  - Configure navigation permissions based on user roles
+- ✅ **Navigation Integration** - **COMPLETED (January 2025)**
+  - ✅ Register navigation injection middleware with Pterodactyl
+  - ✅ Integrate admin sidebar with shop navigation items
+  - ✅ Implement client navigation injection for shop links (main panel shop icon)
+  - ✅ **Server navigation integration** - Add "Manage Plan" tab to server sub-navigation
+  - ✅ Configure navigation permissions based on user roles
+
+#### **✅ SERVER PLAN MANAGEMENT SYSTEM** *(100% Complete - January 2025)*
+
+**STATUS**: Complete server-specific plan management system with renewal and cancellation capabilities
+
+✅ **Server Plan Controller Implementation** (COMPLETED 2025-01-17)
+- Created `ServerPlanController` with comprehensive plan management
+- Methods: `index()`, `renew()`, `cancel()`, `usage()` with proper authorization
+- Plan expiration calculation and renewal order creation
+- Cancellation workflow with confirmation and reason tracking
+- Resource usage display integration
+
+✅ **Database Schema Extensions** (COMPLETED 2025-01-17)
+- Added renewal tracking fields to `shop_orders` table:
+  - `is_renewal` boolean for identifying renewal orders
+  - `original_order_id` foreign key linking renewals to original orders
+  - `discount_amount` decimal for renewal discounts
+  - `cancellation_reason` text for tracking cancellation reasons
+  - `cancelled_at` timestamp for cancellation date tracking
+
+✅ **Server Navigation Integration** (COMPLETED 2025-01-17)
+- Extended `InjectShopNavigation` middleware for server context
+- Adds "Manage Plan" tab to server SubNavigation component
+- Uses clipboard-document-list icon with proper React styling
+- Integrates seamlessly with existing server navigation
+
+✅ **Plan Management Templates** (COMPLETED 2025-01-17)
+- `manage.blade.php` - Complete plan management interface for active plans
+- `no-plan.blade.php` - Interface for servers without active plans  
+- Matches server UI styling patterns with proper authentication
+- Includes renewal forms, cancellation modals, resource usage display
+
+✅ **ShopOrder Model Extensions** (COMPLETED 2025-01-17)
+- Added renewal and cancellation support to existing model
+- New fillable fields and proper cast types for database fields
+- Maintains backward compatibility with existing order system
+- Proper foreign key relationships for renewal order tracking
+
+✅ **Route Registration** (COMPLETED 2025-01-17)
+- Server-specific routes: `/server/{server}/manage-plan`
+- Renewal endpoint: `/server/{server}/manage-plan/renew` 
+- Cancellation endpoint: `/server/{server}/manage-plan/cancel`
+- Usage endpoint: `/server/{server}/manage-plan/usage`
+- All routes properly authorized with server access permissions
+
+**RESULT**: Complete server plan management system with renewal, cancellation, and usage tracking!
 
 ### **3.2 Advanced Features**
 

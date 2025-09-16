@@ -12,6 +12,7 @@ use PterodactylAddons\ShopSystem\Services\ShopOrderService;
 use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
 use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use Illuminate\Support\Facades\Gate;
 
 class OrderController extends BaseShopController
@@ -19,9 +20,12 @@ class OrderController extends BaseShopController
     public function __construct(
         private ShopOrderRepository $orderRepository,
         private ShopOrderService $orderService,
-        private PaymentGatewayManager $paymentManager
+        private PaymentGatewayManager $paymentManager,
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
     ) {
-        parent::__construct();
+        parent::__construct($shopConfigService, $walletService, $currencyService);
     }
 
     /**

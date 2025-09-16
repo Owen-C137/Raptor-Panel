@@ -13,6 +13,7 @@ use PterodactylAddons\ShopSystem\Services\PaymentGatewayManager;
 use PterodactylAddons\ShopSystem\Services\WalletService;
 use PterodactylAddons\ShopSystem\Services\CartService;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\ShopPayment;
 use Illuminate\Support\Facades\DB;
@@ -26,9 +27,12 @@ class CheckoutController extends BaseShopController
         private ShopCouponRepository $couponRepository,
         private ShopOrderService $orderService,
         private PaymentGatewayManager $paymentManager,
-        private CartService $cartService
+        private CartService $cartService,
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
     ) {
-        parent::__construct();
+        parent::__construct($shopConfigService, $walletService, $currencyService);
     }
 
     /**

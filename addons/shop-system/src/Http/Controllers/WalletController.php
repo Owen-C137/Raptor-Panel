@@ -16,14 +16,18 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use PterodactylAddons\ShopSystem\Mail\WalletFundsAddedMail;
 use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 
 class WalletController extends BaseShopController
 {
     public function __construct(
         private UserWalletRepository $walletRepository,
-        private PaymentGatewayManager $paymentGatewayManager
+        private PaymentGatewayManager $paymentGatewayManager,
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
     ) {
-        parent::__construct();
+        parent::__construct($shopConfigService, $walletService, $currencyService);
     }
 
     /**

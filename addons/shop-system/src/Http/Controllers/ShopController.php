@@ -11,6 +11,9 @@ use PterodactylAddons\ShopSystem\Repositories\ShopCategoryRepository;
 use PterodactylAddons\ShopSystem\Repositories\ShopPlanRepository;
 use PterodactylAddons\ShopSystem\Services\ShopOrderService;
 use PterodactylAddons\ShopSystem\Services\CartService;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 use Pterodactyl\Models\Location;
 use Pterodactyl\Models\Node;
 
@@ -20,9 +23,12 @@ class ShopController extends BaseShopController
         private ShopCategoryRepository $categoryRepository,
         private ShopPlanRepository $planRepository,
         private ShopOrderService $orderService,
-        private CartService $cartService
+        private CartService $cartService,
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
     ) {
-        parent::__construct();
+        parent::__construct($shopConfigService, $walletService, $currencyService);
     }
 
     /**

@@ -1044,4 +1044,49 @@ class ShopOrderService
             \Log::error("Email error stack trace: " . $e->getTraceAsString());
         }
     }
+
+    /**
+     * Create a renewal order for an existing plan
+     */
+    public function createRenewalOrder(ShopOrder $originalOrder, string $billingCycle): ShopOrder
+    {
+        $plan = $originalOrder->plan;
+        $user = $originalOrder->user;
+
+        if (!$plan) {
+            throw new \InvalidArgumentException('Original order does not have a valid plan.');
+        }
+
+        $billing = $plan->getPriceForCycle($billingCycle);
+        
+        if (!$billing) {
+            throw new \InvalidArgumentException('Invalid billing cycle selected for renewal.');
+        }
+
+        $orderData = [
+            'uuid' => Str::uuid()->toString(),
+            'user_id' => $user->id,
+            'plan_id' => $plan->id,
+            'server_id' => $originalOrder->server_id, // Link to same server
+            'status' => ShopOrder::STATUS_PENDING,
+            'billing_cycle' => $billingCycle,
+            'amount' => $billing['price'],
+            'setup_fee' => 0, // No setup fee for renewals
+            'currency' => config('shop.currency.default', 'USD'),
+            'is_renewal' => true,
+            'original_order_id' => $originalOrder->id,
+        ];
+
+        // Apply any applicable discounts for renewals
+        if (config('shop.renewal_discount_percentage', 0) > 0) {
+            $discountPercentage = config('shop.renewal_discount_percentage');
+            $discountAmount = $orderData['amount'] * ($discountPercentage / 100);
+            $orderData['discount_amount'] = $discountAmount;
+            $orderData['amount'] = $orderData['amount'] - $discountAmount;
+        }
+
+        return DB::transaction(function () use ($orderData) {
+            return $this->repository->create($orderData);
+        });
+    }
 }

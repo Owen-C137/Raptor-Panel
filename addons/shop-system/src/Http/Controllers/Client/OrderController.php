@@ -6,9 +6,20 @@ use Illuminate\Http\Request;
 use PterodactylAddons\ShopSystem\Http\Controllers\BaseShopController;
 use PterodactylAddons\ShopSystem\Models\ShopOrder;
 use PterodactylAddons\ShopSystem\Models\UserWallet;
+use PterodactylAddons\ShopSystem\Services\ShopConfigService;
+use PterodactylAddons\ShopSystem\Services\WalletService;
+use PterodactylAddons\ShopSystem\Services\CurrencyService;
 
 class OrderController extends BaseShopController
 {
+    public function __construct(
+        ShopConfigService $shopConfigService,
+        WalletService $walletService,
+        CurrencyService $currencyService
+    ) {
+        parent::__construct($shopConfigService, $walletService, $currencyService);
+    }
+
     /**
      * Display user's order history
      */
