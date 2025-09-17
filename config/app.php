@@ -205,6 +205,11 @@ return [
          */
         PterodactylAddons\ShopSystem\ShopServiceProvider::class,
         
+        /*
+         * Ollama AI Service Provider - Self-contained addon
+         */
+        PterodactylAddons\OllamaAi\AiServiceProvider::class,
+        
         Pterodactyl\Providers\RouteServiceProvider::class,
         Pterodactyl\Providers\RepositoryServiceProvider::class,
         Pterodactyl\Providers\ViewComposerServiceProvider::class,
