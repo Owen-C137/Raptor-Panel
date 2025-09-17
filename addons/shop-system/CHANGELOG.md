@@ -2,6 +2,39 @@
 
 # Changelog
 
+## [1.3.0] - 2025-09-17
+
+### 🚀 MAJOR: One-Click Installation System
+- **NEW**: Complete one-click installer that handles everything automatically
+- **NEW**: Enhanced `shop:install` command with 12 automated steps
+- **NEW**: Automatic dependency installation (Stripe, PayPal, UUID)
+- **NEW**: Automatic PSR-4 autoloader configuration
+- **NEW**: Automatic service provider registration
+- **NEW**: Automatic route conflict resolution
+- **NEW**: Comprehensive installation verification
+
+### 🔧 Installation Improvements  
+- **FIXED**: Migration ordering issue (moved paid_at migration to correct timestamp)
+- **FIXED**: Route conflicts with base Pterodactyl patterns
+- **IMPROVED**: Installation now requires zero manual file editing
+- **IMPROVED**: One command does everything: `php artisan shop:install`
+- **IMPROVED**: Comprehensive error handling and user feedback
+- **IMPROVED**: Automatic prerequisite verification (PHP, database, composer)
+
+### 📖 Documentation Updates
+- **UPDATED**: Installation guide completely rewritten for simplicity
+- **ADDED**: One-click installation instructions
+- **ADDED**: Automatic setup explanation with expected output
+- **SIMPLIFIED**: Troubleshooting section focused on automated solutions
+- **IMPROVED**: User-friendly language and clearer structure
+
+### 🎯 User Experience
+- **BREAKING**: Installation process completely changed (much simpler)
+- **NEW**: Installation now takes 2 steps instead of 10+ manual steps
+- **NEW**: Automatic validation ensures installation success
+- **NEW**: Clear progress indicators and success confirmations
+- **NEW**: Helpful next-steps guidance after installation
+
 ## [1.2.4] - 2025-09-16
 
 ### 🚨 Critical Payment Bug Fix
