@@ -2,6 +2,12 @@
 
 # Changelog
 
+## [1.3.1] - 2025-09-17
+
+### 🔧 System Requirements Update
+- **UPDATED**: PHP minimum version requirement from 8.1+ to 8.3+
+- **IMPROVED**: Installation command now enforces PHP 8.3+ for optimal performance and security
+
 ## [1.3.0] - 2025-09-17
 
 ### 🚀 MAJOR: One-Click Installation System

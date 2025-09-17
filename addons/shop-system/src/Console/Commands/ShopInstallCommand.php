@@ -140,8 +140,8 @@ class ShopInstallCommand extends Command
         }
 
         // Check PHP version
-        if (version_compare(PHP_VERSION, '8.1.0') < 0) {
-            throw new \Exception('PHP 8.1+ is required. Current version: ' . PHP_VERSION);
+        if (version_compare(PHP_VERSION, '8.3.0') < 0) {
+            throw new \Exception('PHP 8.3+ is required. Current version: ' . PHP_VERSION);
         }
 
         // Check if composer is available
