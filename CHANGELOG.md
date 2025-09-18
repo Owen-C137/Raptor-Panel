@@ -6,17 +6,28 @@ All notable changes to Raptor Panel will be documented in this file.
 
 ### Added
 - 🚀 **Initial Raptor Panel Release** - Complete fork of Pterodactyl with enhanced features
-- 🎨 **OneUI Theme Integration** - Modern, responsive admin interface
+- 🎨 **OneUI Theme Integration** - Modern, responsive admin interface with dark mode support
 - ✨ **Enhanced Node Configuration** - Syntax highlighting with atom-one-dark theme
-- 📋 **Copy-to-Clipboard Functionality** - Easy configuration copying
+- 📋 **Copy-to-Clipboard Functionality** - Easy configuration copying with success notifications
 - 🔄 **Auto-Update System** - Direct GitHub integration for seamless updates
 - 💾 **Backup & Restore** - Comprehensive backup system with rollback capabilities
 - 🎛️ **Improved Settings Layout** - Better organized admin configuration blocks
+- 🛠️ **JavaScript Compatibility** - Global jQuery readiness handler for shop system
+- ⚡ **Performance Optimizations** - Better script loading order and dependency management
 
 ### Enhanced
 - 🖥️ **Admin Dashboard** - Real-time update notifications and progress tracking
 - ⚙️ **Node Management** - Enhanced configuration display with better readability
 - 🛡️ **Security** - Safe updates with automatic backup creation
+- 🎯 **Modal System** - Improved Bootstrap 5 compatibility with OneUI theme
+- 📱 **Responsive Design** - Better mobile and tablet experience
+
+### Fixed
+- 🐛 **SetTheme.js Errors** - Fixed missing css-main element reference
+- 🔧 **jQuery Compatibility** - Resolved "$ is not defined" errors
+- 🎨 **CSS Loading Order** - Fixed stylesheet and script dependencies
+- ⚙️ **Modal Initialization** - Fixed Bootstrap modal compatibility issues
+- 🚀 **Script Structure** - Proper JavaScript organization and execution order
 
 ### Technical
 - **GitHub Integration** - Direct repository monitoring for updates
