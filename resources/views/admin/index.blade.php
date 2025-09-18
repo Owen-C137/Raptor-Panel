@@ -105,7 +105,7 @@
 
 <div class="row">
     <div class="col-6 col-sm-3 text-center">
-        <a href="https://discord.gg/raptorpanel" class="btn btn-warning w-100 mb-2">
+        <a href="https://discord.gg/GEH2Fc5sgK" class="btn btn-warning w-100 mb-2">
             <i class="fab fa-discord me-1"></i> Support <small>(Discord)</small>
         </a>
     </div>
@@ -318,29 +318,29 @@ function initializeAdminPage() {
                 const filesCount = data.files_count || 0;
 
                 let changelogHtml = '';
-                if (changelog.features && changelog.features.length > 0) {
+                if (changelog.added && changelog.added.length > 0) {
                     changelogHtml += `
                         <h6><i class="fas fa-plus-circle text-primary me-1"></i>New Features</h6>
                         <ul class="list-unstyled mb-3">
-                            ${changelog.features.map(feature => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${feature}</li>`).join('')}
+                            ${changelog.added.map(feature => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${feature}</li>`).join('')}
                         </ul>
                     `;
                 }
 
-                if (changelog.fixes && changelog.fixes.length > 0) {
+                if (changelog.fixed && changelog.fixed.length > 0) {
                     changelogHtml += `
                         <h6><i class="fas fa-bug text-danger me-1"></i>Bug Fixes</h6>
                         <ul class="list-unstyled mb-3">
-                            ${changelog.fixes.map(fix => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${fix}</li>`).join('')}
+                            ${changelog.fixed.map(fix => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${fix}</li>`).join('')}
                         </ul>
                     `;
                 }
 
-                if (changelog.changes && changelog.changes.length > 0) {
+                if (changelog.changed && changelog.changed.length > 0) {
                     changelogHtml += `
                         <h6><i class="fas fa-edit text-info me-1"></i>Changes</h6>
                         <ul class="list-unstyled mb-3">
-                            ${changelog.changes.map(change => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${change}</li>`).join('')}
+                            ${changelog.changed.map(change => `<li class="mb-1"><i class="fas fa-check text-success me-2"></i>${change}</li>`).join('')}
                         </ul>
                     `;
                 }
@@ -363,7 +363,7 @@ function initializeAdminPage() {
                             </div>
                         </div>
                         <div class="text-center mt-2">
-                            <small class="text-muted">${filesCount} files will be updated</small>
+                            <small class="text-muted">${filesCount > 0 ? filesCount + ' files will be updated' : 'System files will be updated as needed'}</small>
                         </div>
                     </div>
                     

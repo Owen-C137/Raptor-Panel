@@ -55,10 +55,10 @@ class UpdateController extends Controller
 
             if ($updateAvailable) {
                 // Get changelog for the new version
-                $changelog = $this->changelogService->getFormattedChangelog($latestVersion);
-                $result['changelog'] = $changelog;
-                $result['features_count'] = count($changelog['features'] ?? []);
-                $result['fixes_count'] = count($changelog['fixes'] ?? []);
+                $changelogData = $this->changelogService->getChangelogForVersion($latestVersion);
+                $result['changelog'] = $changelogData;
+                $result['features_count'] = count($changelogData['added'] ?? []);
+                $result['fixes_count'] = count($changelogData['fixed'] ?? []);
             }
 
             // Cache for 1 hour
@@ -90,14 +90,17 @@ class UpdateController extends Controller
                 $version = $this->updateService->getLatestVersion();
             }
 
-            $changelog = $this->changelogService->getFormattedChangelog($version);
-            $changedFiles = $this->updateService->getChangedFiles();
+            $changelog = $this->changelogService->getChangelogForVersion($version);
+            
+            // For now, skip the expensive file scanning operation
+            // $changedFiles = $this->updateService->getChangedFiles();
+            $changedFiles = []; // Placeholder - could be implemented with caching later
             
             return response()->json([
                 'version' => $version,
                 'changelog' => $changelog,
                 'changed_files' => $changedFiles,
-                'files_count' => count($changedFiles),
+                'files_count' => 0, // Will show "files will be updated" generically
                 'current_version' => $this->updateService->getCurrentVersion(),
             ]);
 

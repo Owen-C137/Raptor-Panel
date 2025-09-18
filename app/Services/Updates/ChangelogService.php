@@ -114,6 +114,7 @@ class ChangelogService
             'changed' => 'changed',
             'updated' => 'changed',
             'modified' => 'changed',
+            'enhanced' => 'changed',
             'fixed' => 'fixed',
             'bugfixes' => 'fixed',
             'bug fixes' => 'fixed',
