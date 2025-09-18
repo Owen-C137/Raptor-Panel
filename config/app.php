@@ -7,11 +7,11 @@ return [
     |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
-    | This value is set when creating a Pterodactyl release. You should not
-    | change this value if you are not maintaining your own internal versions.
+    | This value is set when creating a Raptor Panel release. 
+    | Update this version number when releasing new features.
     */
 
-    'version' => '1.11.11',
+    'version' => '1.0.0',
 
     /*
     |--------------------------------------------------------------------------
@@ -23,7 +23,47 @@ return [
     | any other location as required by the application or its packages.
     */
 
-    'name' => env('APP_NAME', 'Pterodactyl'),
+    'name' => env('APP_NAME', 'Raptor Panel'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update System Configuration
+    |--------------------------------------------------------------------------
+    | Configuration for the auto-update system that checks GitHub for updates
+    */
+
+    'update_source' => [
+        'github_owner' => 'Owen-C137',
+        'github_repo' => 'Raptor-Panel',
+        'branch' => 'main',
+        'api_base' => 'https://api.github.com/repos/Owen-C137/Raptor-Panel',
+        'raw_base' => 'https://raw.githubusercontent.com/Owen-C137/Raptor-Panel/main',
+    ],
+
+    'update_settings' => [
+        'check_interval' => 24, // hours between automatic checks
+        'auto_backup' => true,
+        'require_confirmation' => true,
+        'show_changelog' => true,
+        'excluded_paths' => [
+            'storage/',
+            '.env*',
+            'config/database.php',
+            'bootstrap/cache/',
+            '*.log',
+            'node_modules/',
+            '.git/',
+        ],
+        'updatable_paths' => [
+            'app/',
+            'resources/',
+            'routes/',
+            'config/app.php',
+            'public/themes/',
+            'addons/',
+            'database/migrations/',
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -204,11 +244,7 @@ return [
          * Shop System Service Provider - Self-contained addon
          */
         PterodactylAddons\ShopSystem\ShopServiceProvider::class,
-        
-        /*
-         * Ollama AI Service Provider - Self-contained addon
-         */
-        PterodactylAddons\OllamaAi\AiServiceProvider::class,
+
         
         Pterodactyl\Providers\RouteServiceProvider::class,
         Pterodactyl\Providers\RepositoryServiceProvider::class,

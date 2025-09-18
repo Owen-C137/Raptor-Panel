@@ -5,16 +5,36 @@
 @endsection
 
 @section('content-header')
-    <h1>
-        Customer Analytics
-        <small>Customer behavior and engagement insights</small>
-    </h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li><a href="{{ route('admin.shop.dashboard') }}">Shop</a></li>
-        <li><a href="{{ route('admin.shop.analytics.index') }}">Analytics</a></li>
-        <li class="active">Customers</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Customer Analytics
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Customer behavior and engagement insights
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item">
+            <a class="link-fx" href="{{ route('admin.index') }}">Admin</a>
+          </li>
+          <li class="breadcrumb-item">
+            <a class="link-fx" href="{{ route('admin.shop.dashboard') }}">Shop</a>
+          </li>
+          <li class="breadcrumb-item">
+            <a class="link-fx" href="{{ route('admin.shop.analytics.index') }}">Analytics</a>
+          </li>
+          <li class="breadcrumb-item" aria-current="page">
+            Customers
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')

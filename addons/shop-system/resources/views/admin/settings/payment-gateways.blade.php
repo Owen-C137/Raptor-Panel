@@ -5,13 +5,28 @@
 @endsection
 
 @section('content-header')
-    <h1>Payment Gateway Settings<small>Configure payment processing</small></h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li><a href="{{ route('admin.shop.dashboard') }}">Shop</a></li>
-        <li><a href="{{ route('admin.shop.settings.index') }}">Settings</a></li>
-        <li class="active">Payment Gateways</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Payment Gateway SettingsConfigure payment processing
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Configure payment processing
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.index') }}">Admin</a></li>
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.shop.dashboard') }}">Shop</a></li>
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.shop.settings.index') }}">Settings</a></li>
+          <li class="breadcrumb-item" aria-current="page">Payment Gateways</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')

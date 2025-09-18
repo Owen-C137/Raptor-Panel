@@ -5,52 +5,69 @@
 @endsection
 
 @section('content-header')
-    <h1>{{ $server->name }}<small>Edit details for this server including owner and container.</small></h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li><a href="{{ route('admin.servers') }}">Servers</a></li>
-        <li><a href="{{ route('admin.servers.view', $server->id) }}">{{ $server->name }}</a></li>
-        <li class="active">Details</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          {{ $server->name }}
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Edit details for this server including owner and container.
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.index') }}">Admin</a></li>
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.servers') }}">Servers</a></li>
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.servers.view', $server->id) }}">{{ $server->name }}</a></li>
+          <li class="breadcrumb-item" aria-current="page">Details</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')
 @include('admin.servers.partials.navigation')
 <div class="row">
-    <div class="col-xs-12">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">Base Information</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">Base Information</h3>
             </div>
             <form action="{{ route('admin.servers.view.details', $server->id) }}" method="POST">
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="name" class="control-label">Server Name <span class="field-required"></span></label>
+                <div class="block-content">
+                    <div class="form-group mb-3">
+                        <label for="name" class="form-label">Server Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" value="{{ old('name', $server->name) }}" class="form-control" />
                         <p class="text-muted small">Character limits: <code>a-zA-Z0-9_-</code> and <code>[Space]</code>.</p>
                     </div>
-                    <div class="form-group">
-                        <label for="external_id" class="control-label">External Identifier</label>
+                    <div class="form-group mb-3">
+                        <label for="external_id" class="form-label">External Identifier</label>
                         <input type="text" name="external_id" value="{{ old('external_id', $server->external_id) }}" class="form-control" />
                         <p class="text-muted small">Leave empty to not assign an external identifier for this server. The external ID should be unique to this server and not be in use by any other servers.</p>
                     </div>
-                    <div class="form-group">
-                        <label for="pUserId" class="control-label">Server Owner <span class="field-required"></span></label>
+                    <div class="form-group mb-3">
+                        <label for="pUserId" class="form-label">Server Owner <span class="text-danger">*</span></label>
                         <select name="owner_id" class="form-control" id="pUserId">
                             <option value="{{ $server->owner_id }}" selected>{{ $server->user->email }}</option>
                         </select>
                         <p class="text-muted small">You can change the owner of this server by changing this field to an email matching another use on this system. If you do this a new daemon security token will be generated automatically.</p>
                     </div>
-                    <div class="form-group">
-                        <label for="description" class="control-label">Server Description</label>
+                    <div class="form-group mb-3">
+                        <label for="description" class="form-label">Server Description</label>
                         <textarea name="description" rows="3" class="form-control">{{ old('description', $server->description) }}</textarea>
                         <p class="text-muted small">A brief description of this server.</p>
                     </div>
                 </div>
-                <div class="box-footer">
+                <div class="block-content block-content-full text-end bg-body-light">
                     {!! csrf_field() !!}
                     {!! method_field('PATCH') !!}
-                    <input type="submit" class="btn btn-sm btn-primary" value="Update Details" />
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-save me-1"></i> Update Details
+                    </button>
                 </div>
             </form>
         </div>

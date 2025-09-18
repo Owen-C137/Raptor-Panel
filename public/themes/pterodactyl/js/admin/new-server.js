@@ -120,14 +120,16 @@ $('#pEggId').on('change', function (event) {
     $.each(_.get(objectChain, 'variables', []), function (i, item) {
         variableIds[item.env_variable] = 'var_ref_' + item.id;
 
-        let isRequired = (item.required === 1) ? '<span class="label label-danger">Required</span> ' : '';
+        let isRequired = (item.required === 1) ? '<span class="badge bg-danger">Required</span> ' : '';
         let dataAppend = ' \
-            <div class="form-group col-sm-6"> \
-                <label for="var_ref_' + escapeHtml(item.id) + '" class="control-label">' + isRequired + escapeHtml(item.name) + '</label> \
-                <input type="text" id="var_ref_' + escapeHtml(item.id) + '" autocomplete="off" name="environment[' + escapeHtml(item.env_variable) + ']" class="form-control" value="' + escapeHtml(item.default_value) + '" /> \
-                <p class="text-muted small">' + escapeHtml(item.description) + '<br /> \
-                <strong>Access in Startup:</strong> <code>{{' + escapeHtml(item.env_variable) + '}}</code><br /> \
-                <strong>Validation Rules:</strong> <code>' + escapeHtml(item.rules) + '</code></small></p> \
+            <div class="col-md-6"> \
+                <div class="form-group mb-3"> \
+                    <label for="var_ref_' + escapeHtml(item.id) + '" class="form-label">' + isRequired + escapeHtml(item.name) + '</label> \
+                    <input type="text" id="var_ref_' + escapeHtml(item.id) + '" autocomplete="off" name="environment[' + escapeHtml(item.env_variable) + ']" class="form-control" value="' + escapeHtml(item.default_value) + '" /> \
+                    <p class="text-muted small">' + escapeHtml(item.description) + '<br /> \
+                    <strong>Access in Startup:</strong> <code>{{' + escapeHtml(item.env_variable) + '}}</code><br /> \
+                    <strong>Validation Rules:</strong> <code>' + escapeHtml(item.rules) + '</code></p> \
+                </div> \
             </div> \
         ';
         $('#appendVariablesTo').append(dataAppend);

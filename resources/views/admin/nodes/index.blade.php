@@ -10,36 +10,53 @@
 @endsection
 
 @section('content-header')
-    <h1>Nodes<small>All nodes available on the system.</small></h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li class="active">Nodes</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Nodes
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          All nodes available on the system.
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item">
+            <a class="link-fx" href="{{ route('admin.index') }}">Admin</a>
+          </li>
+          <li class="breadcrumb-item" aria-current="page">
+            Nodes
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')
 <div class="row">
-    <div class="col-xs-12">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">Node List</h3>
-                <div class="box-tools search01">
-                    <form action="{{ route('admin.nodes') }}" method="GET">
-                        <div class="input-group input-group-sm">
-                            <input type="text" name="filter[name]" class="form-control pull-right" value="{{ request()->input('filter.name') }}" placeholder="Search Nodes">
-                            <div class="input-group-btn">
-                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
-                                <a href="{{ route('admin.nodes.new') }}"><button type="button" class="btn btn-sm btn-primary" style="border-radius: 0 3px 3px 0;margin-left:-1px;">Create New</button></a>
-                            </div>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">Node List</h3>
+                <div class="block-options">
+                    <form action="{{ route('admin.nodes') }}" method="GET" class="d-flex">
+                        <div class="input-group input-group-sm me-2">
+                            <input type="text" name="filter[name]" class="form-control" value="{{ request()->input('filter.name') }}" placeholder="Search Nodes">
+                            <button type="submit" class="btn btn-outline-secondary"><i class="fa fa-search"></i></button>
                         </div>
+                        <a href="{{ route('admin.nodes.new') }}" class="btn btn-sm btn-primary">Create New</a>
                     </form>
                 </div>
             </div>
-            <div class="box-body table-responsive no-padding">
-                <table class="table table-hover">
-                    <tbody>
+            <div class="block-content p-0">
+                <table class="table table-vcenter">
+                    <thead>
                         <tr>
-                            <th></th>
+                            <th class="text-center" style="width: 50px;">Status</th>
                             <th>Name</th>
                             <th>Location</th>
                             <th>Memory</th>
@@ -48,10 +65,12 @@
                             <th class="text-center">SSL</th>
                             <th class="text-center">Public</th>
                         </tr>
+                    </thead>
+                    <tbody>
                         @foreach ($nodes as $node)
                             <tr>
-                                <td class="text-center text-muted left-icon" data-action="ping" data-secret="{{ $node->getDecryptedKey() }}" data-location="{{ $node->scheme }}://{{ $node->fqdn }}:{{ $node->daemonListen }}/api/system"><i class="fa fa-fw fa-refresh fa-spin"></i></td>
-                                <td>{!! $node->maintenance_mode ? '<span class="label label-warning"><i class="fa fa-wrench"></i></span> ' : '' !!}<a href="{{ route('admin.nodes.view', $node->id) }}">{{ $node->name }}</a></td>
+                                <td class="text-center text-muted" data-action="ping" data-secret="{{ $node->getDecryptedKey() }}" data-location="{{ $node->scheme }}://{{ $node->fqdn }}:{{ $node->daemonListen }}/api/system"><i class="fa fa-fw fa-refresh fa-spin"></i></td>
+                                <td>{!! $node->maintenance_mode ? '<span class="badge bg-warning"><i class="fa fa-wrench"></i></span> ' : '' !!}<a href="{{ route('admin.nodes.view', $node->id) }}">{{ $node->name }}</a></td>
                                 <td>{{ $node->location->short }}</td>
                                 <td>{{ $node->memory }} MiB</td>
                                 <td>{{ $node->disk }} MiB</td>
@@ -64,8 +83,8 @@
                 </table>
             </div>
             @if($nodes->hasPages())
-                <div class="box-footer with-border">
-                    <div class="col-md-12 text-center">{!! $nodes->appends(['query' => Request::input('query')])->render() !!}</div>
+                <div class="block-content block-content-full block-content-sm text-center border-top">
+                    {!! $nodes->appends(['query' => Request::input('query')])->render() !!}
                 </div>
             @endif
         </div>

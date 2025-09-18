@@ -5,24 +5,39 @@
 @endsection
 
 @section('content-header')
-    <h1>Application API<small>Control access credentials for managing this Panel via the API.</small></h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li class="active">Application API</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Application API
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Control access credentials for managing this Panel via the API.
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.index') }}">Admin</a></li>
+          <li class="breadcrumb-item" aria-current="page">Application API</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')
     <div class="row">
-        <div class="col-xs-12">
-            <div class="box box-primary">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Credentials List</h3>
-                    <div class="box-tools">
+        <div class="col-12">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Credentials List</h3>
+                    <div class="block-options">
                         <a href="{{ route('admin.api.new') }}" class="btn btn-sm btn-primary">Create New</a>
                     </div>
                 </div>
-                <div class="box-body table-responsive no-padding">
+                <div class="block-content p-0">
                     <table class="table table-hover">
                         <tr>
                             <th>Key</th>

@@ -6,33 +6,52 @@
 @endsection
 
 @section('content-header')
-    <h1>Panel Settings<small>Configure Pterodactyl to your liking.</small></h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li class="active">Settings</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Panel Settings
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Configure Pterodactyl to your liking.
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item">
+            <a class="link-fx" href="{{ route('admin.index') }}">Admin</a>
+          </li>
+          <li class="breadcrumb-item" aria-current="page">
+            Settings
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')
     @yield('settings::nav')
     <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Panel Settings</h3>
+        <div class="col-12">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Panel Settings</h3>
                 </div>
                 <form action="{{ route('admin.settings') }}" method="POST">
-                    <div class="box-body">
+                    <div class="block-content">
                         <div class="row">
                             <div class="form-group col-md-4">
-                                <label class="control-label">Company Name</label>
+                                <label class="form-label">Company Name</label>
                                 <div>
                                     <input type="text" class="form-control" name="app:name" value="{{ old('app:name', config('app.name')) }}" />
                                     <p class="text-muted"><small>This is the name that is used throughout the panel and in emails sent to clients.</small></p>
                                 </div>
                             </div>
                             <div class="form-group col-md-4">
-                                <label class="control-label">Require 2-Factor Authentication</label>
+                                <label class="form-label">Require 2-Factor Authentication</label>
                                 <div>
                                     <div class="btn-group" data-toggle="buttons">
                                         @php
@@ -52,7 +71,7 @@
                                 </div>
                             </div>
                             <div class="form-group col-md-4">
-                                <label class="control-label">Default Language</label>
+                                <label class="form-label">Default Language</label>
                                 <div>
                                     <select name="app:locale" class="form-control">
                                         @foreach($languages as $key => $value)
@@ -64,9 +83,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="box-footer">
+                    <div class="block-content block-content-full block-content-sm text-end border-top">
                         {!! csrf_field() !!}
-                        <button type="submit" name="_method" value="PATCH" class="btn btn-sm btn-primary pull-right">Save</button>
+                        <button type="submit" name="_method" value="PATCH" class="btn btn-sm btn-primary">Save</button>
                     </div>
                 </form>
             </div>

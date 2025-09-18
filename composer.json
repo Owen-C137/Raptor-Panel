@@ -75,8 +75,7 @@
             "Pterodactyl\\": "app/",
             "Database\\Factories\\": "database/Factories/",
             "Database\\Seeders\\": "database/Seeders/",
-            "PterodactylAddons\\ShopSystem\\": "addons/shop-system/src/",
-            "PterodactylAddons\\OllamaAi\\": "addons/ollama-ai/src/"
+            "PterodactylAddons\\ShopSystem\\": "addons/shop-system/src/"
         }
     },
     "autoload-dev": {

@@ -59,160 +59,88 @@ class InjectShopNavigation
         
         $content = $response->getContent();
         
-        // Find the admin navigation menu (match Pterodactyl structure with collapsible dropdown)
+        // Find the admin navigation menu (One UI nav-main structure)
         $shopNavigation = '
-                        <li class="treeview shop-management-menu" data-shop-menu="true">
-                            <a href="#" class="shop-toggle">
-                                <i class="fa fa-shopping-bag"></i>
-                                <span>Shop Management</span>
-                                <span class="pull-right-container">
-                                    <i class="fa fa-angle-left pull-right"></i>
-                                </span>
-                            </a>
-                            <ul class="treeview-menu" style="display: none;">
-                                <li class="{{ Route::currentRouteName() == \'admin.shop.index\' || Route::currentRouteName() == \'admin.shop.dashboard\' ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop">
-                                        <i class="fa fa-dashboard"></i> <span>Dashboard</span>
-                                    </a>
-                                </li>
-
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.plans\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/plans">
-                                        <i class="fa fa-list"></i> <span>Plans</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.categories\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/categories">
-                                        <i class="fa fa-folder"></i> <span>Categories</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.orders\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/orders">
-                                        <i class="fa fa-shopping-cart"></i> <span>Orders</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.payments\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/payments">
-                                        <i class="fa fa-credit-card"></i> <span>Payments</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.coupons\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/coupons">
-                                        <i class="fa fa-tag"></i> <span>Coupons</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.analytics\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/analytics">
-                                        <i class="fa fa-bar-chart"></i> <span>Analytics</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.reports\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/reports">
-                                        <i class="fa fa-line-chart"></i> <span>Reports</span>
-                                    </a>
-                                </li>
-                                <li class="{{ starts_with(Route::currentRouteName(), \'admin.shop.settings\') ? \'active\' : \'\' }}">
-                                    <a href="/admin/shop/settings">
-                                        <i class="fa fa-gear"></i> <span>Settings</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>';
+                            <li class="nav-main-heading">SHOP MANAGEMENT</li>
+                            <li class="nav-main-item {{ Route::currentRouteName() == \'admin.shop.index\' || Route::currentRouteName() == \'admin.shop.dashboard\' ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ Route::currentRouteName() == \'admin.shop.index\' || Route::currentRouteName() == \'admin.shop.dashboard\' ? \'active\' : \'\' }}" href="/admin/shop">
+                                    <i class="nav-main-link-icon fa fa-dashboard"></i>
+                                    <span class="nav-main-link-name">Dashboard</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.plans\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.plans\') ? \'active\' : \'\' }}" href="/admin/shop/plans">
+                                    <i class="nav-main-link-icon fa fa-list"></i>
+                                    <span class="nav-main-link-name">Plans</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.categories\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.categories\') ? \'active\' : \'\' }}" href="/admin/shop/categories">
+                                    <i class="nav-main-link-icon fa fa-folder"></i>
+                                    <span class="nav-main-link-name">Categories</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.orders\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.orders\') ? \'active\' : \'\' }}" href="/admin/shop/orders">
+                                    <i class="nav-main-link-icon fa fa-shopping-cart"></i>
+                                    <span class="nav-main-link-name">Orders</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.payments\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.payments\') ? \'active\' : \'\' }}" href="/admin/shop/payments">
+                                    <i class="nav-main-link-icon fa fa-credit-card"></i>
+                                    <span class="nav-main-link-name">Payments</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.coupons\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.coupons\') ? \'active\' : \'\' }}" href="/admin/shop/coupons">
+                                    <i class="nav-main-link-icon fa fa-tag"></i>
+                                    <span class="nav-main-link-name">Coupons</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.analytics\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.analytics\') ? \'active\' : \'\' }}" href="/admin/shop/analytics">
+                                    <i class="nav-main-link-icon fa fa-bar-chart"></i>
+                                    <span class="nav-main-link-name">Analytics</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.reports\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.reports\') ? \'active\' : \'\' }}" href="/admin/shop/reports">
+                                    <i class="nav-main-link-icon fa fa-line-chart"></i>
+                                    <span class="nav-main-link-name">Reports</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.settings\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.settings\') ? \'active\' : \'\' }}" href="/admin/shop/settings">
+                                    <i class="nav-main-link-icon fa fa-gear"></i>
+                                    <span class="nav-main-link-name">Settings</span>
+                                </a>
+                            </li>';
         
-        // JavaScript to initialize the shop management treeview
+        // Simple JavaScript for One UI shop navigation (no submenus needed)
         $treeviewScript = '
-        <style>
-        .shop-management-menu .treeview-menu {
-            padding-left: 0;
-        }
-        .shop-management-menu .treeview-menu li a {
-            padding-left: 50px;
-        }
-        .shop-management-menu .shop-toggle {
-            cursor: pointer;
-        }
-        .shop-management-menu .pull-right-container .fa {
-            transition: transform 0.3s;
-        }
-        </style>
         <script>
         $(document).ready(function() {
-            // Wait a bit to ensure DOM is fully loaded
-            setTimeout(function() {
-                // Initialize shop management treeview specifically
-                var $shopMenu = $(\'.shop-management-menu\');
-                
-                if ($shopMenu.length > 0) {
-                    var $toggleLink = $shopMenu.find(\'.shop-toggle\');
-                    var $submenu = $shopMenu.find(\'.treeview-menu\');
-                    var $icon = $toggleLink.find(\'.fa-angle-left\');
-                    
-                    // Check if current URL contains shop or any submenu item is active
-                    var currentUrl = window.location.pathname;
-                    var isOnShopPage = currentUrl.indexOf(\'/admin/shop\') !== -1;
-                    var hasActiveChild = $submenu.find(\'li.active\').length > 0;
-                    
-                    if (isOnShopPage || hasActiveChild) {
-                        // Open the menu if on shop page or has active child
-                        $shopMenu.addClass(\'active\');
-                        $submenu.show();
-                        $icon.removeClass(\'fa-angle-left\').addClass(\'fa-angle-down\');
-                        
-                        // Store state to keep it open
-                        sessionStorage.setItem(\'shopMenuOpen\', \'true\');
-                    } else {
-                        // Check if menu should stay open from previous navigation
-                        var shouldStayOpen = sessionStorage.getItem(\'shopMenuOpen\');
-                        if (shouldStayOpen === \'true\') {
-                            $shopMenu.addClass(\'active\');
-                            $submenu.show();
-                            $icon.removeClass(\'fa-angle-left\').addClass(\'fa-angle-down\');
-                        }
-                    }
-                    
-                    // Handle toggle click
-                    $toggleLink.on(\'click\', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        
-                        if ($shopMenu.hasClass(\'active\')) {
-                            // Close menu
-                            $shopMenu.removeClass(\'active\');
-                            $submenu.slideUp(300);
-                            $icon.removeClass(\'fa-angle-down\').addClass(\'fa-angle-left\');
-                            sessionStorage.setItem(\'shopMenuOpen\', \'false\');
-                        } else {
-                            // Open menu
-                            $shopMenu.addClass(\'active\');
-                            $submenu.slideDown(300);
-                            $icon.removeClass(\'fa-angle-left\').addClass(\'fa-angle-down\');
-                            sessionStorage.setItem(\'shopMenuOpen\', \'true\');
-                        }
-                    });
-                    
-                    // Prevent submenu clicks from closing the menu
-                    $submenu.on(\'click\', function(e) {
-                        e.stopPropagation();
-                    });
-                }
-            }, 500);
+            // Simple navigation handling - no complex submenu logic needed
+            // One UI will handle the basic navigation functionality
+            console.log("Shop navigation loaded successfully");
         });
         </script>';
         
-        // Try multiple patterns to inject shop navigation (match Pterodactyl structure)
+        // Try multiple patterns to inject shop navigation (match One UI nav-main structure)
         $patterns = [
             // Pattern 1: After the last item in SERVICE MANAGEMENT section (Nests)
-            '/(<a href="[^"]*\/admin\/nests[^"]*">[^<]*<i class="fa fa-th-large"><\/i>[^<]*<span>Nests<\/span>[^<]*<\/a>\s*<\/li>)/s',
-            // Pattern 2: After SERVICE MANAGEMENT section  
-            '/(<li class="header">SERVICE MANAGEMENT<\/li>.*?<\/li>)(\s*<\/ul>)/s',
-            // Pattern 3: After MANAGEMENT section
-            '/(<li class="header">MANAGEMENT<\/li>.*?<\/li>)(\s*<li class="header">)/s',
+            '/(<li class="nav-main-item[^"]*"[^>]*>\s*<a class="nav-main-link[^"]*" href="[^"]*\/admin\/nests[^"]*">[^<]*<i class="nav-main-link-icon fa fa-th-large"><\/i>[^<]*<span class="nav-main-link-name">Nests<\/span>[^<]*<\/a>\s*<\/li>)/s',
+            // Pattern 2: After SERVICE MANAGEMENT heading
+            '/(<li class="nav-main-heading">SERVICE MANAGEMENT<\/li>.*?<\/li>)(\s*<\/ul>)/s',
+            // Pattern 3: After MANAGEMENT heading  
+            '/(<li class="nav-main-heading">MANAGEMENT<\/li>.*?<\/li>)(\s*<li class="nav-main-heading">)/s',
             // Pattern 4: After any management section with users
-            '/(<a href="[^"]*\/admin\/users[^"]*">[^<]*<\/a>\s*<\/li>)/s',
+            '/(<li class="nav-main-item[^"]*"[^>]*>\s*<a class="nav-main-link[^"]*" href="[^"]*\/admin\/users[^"]*">[^<]*<\/a>\s*<\/li>)/s',
             // Pattern 5: After settings menu item
-            '/(<a href="[^"]*\/admin\/settings[^"]*">[^<]*<\/a>\s*<\/li>)/s',
-            // Pattern 6: Fallback - before closing ul in sidebar
-            '/(<\/ul>\s*<\/section>)/s'
+            '/(<li class="nav-main-item[^"]*"[^>]*>\s*<a class="nav-main-link[^"]*" href="[^"]*\/admin\/settings[^"]*">[^<]*<\/a>\s*<\/li>)/s',
+            // Pattern 6: Fallback - before closing ul in nav-main
+            '/(<\/ul>\s*<\/div>\s*<\/div>\s*<\/nav>)/s'
         ];
         
         $injected = false;

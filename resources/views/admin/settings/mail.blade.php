@@ -6,26 +6,41 @@
 @endsection
 
 @section('content-header')
-    <h1>Mail Settings<small>Configure how Pterodactyl should handle sending emails.</small></h1>
-    <ol class="breadcrumb">
-        <li><a href="{{ route('admin.index') }}">Admin</a></li>
-        <li class="active">Settings</li>
-    </ol>
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Mail Settings
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Configure how Pterodactyl should handle sending emails.
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.index') }}">Admin</a></li>
+          <li class="breadcrumb-item" aria-current="page">Settings</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
 @endsection
 
 @section('content')
     @yield('settings::nav')
     <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Email Settings</h3>
+        <div class="col-12">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Email Settings</h3>
                 </div>
                 @if($disabled)
-                    <div class="box-body">
+                    <div class="block-content">
                         <div class="row">
-                            <div class="col-xs-12">
-                                <div class="alert alert-info no-margin-bottom">
+                            <div class="col-12">
+                                <div class="alert alert-info">
                                     This interface is limited to instances using SMTP as the mail driver. Please either use <code>php artisan p:environment:mail</code> command to update your email settings, or set <code>MAIL_DRIVER=smtp</code> in your environment file.
                                 </div>
                             </div>
@@ -33,24 +48,24 @@
                     </div>
                 @else
                     <form>
-                        <div class="box-body">
+                        <div class="block-content">
                             <div class="row">
                                 <div class="form-group col-md-6">
-                                    <label class="control-label">SMTP Host</label>
+                                    <label class="form-label">SMTP Host</label>
                                     <div>
                                         <input required type="text" class="form-control" name="mail:mailers:smtp:host" value="{{ old('mail:mailers:smtp:host', config('mail.mailers.smtp.host')) }}" />
                                         <p class="text-muted small">Enter the SMTP server address that mail should be sent through.</p>
                                     </div>
                                 </div>
                                 <div class="form-group col-md-2">
-                                    <label class="control-label">SMTP Port</label>
+                                    <label class="form-label">SMTP Port</label>
                                     <div>
                                         <input required type="number" class="form-control" name="mail:mailers:smtp:port" value="{{ old('mail:mailers:smtp:port', config('mail.mailers.smtp.port')) }}" />
                                         <p class="text-muted small">Enter the SMTP server port that mail should be sent through.</p>
                                     </div>
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <label class="control-label">Encryption</label>
+                                    <label class="form-label">Encryption</label>
                                     <div>
                                         @php
                                             $encryption = old('mail:mailers:smtp:encryption', config('mail.mailers.smtp.encryption'));
@@ -64,14 +79,14 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label class="control-label">Username <span class="field-optional"></span></label>
+                                    <label class="form-label">Username <span class="field-optional"></span></label>
                                     <div>
                                         <input type="text" class="form-control" name="mail:mailers:smtp:username" value="{{ old('mail:mailers:smtp:username', config('mail.mailers.smtp.username')) }}" />
                                         <p class="text-muted small">The username to use when connecting to the SMTP server.</p>
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label class="control-label">Password <span class="field-optional"></span></label>
+                                    <label class="form-label">Password <span class="field-optional"></span></label>
                                     <div>
                                         <input type="password" class="form-control" name="mail:mailers:smtp:password"/>
                                         <p class="text-muted small">The password to use in conjunction with the SMTP username. Leave blank to continue using the existing password. To set the password to an empty value enter <code>!e</code> into the field.</p>
@@ -81,14 +96,14 @@
                             <div class="row">
                                 <hr />
                                 <div class="form-group col-md-6">
-                                    <label class="control-label">Mail From</label>
+                                    <label class="form-label">Mail From</label>
                                     <div>
                                         <input required type="email" class="form-control" name="mail:from:address" value="{{ old('mail:from:address', config('mail.from.address')) }}" />
                                         <p class="text-muted small">Enter an email address that all outgoing emails will originate from.</p>
                                     </div>
                                 </div>
                                 <div class="form-group col-md-6">
-                                    <label class="control-label">Mail From Name <span class="field-optional"></span></label>
+                                    <label class="form-label">Mail From Name <span class="field-optional"></span></label>
                                     <div>
                                         <input type="text" class="form-control" name="mail:from:name" value="{{ old('mail:from:name', config('mail.from.name')) }}" />
                                         <p class="text-muted small">The name that emails should appear to come from.</p>
@@ -96,12 +111,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="box-footer">
+                        <div class="block-content block-content-full block-content-sm text-end border-top">
                             {{ csrf_field() }}
-                            <div class="pull-right">
-                                <button type="button" id="testButton" class="btn btn-sm btn-success">Test</button>
-                                <button type="button" id="saveButton" class="btn btn-sm btn-primary">Save</button>
-                            </div>
+                            <button type="button" id="testButton" class="btn btn-sm btn-success">Test</button>
+                            <button type="button" id="saveButton" class="btn btn-sm btn-primary">Save</button>
                         </div>
                     </form>
                 @endif

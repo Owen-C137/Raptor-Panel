@@ -226,3 +226,26 @@ Route::group(['prefix' => 'nests'], function () {
     Route::delete('/egg/{egg:id}', [Admin\Nests\EggController::class, 'destroy']);
     Route::delete('/egg/{egg:id}/variables/{variable:id}', [Admin\Nests\EggVariableController::class, 'destroy']);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Update Controller Routes
+|--------------------------------------------------------------------------
+|
+| Endpoint: /admin/updates
+|
+*/
+Route::group(['prefix' => 'updates'], function () {
+    Route::get('/check', [Admin\UpdateController::class, 'checkForUpdates'])->name('admin.updates.check');
+    Route::get('/details', [Admin\UpdateController::class, 'getUpdateDetails'])->name('admin.updates.details');
+    Route::get('/status', [Admin\UpdateController::class, 'getSystemStatus'])->name('admin.updates.status');
+    Route::get('/progress', [Admin\UpdateController::class, 'getUpdateProgress'])->name('admin.updates.progress');
+    Route::get('/backups', [Admin\UpdateController::class, 'listBackups'])->name('admin.updates.backups');
+
+    Route::post('/apply', [Admin\UpdateController::class, 'applyUpdate'])->name('admin.updates.apply');
+    Route::post('/cancel', [Admin\UpdateController::class, 'cancelUpdate'])->name('admin.updates.cancel');
+    Route::post('/backups/restore', [Admin\UpdateController::class, 'restoreBackup'])->name('admin.updates.backups.restore');
+    Route::post('/backups/cleanup', [Admin\UpdateController::class, 'cleanupBackups'])->name('admin.updates.backups.cleanup');
+
+    Route::delete('/backups/{backup_id}', [Admin\UpdateController::class, 'deleteBackup'])->name('admin.updates.backups.delete');
+});
