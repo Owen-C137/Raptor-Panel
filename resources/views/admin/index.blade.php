@@ -516,7 +516,7 @@ function initializeAdminPage() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': document.querySelector('meta[name="_token"]').content
             },
             body: JSON.stringify({
                 backup: true
