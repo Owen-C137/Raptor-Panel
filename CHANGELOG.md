@@ -2,6 +2,20 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.0.3 - 2025-09-18
+
+### Added
+- 📋 **Detailed File Previews** - View exactly which files will be updated before applying changes
+- 🏷️ **File Categorization** - Files organized by type (Application Logic, UI, Configuration, etc.)
+- 📊 **Comprehensive Update Reports** - Detailed success metrics with file counts and timestamps
+- 🔍 **File Status Indicators** - NEW/MODIFIED badges with file sizes for complete transparency
+
+### Enhanced
+- 🎯 **Update Modal** - Expandable accordion view showing files by category with detailed information
+- ✅ **Success Notifications** - Enhanced alerts showing version transitions and update statistics
+- 📈 **Progress Tracking** - Real-time file update progress with comprehensive reporting
+- 🛡️ **Error Handling** - Detailed failure reporting for any files that fail to update
+
 ## v1.0.2 - 2025-09-18
 
 ### Added

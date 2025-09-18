@@ -11,7 +11,7 @@ return [
     | Update this version number when releasing new features.
     */
 
-    'version' => '1.0.2',
+    'version' => '1.0.3',
 
     /*
     |--------------------------------------------------------------------------
