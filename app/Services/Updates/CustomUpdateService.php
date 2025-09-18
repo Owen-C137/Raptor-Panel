@@ -27,6 +27,14 @@ class CustomUpdateService
     }
 
     /**
+     * Get the current local version.
+     */
+    public function getCurrentVersion(): string
+    {
+        return config('app.version');
+    }
+
+    /**
      * Get the latest version from the GitHub repository.
      */
     public function getLatestVersion(): string

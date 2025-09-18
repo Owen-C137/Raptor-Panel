@@ -1,21 +1,137 @@
-[![Logo Image](https://cdn.pterodactyl.io/logos/new/pterodactyl_logo.png)](https://pterodactyl.io)
+# Raptor Panel
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/pterodactyl/panel/ci.yaml?label=Tests&style=for-the-badge&branch=1.0-develop)
-![Discord](https://img.shields.io/discord/122900397965705216?label=Discord&logo=Discord&logoColor=white&style=for-the-badge)
-![GitHub Releases](https://img.shields.io/github/downloads/pterodactyl/panel/latest/total?style=for-the-badge)
-![GitHub contributors](https://img.shields.io/github/contributors/pterodactyl/panel?style=for-the-badge)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/Owen-C137/Raptor-Panel/release.yml?branch=main)](https://github.com/Owen-C137/Raptor-Panel/actions)
+[![License](https://img.shields.io/github/license/Owen-C137/Raptor-Panel)](https://opensource.org/licenses/MIT)
+[![Version](https://img.shields.io/github/v/release/Owen-C137/Raptor-Panel)](https://github.com/Owen-C137/Raptor-Panel/releases)
 
-# Pterodactyl Panel
+Raptor Panel is an enhanced, feature-rich fork of Pterodactyl Panel with modern UI improvements and advanced functionality for managing game servers.
 
-Pterodactyl® is a free, open-source game server management panel built with PHP, React, and Go. Designed with security
-in mind, Pterodactyl runs all game servers in isolated Docker containers while exposing a beautiful and intuitive
-UI to end users.
+## ✨ Key Features
 
-Stop settling for less. Make game servers a first class citizen on your platform.
+- 🎨 **Modern OneUI Interface** - Beautiful, responsive admin dashboard
+- 🔄 **Auto-Update System** - Seamless updates directly from the admin panel
+- ✨ **Enhanced Node Configuration** - Syntax highlighting and copy-to-clipboard functionality
+- 💾 **Backup & Restore** - Comprehensive backup system with rollback capabilities
+- 🛡️ **Security First** - Safe updates with automatic backup creation
+- ⚙️ **Improved Settings** - Better organized configuration management
 
-![Image](https://cdn.pterodactyl.io/site-assets/pterodactyl_v1_demo.gif)
+## 🚀 Quick Start
 
-## Documentation
+### Requirements
+
+- PHP 8.1 or higher
+- Composer
+- MariaDB 10.4+ / MySQL 8.0+
+- Redis
+- Node.js (for theme compilation)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/Owen-C137/Raptor-Panel.git
+cd Raptor-Panel
+```
+
+2. Install dependencies:
+```bash
+composer install --no-dev --optimize-autoloader
+```
+
+3. Copy configuration and set up environment:
+```bash
+cp .env.example .env
+php artisan key:generate --force
+```
+
+4. Configure your database in `.env` and run migrations:
+```bash
+php artisan migrate --force
+php artisan db:seed --force
+```
+
+5. Create your first admin user:
+```bash
+php artisan p:user:make
+```
+
+## 🔄 Auto-Update System
+
+Raptor Panel includes a built-in auto-update system that allows seamless updates:
+
+### Web Interface
+- Navigate to Admin Dashboard
+- Updates are automatically detected and shown
+- Click "View Update" to see changelog
+- Click "Update Now" for one-click installation
+
+### Command Line
+```bash
+# Check for updates
+php artisan update:check
+
+# Apply updates with backup
+php artisan update:apply --backup
+
+# Rollback to previous version
+php artisan update:rollback --latest
+```
+
+## 🛠️ For Developers
+
+### Release Workflow
+
+1. **Update version** in `config/app.php` 
+2. **Update CHANGELOG.md** with new features/fixes
+3. **Commit and push** changes
+4. Users automatically get update notifications!
+
+### Development Setup
+
+```bash
+# Install dev dependencies
+composer install
+npm install
+
+# Compile assets
+npm run build
+
+# Run development server
+php artisan serve
+```
+
+## 📖 Documentation
+
+- [Installation Guide](https://github.com/Owen-C137/Raptor-Panel/wiki/Installation)
+- [Configuration](https://github.com/Owen-C137/Raptor-Panel/wiki/Configuration)
+- [Auto-Update System](https://github.com/Owen-C137/Raptor-Panel/wiki/Auto-Updates)
+- [API Documentation](https://github.com/Owen-C137/Raptor-Panel/wiki/API)
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Built upon the excellent foundation of [Pterodactyl Panel](https://github.com/pterodactyl/panel)
+- OneUI theme integration for modern interface
+- Community feedback and contributions
+
+## 💖 Support the Project
+
+If you find Raptor Panel useful, please consider:
+- ⭐ Starring the repository
+- 🐛 Reporting bugs and issues
+- 💝 [Sponsoring the project](https://github.com/sponsors/Owen-C137)
+- 📢 Sharing with others
+
+---
+
+**Raptor Panel** - Enhanced server management for the modern era.
 
 * [Panel Documentation](https://pterodactyl.io/panel/1.0/getting_started.html)
 * [Wings Documentation](https://pterodactyl.io/wings/1.0/installing.html)
