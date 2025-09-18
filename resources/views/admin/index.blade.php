@@ -60,25 +60,31 @@
 </div>
 
 <!-- Update Available Modal -->
-<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModal" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-download me-2"></i>Raptor Panel Update Available
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="update-details-content">
-                    <!-- Update details will be loaded here -->
+            <div class="block block-rounded block-transparent mb-0">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fas fa-download me-2"></i>Raptor Panel Update Available
+                    </h3>
+                    <div class="block-options">
+                        <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="fa fa-fw fa-times"></i>
+                        </button>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="apply-update-btn">
-                    <i class="fas fa-download me-1"></i>Update Now
-                </button>
+                <div class="block-content fs-sm">
+                    <div id="update-details-content">
+                        <!-- Update details will be loaded here -->
+                    </div>
+                </div>
+                <div class="block-content block-content-full text-end bg-body">
+                    <button type="button" class="btn btn-sm btn-alt-secondary me-1" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="apply-update-btn">
+                        <i class="fas fa-download me-1"></i>Update Now
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -86,18 +92,20 @@
 
 <!-- Update Progress Modal -->
 <div class="modal fade" id="updateProgressModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-cogs me-2"></i>Updating Raptor Panel
-                </h5>
-            </div>
-            <div class="modal-body">
-                <div class="progress mb-3">
-                    <div class="progress-bar" id="update-progress-bar" style="width: 0%"></div>
+            <div class="block block-rounded block-transparent mb-0">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fas fa-cogs me-2"></i>Updating Raptor Panel
+                    </h3>
                 </div>
-                <p id="update-status-text" class="mb-0 text-center">Preparing update...</p>
+                <div class="block-content fs-sm">
+                    <div class="progress mb-3" style="height: 20px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" id="update-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <p id="update-status-text" class="mb-0 text-center fw-medium">Preparing update...</p>
+                </div>
             </div>
         </div>
     </div>
