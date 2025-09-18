@@ -128,8 +128,8 @@
         </a>
     </div>
     <div class="col-6 col-sm-3 text-center">
-        <a href="https://github.com/sponsors/Owen-C137" class="btn btn-success w-100 mb-2">
-            <i class="fas fa-heart me-1"></i> Sponsor Project
+        <a href="https://ko-fi.com/owenc137" class="btn btn-success w-100 mb-2">
+            <i class="fas fa-heart me-1"></i> Support Me Here!
         </a>
     </div>
 </div>
