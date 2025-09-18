@@ -2,6 +2,26 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.0.1 - 2025-09-18
+
+### Added
+- 🔧 **Advanced Modal System** - Enhanced Bootstrap 5 modal compatibility with OneUI
+- 🎯 **Global jQuery Handler** - Improved script compatibility across all admin interfaces
+- 📊 **Update Progress Tracking** - Real-time update status with detailed progress indicators
+- 🛠️ **Developer Tools** - Enhanced debugging and error handling capabilities
+
+### Fixed
+- 🐛 **JavaScript Execution Order** - Fixed script loading sequence for better compatibility
+- 🔧 **Modal Initialization** - Resolved Bootstrap modal compatibility with OneUI theme
+- 🎨 **CSS Dependencies** - Fixed stylesheet loading order and theme integration
+- ⚡ **Performance Issues** - Optimized script execution and reduced loading times
+
+### Enhanced
+- 🖥️ **Admin Dashboard** - Improved update notifications and system status display
+- 🔄 **Auto-Update Process** - Streamlined update flow with better user feedback
+- 🛡️ **Error Handling** - Better error messages and recovery options
+- 📱 **Mobile Compatibility** - Enhanced responsive design for mobile devices
+
 ## v1.0.0 - 2024-09-18
 
 ### Added
