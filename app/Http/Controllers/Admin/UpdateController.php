@@ -132,14 +132,23 @@ class UpdateController extends Controller
 
             $createBackup = $request->get('backup', true);
             
+            // Get files that will be changed
+            $changedFiles = $this->updateService->getChangedFiles();
+            
+            if (empty($changedFiles)) {
+                return response()->json([
+                    'error' => 'No files need to be updated.',
+                ], 400);
+            }
+            
             // Create backup if requested
             $backupId = null;
             if ($createBackup) {
-                $backupId = $this->backupService->createBackup('pre-update-' . now()->format('Y-m-d-H-i-s'));
+                $backupId = $this->backupService->createBackup($changedFiles);
             }
 
             // Apply the update
-            $result = $this->updateService->applyUpdate($backupId);
+            $result = $this->updateService->applyUpdate();
 
             // Clear update cache
             Cache::forget('raptor_panel_update_check');

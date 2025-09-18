@@ -205,6 +205,11 @@ function initializeAdminPage() {
             .then(data => {
                 updateUpdateBlock(data);
                 refreshBtn.querySelector('i').classList.remove('fa-spin');
+                
+                // Show status alert when manually refreshed
+                if (force) {
+                    showStatusAlert(data.update_available, data.current_version, data.latest_version);
+                }
             })
             .catch(error => {
                 console.error('Update check failed:', error);
@@ -291,6 +296,52 @@ function initializeAdminPage() {
                 <p class="mb-0 text-muted">${errorMessage}</p>
             </div>
         `;
+    }
+
+    function showStatusAlert(updateAvailable, currentVersion, latestVersion) {
+        // Remove any existing status alerts
+        const existingAlert = document.querySelector('.status-alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+        
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-dismissible fade show status-alert';
+        
+        if (updateAvailable) {
+            alert.classList.add('alert-warning');
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Update Available!</strong> Version ${latestVersion} is available. You're currently running ${currentVersion}.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        } else {
+            alert.classList.add('alert-success');
+            alert.innerHTML = `
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>Up to Date!</strong> You're running the latest version (${currentVersion}).
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        }
+        
+        // Find the content container and first row to insert before
+        const contentContainer = document.querySelector('.content.content-full');
+        const firstRow = contentContainer ? contentContainer.querySelector('.row') : null;
+        
+        if (contentContainer && firstRow) {
+            contentContainer.insertBefore(alert, firstRow);
+        } else {
+            // Fallback: append to content container or body
+            const target = contentContainer || document.querySelector('.content') || document.body;
+            target.insertBefore(alert, target.firstChild);
+        }
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (alert && alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
     }
 
     function showUpdateModal(version) {
@@ -443,10 +494,36 @@ function initializeAdminPage() {
                     <strong>Update Successful!</strong> Raptor Panel has been updated to version ${data.updated_version}.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
-                document.querySelector('.content').insertBefore(alert, document.querySelector('.row'));
                 
-                // Refresh the update check
-                setTimeout(() => checkForUpdates(true), 1000);
+                // Find the content container and first row to insert before
+                const contentContainer = document.querySelector('.content.content-full');
+                const firstRow = contentContainer ? contentContainer.querySelector('.row') : null;
+                
+                if (contentContainer && firstRow) {
+                    contentContainer.insertBefore(alert, firstRow);
+                } else {
+                    // Fallback: append to content container or body
+                    const target = contentContainer || document.querySelector('.content') || document.body;
+                    target.insertBefore(alert, target.firstChild);
+                }
+                
+                // Clear update cache and refresh the update check
+                setTimeout(() => {
+                    // Force refresh the update check to show new status
+                    checkForUpdates(true);
+                    
+                    // Update the page header version if it exists
+                    const versionElements = document.querySelectorAll('[data-version]');
+                    versionElements.forEach(el => {
+                        if (el.textContent.includes(data.current_version)) {
+                            el.textContent = el.textContent.replace(data.current_version, data.updated_version);
+                        }
+                    });
+                    
+                    // Show success status alert
+                    showStatusAlert(false, data.updated_version, data.updated_version);
+                    
+                }, 1000);
             }, 2000);
         })
         .catch(error => {
