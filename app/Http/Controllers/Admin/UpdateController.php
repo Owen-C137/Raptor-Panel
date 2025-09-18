@@ -37,8 +37,22 @@ class UpdateController extends Controller
         try {
             $cacheKey = 'raptor_panel_update_check';
             $cachedResult = Cache::get($cacheKey);
+            $forceRefresh = $request->get('force', false);
             
-            if ($cachedResult && !$request->get('force', false)) {
+            // If forced refresh, clear all relevant caches
+            if ($forceRefresh) {
+                Cache::forget($cacheKey);
+                try {
+                    // Clear config cache to ensure version changes are reflected
+                    \Artisan::call('config:clear');
+                    \Artisan::call('config:cache');
+                } catch (\Exception $e) {
+                    // Continue if cache clearing fails
+                }
+                $cachedResult = null;
+            }
+            
+            if ($cachedResult && !$forceRefresh) {
                 return response()->json($cachedResult);
             }
 
