@@ -1,3 +1,49 @@
+# Raptor Panel Changelog
+
+All notable changes to Raptor Panel will be documented in this file.
+
+## v1.0.0 - 2024-09-18
+
+### Added
+- 🚀 **Initial Raptor Panel Release** - Complete fork of Pterodactyl with enhanced features
+- 🎨 **OneUI Theme Integration** - Modern, responsive admin interface
+- ✨ **Enhanced Node Configuration** - Syntax highlighting with atom-one-dark theme
+- 📋 **Copy-to-Clipboard Functionality** - Easy configuration copying
+- 🔄 **Auto-Update System** - Direct GitHub integration for seamless updates
+- 💾 **Backup & Restore** - Comprehensive backup system with rollback capabilities
+- 🎛️ **Improved Settings Layout** - Better organized admin configuration blocks
+
+### Enhanced
+- 🖥️ **Admin Dashboard** - Real-time update notifications and progress tracking
+- ⚙️ **Node Management** - Enhanced configuration display with better readability
+- 🛡️ **Security** - Safe updates with automatic backup creation
+
+### Technical
+- **GitHub Integration** - Direct repository monitoring for updates
+- **Service Architecture** - Modular update services for maintainability  
+- **CLI Commands** - Full command-line support for updates and rollbacks
+- **Web Interface** - AJAX-powered update management
+- **File Management** - Selective file updates and change detection
+
+---
+
+## Release Workflow
+
+When creating new releases:
+
+1. **🔴 IMPORTANT: Update version in `config/app.php`** 
+2. **🟡 IMPORTANT: Update this CHANGELOG.md**
+3. Commit and push changes
+4. Users automatically get update notifications!
+
+---
+
+*Raptor Panel - Enhanced Pterodactyl Experience*
+
+---
+
+# Previous Pterodactyl Changelog (for reference)
+
 # Changelog
 This file is a running track of new features and fixes to each version of the panel released starting with `v0.4.0`.
 
