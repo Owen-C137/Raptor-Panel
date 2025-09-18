@@ -375,6 +375,7 @@ function initializeAdminPage() {
 
                 const changelog = data.changelog || {};
                 const filesCount = data.files_count || 0;
+                const changedFiles = data.changed_files || [];
 
                 let changelogHtml = '';
                 if (changelog.added && changelog.added.length > 0) {
@@ -404,6 +405,54 @@ function initializeAdminPage() {
                     `;
                 }
 
+                // Generate file details
+                let fileDetailsHtml = '';
+                if (changedFiles.length > 0) {
+                    const filesByCategory = {};
+                    changedFiles.forEach(file => {
+                        const category = file.category;
+                        if (!filesByCategory[category]) {
+                            filesByCategory[category] = [];
+                        }
+                        filesByCategory[category].push(file);
+                    });
+
+                    fileDetailsHtml = `
+                        <div class="mt-4">
+                            <h6><i class="fas fa-file-code text-info me-1"></i>Files to be Updated (${filesCount})</h6>
+                            <div class="accordion" id="fileAccordion">
+                    `;
+
+                    Object.keys(filesByCategory).forEach((category, index) => {
+                        const files = filesByCategory[category];
+                        fileDetailsHtml += `
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading${index}">
+                                    <button class="accordion-button ${index === 0 ? '' : 'collapsed'}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse${index}">
+                                        <strong>${category}</strong>
+                                        <span class="badge bg-primary ms-2">${files.length}</span>
+                                    </button>
+                                </h2>
+                                <div id="collapse${index}" class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" data-bs-parent="#fileAccordion">
+                                    <div class="accordion-body">
+                                        ${files.map(file => `
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="badge bg-${file.type === 'new' ? 'success' : 'warning'} me-2">
+                                                    ${file.type === 'new' ? 'NEW' : 'MOD'}
+                                                </span>
+                                                <code class="flex-grow-1 fs-sm">${file.path}</code>
+                                                ${file.size ? `<small class="text-muted ms-2">${Math.round(file.size / 1024)}KB</small>` : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    fileDetailsHtml += `</div></div>`;
+                }
+
                 detailsContent.innerHTML = `
                     <div class="mb-4">
                         <h6>Update Summary</h6>
@@ -427,6 +476,8 @@ function initializeAdminPage() {
                     </div>
                     
                     ${changelogHtml || '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>No detailed changelog available for this version.</div>'}
+                    
+                    ${fileDetailsHtml}
                     
                     <div class="alert alert-warning">
                         <i class="fas fa-shield-alt me-2"></i>
@@ -486,12 +537,22 @@ function initializeAdminPage() {
             setTimeout(() => {
                 hideModal(updateProgressModal);
                 
-                // Show success message and reload
+                // Show success message with detailed report
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-success alert-dismissible fade show';
+                
+                const failureInfo = data.failed_files_count > 0 
+                    ? `<br><small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>${data.failed_files_count} files failed to update</small>`
+                    : '';
+                
                 alert.innerHTML = `
                     <i class="fas fa-check-circle me-2"></i>
-                    <strong>Update Successful!</strong> Raptor Panel has been updated to version ${data.updated_version}.
+                    <strong>Update Successful!</strong> Raptor Panel has been updated from ${data.old_version} to ${data.updated_version}.
+                    <br><small class="mt-1 d-block">
+                        <i class="fas fa-file-check me-1"></i>${data.updated_files_count} files updated successfully
+                        ${failureInfo}
+                        <br><i class="fas fa-clock me-1"></i>Completed at ${new Date(data.update_timestamp).toLocaleString()}
+                    </small>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 

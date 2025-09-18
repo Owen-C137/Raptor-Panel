@@ -268,10 +268,14 @@ class CustomUpdateService
                 'message' => empty($failedFiles) 
                     ? 'Update completed successfully' 
                     : 'Update completed with some errors',
-                'updated_files' => count($updatedFiles),
-                'failed_files' => count($failedFiles),
+                'updated_files_count' => count($updatedFiles),
+                'failed_files_count' => count($failedFiles),
+                'updated_files_list' => $updatedFiles,
+                'failed_files_list' => $failedFiles,
                 'backup_path' => $backupPath,
                 'new_version' => $latestVersion,
+                'old_version' => $this->getCurrentVersion(),
+                'update_timestamp' => now()->toISOString(),
             ];
 
         } catch (Exception $e) {

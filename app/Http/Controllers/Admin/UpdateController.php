@@ -92,15 +92,24 @@ class UpdateController extends Controller
 
             $changelog = $this->changelogService->getChangelogForVersion($version);
             
-            // For now, skip the expensive file scanning operation
-            // $changedFiles = $this->updateService->getChangedFiles();
-            $changedFiles = []; // Placeholder - could be implemented with caching later
+            // Get files that will be updated
+            $changedFiles = $this->updateService->getChangedFiles();
+            $fileDetails = [];
+            
+            foreach ($changedFiles as $file) {
+                $fileDetails[] = [
+                    'path' => $file,
+                    'type' => $this->getFileUpdateType($file),
+                    'category' => $this->getFileCategory($file),
+                    'size' => file_exists(base_path($file)) ? filesize(base_path($file)) : null,
+                ];
+            }
             
             return response()->json([
                 'version' => $version,
                 'changelog' => $changelog,
-                'changed_files' => $changedFiles,
-                'files_count' => 0, // Will show "files will be updated" generically
+                'changed_files' => $fileDetails,
+                'files_count' => count($fileDetails),
                 'current_version' => $this->updateService->getCurrentVersion(),
             ]);
 
@@ -157,8 +166,13 @@ class UpdateController extends Controller
                 'success' => true,
                 'message' => 'Update applied successfully!',
                 'updated_version' => $result['new_version'],
-                'updated_files' => $result['updated_files'],
+                'old_version' => $result['old_version'],
+                'updated_files_count' => $result['updated_files_count'],
+                'failed_files_count' => $result['failed_files_count'],
+                'updated_files_list' => $result['updated_files_list'],
+                'failed_files_list' => $result['failed_files_list'],
                 'backup_id' => $backupId,
+                'update_timestamp' => $result['update_timestamp'],
             ]);
 
         } catch (Exception $e) {
@@ -389,5 +403,48 @@ class UpdateController extends Controller
                 'details' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
+    }
+
+    /**
+     * Determine the type of file update
+     */
+    private function getFileUpdateType(string $filePath): string
+    {
+        if (!file_exists(base_path($filePath))) {
+            return 'new';
+        }
+        return 'modified';
+    }
+
+    /**
+     * Categorize files by their purpose
+     */
+    private function getFileCategory(string $filePath): string
+    {
+        if (str_starts_with($filePath, 'app/')) {
+            return 'Application Logic';
+        }
+        if (str_starts_with($filePath, 'resources/views/')) {
+            return 'User Interface';
+        }
+        if (str_starts_with($filePath, 'resources/js/') || str_starts_with($filePath, 'resources/css/')) {
+            return 'Frontend Assets';
+        }
+        if (str_starts_with($filePath, 'public/')) {
+            return 'Public Assets';
+        }
+        if (str_starts_with($filePath, 'config/')) {
+            return 'Configuration';
+        }
+        if (str_starts_with($filePath, 'database/migrations/')) {
+            return 'Database Schema';
+        }
+        if (str_starts_with($filePath, 'routes/')) {
+            return 'API Routes';
+        }
+        if (str_starts_with($filePath, 'addons/')) {
+            return 'Addon System';
+        }
+        return 'Other';
     }
 }
