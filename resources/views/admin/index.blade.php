@@ -128,26 +128,69 @@
 @endsection
 
 @section('footer-scripts')
+@parent
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const updateBlock = document.getElementById('raptor-panel-update-block');
-    const updateContent = document.getElementById('update-content');
-    const updateBlockHeader = document.getElementById('update-block-header');
-    const refreshBtn = document.getElementById('refresh-update-check');
-    const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
-    const updateProgressModal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
+// Wait for jQuery to be available
+function initializeAdminPage() {
+    // Wait for OneUI and Bootstrap to be ready
+    setTimeout(function() {
+        initializeUpdateSystem();
+    }, 100);
 
-    // Check for updates on page load
-    checkForUpdates();
+    function initializeUpdateSystem() {
+        const updateBlock = document.getElementById('raptor-panel-update-block');
+        const updateContent = document.getElementById('update-content');
+        const updateBlockHeader = document.getElementById('update-block-header');
+        const refreshBtn = document.getElementById('refresh-update-check');
+        
+        // Use jQuery for Bootstrap modal initialization to ensure compatibility
+        let updateModal, updateProgressModal;
+        
+        try {
+            // Initialize modals using OneUI/Bootstrap
+            if (typeof bootstrap !== 'undefined') {
+                updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+                updateProgressModal = new bootstrap.Modal(document.getElementById('updateProgressModal'));
+            } else if (typeof $ !== 'undefined') {
+                // Fallback to jQuery modal
+                updateModal = $('#updateModal');
+                updateProgressModal = $('#updateProgressModal');
+            }
+        } catch (e) {
+            console.error('Modal initialization failed:', e);
+            return;
+        }
 
-    // Refresh button click handler
-    refreshBtn.addEventListener('click', function() {
-        refreshBtn.querySelector('i').classList.add('fa-spin');
-        checkForUpdates(true);
-    });
+        // Helper functions for modal operations
+        function showModal(modal) {
+            if (modal && typeof modal.show === 'function') {
+                modal.show();
+            } else if (modal && typeof modal.modal === 'function') {
+                modal.modal('show');
+            }
+        }
 
-    function checkForUpdates(force = false) {
-        const url = '{{ route('admin.updates.check') }}' + (force ? '?force=true' : '');
+        function hideModal(modal) {
+            if (modal && typeof modal.hide === 'function') {
+                modal.hide();
+            } else if (modal && typeof modal.modal === 'function') {
+                modal.modal('hide');
+            }
+        }
+
+        // Check for updates on page load
+        checkForUpdates();
+
+        // Refresh button click handler
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', function() {
+                refreshBtn.querySelector('i').classList.add('fa-spin');
+                checkForUpdates(true);
+            });
+        }
+
+        function checkForUpdates(force = false) {
+            const url = '{{ route('admin.updates.check') }}' + (force ? '?force=true' : '');
         
         fetch(url)
             .then(response => response.json())
@@ -254,7 +297,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
 
-        updateModal.show();
+        // Show modal using compatible method
+        showModal(updateModal);
 
         // Load update details
         fetch('{{ route('admin.updates.details') }}?version=' + encodeURIComponent(version))
@@ -345,12 +389,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Apply update button handler
     document.getElementById('apply-update-btn').addEventListener('click', function() {
-        updateModal.hide();
+        hideModal(updateModal);
         applyUpdate();
     });
 
     function applyUpdate() {
-        updateProgressModal.show();
+        showModal(updateProgressModal);
         
         const progressBar = document.getElementById('update-progress-bar');
         const statusText = document.getElementById('update-status-text');
@@ -381,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
 
             setTimeout(() => {
-                updateProgressModal.hide();
+                hideModal(updateProgressModal);
                 
                 // Show success message and reload
                 const alert = document.createElement('div');
@@ -405,10 +449,24 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             setTimeout(() => {
-                updateProgressModal.hide();
+                hideModal(updateProgressModal);
             }, 3000);
         });
     }
-});
+
+    } // end initializeUpdateSystem function
+}
+
+// Initialize when DOM is ready and jQuery is available
+if (typeof $ !== 'undefined') {
+    $(document).ready(initializeAdminPage);
+} else {
+    // Fallback to vanilla JS
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeAdminPage);
+    } else {
+        initializeAdminPage();
+    }
+}
 </script>
 @endsection

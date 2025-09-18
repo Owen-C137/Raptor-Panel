@@ -22,7 +22,7 @@
             {!! Theme::css('vendor/select2/select2.min.css?t={cache-version}') !!}
             {!! Theme::css('vendor/sweetalert/sweetalert.min.css?t={cache-version}') !!}
             {!! Theme::css('vendor/animate/animate.min.css?t={cache-version}') !!}
-            <link rel="stylesheet" href="/themes/one-ui/css/oneui.min.css?t={cache-version}" type="text/css">
+            <link id="css-main" rel="stylesheet" href="/themes/one-ui/css/oneui.min.css?t={cache-version}" type="text/css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
 
@@ -321,51 +321,116 @@
             <script src="/js/keyboard.polyfill.js" type="application/javascript"></script>
             <script>keyboardeventKeyPolyfill.polyfill();</script>
 
-
+            <!-- Load jQuery first -->
             {!! Theme::js('vendor/jquery/jquery.min.js?t={cache-version}') !!}
+            
+            <!-- Load OneUI framework (includes Bootstrap 5) -->
+            <script src="/themes/one-ui/js/oneui.app.min.js?t={cache-version}" type="application/javascript"></script>
+            
+            <!-- Load other dependencies -->
             {!! Theme::js('vendor/sweetalert/sweetalert.min.js?t={cache-version}') !!}
-            {!! Theme::js('vendor/bootstrap/bootstrap.min.js?t={cache-version}') !!}
-            {!! Theme::js('vendor/slimscroll/jquery.slimscroll.min.js?t={cache-version}') !!}
-            {!! Theme::js('vendor/adminlte/app.min.js?t={cache-version}') !!}
             {!! Theme::js('vendor/bootstrap-notify/bootstrap-notify.min.js?t={cache-version}') !!}
             {!! Theme::js('vendor/select2/select2.full.min.js?t={cache-version}') !!}
             {!! Theme::js('js/admin/functions.js?t={cache-version}') !!}
-            <script src="/themes/one-ui/js/oneui.app.min.js?t={cache-version}" type="application/javascript"></script>
             <script src="/js/autocomplete.js" type="application/javascript"></script>
 
+            <!-- Global jQuery readiness check -->
+            <script>
+                // Ensure $ is available globally by waiting for jQuery to load
+                (function() {
+                    var pendingCalls = [];
+                    
+                    // Temporary $ function that queues calls until jQuery is ready
+                    if (typeof window.$ === 'undefined') {
+                        window.$ = function() {
+                            var args = Array.prototype.slice.call(arguments);
+                            if (args.length === 1 && typeof args[0] === 'function') {
+                                // This is likely $(document).ready() or $(function(){})
+                                pendingCalls.push(args[0]);
+                            } else if (args.length === 1 && args[0] === document) {
+                                // This is $(document)
+                                return {
+                                    ready: function(callback) {
+                                        pendingCalls.push(callback);
+                                    }
+                                };
+                            }
+                            return window.$;
+                        };
+                    }
+                    
+                    // Check for jQuery and execute pending calls
+                    var checkJQuery = function() {
+                        if (typeof jQuery !== 'undefined') {
+                            window.$ = jQuery;
+                            jQuery(document).ready(function() {
+                                for (var i = 0; i < pendingCalls.length; i++) {
+                                    try {
+                                        pendingCalls[i]();
+                                    } catch (e) {
+                                        console.error('Error executing queued jQuery function:', e);
+                                    }
+                                }
+                                pendingCalls = [];
+                            });
+                        } else {
+                            setTimeout(checkJQuery, 10);
+                        }
+                    };
+                    checkJQuery();
+                })();
+            </script>
 
             @if(Auth::user()->root_admin)
                 <script>
-                    $('#logoutButton').on('click', function (event) {
-                        event.preventDefault();
+                    // Wait for jQuery to be available before running
+                    (function checkJQuery() {
+                        if (typeof $ !== 'undefined') {
+                            $(document).ready(function() {
+                                $('#logoutButton').on('click', function (event) {
+                                    event.preventDefault();
 
-                        var that = this;
-                        swal({
-                            title: 'Do you want to log out?',
-                            type: 'warning',
-                            showCancelButton: true,
-                            confirmButtonColor: '#d9534f',
-                            cancelButtonColor: '#d33',
-                            confirmButtonText: 'Log out'
-                        }, function () {
-                             $.ajax({
-                                type: 'POST',
-                                url: '{{ route('auth.logout') }}',
-                                data: {
-                                    _token: '{{ csrf_token() }}'
-                                },complete: function () {
-                                    window.location.href = '{{route('auth.login')}}';
-                                }
+                                    var that = this;
+                                    swal({
+                                        title: 'Do you want to log out?',
+                                        type: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#d9534f',
+                                        cancelButtonColor: '#d33',
+                                        confirmButtonText: 'Log out'
+                                    }, function () {
+                                         $.ajax({
+                                            type: 'POST',
+                                            url: '{{ route('auth.logout') }}',
+                                            data: {
+                                                _token: '{{ csrf_token() }}'
+                                            },complete: function () {
+                                                window.location.href = '{{route('auth.login')}}';
+                                            }
+                                    });
+                                });
+                            });
                         });
-                    });
-                });
+                        } else {
+                            // Retry in 100ms
+                            setTimeout(checkJQuery, 100);
+                        }
+                    })();
                 </script>
             @endif
 
             <script>
-                $(function () {
-                    $('[data-toggle="tooltip"]').tooltip();
-                })
+                // Wait for jQuery to be available before running tooltips
+                (function checkJQueryTooltip() {
+                    if (typeof $ !== 'undefined') {
+                        $(function () {
+                            $('[data-toggle="tooltip"]').tooltip();
+                        });
+                    } else {
+                        // Retry in 100ms
+                        setTimeout(checkJQueryTooltip, 100);
+                    }
+                })();
             </script>
         @show
     </body>
