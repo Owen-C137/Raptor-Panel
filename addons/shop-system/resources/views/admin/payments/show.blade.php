@@ -39,160 +39,227 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-8">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Payment Details</h3>
+    <div class="col-lg-8">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-credit-card me-1"></i>Payment Details
+                </h3>
             </div>
             
-            <div class="box-body">
-                <dl class="dl-horizontal">
-                    <dt>Payment ID:</dt>
-                    <dd>#{{ $payment->id }}</dd>
-                    
-                    <dt>Transaction ID:</dt>
-                    <dd><code>{{ $payment->gateway_transaction_id ?? 'N/A' }}</code></dd>
-                    
-                    <dt>Gateway:</dt>
-                    <dd>{{ ucfirst($payment->gateway) }}</dd>
-                    
-                    <dt>Status:</dt>
-                    <dd>
-                        @switch($payment->status)
-                            @case('pending')
-                                <span class="label label-warning">Pending</span>
-                                @break
-                            @case('completed')
-                                <span class="label label-success">Completed</span>
-                                @break
-                            @case('failed')
-                                <span class="label label-danger">Failed</span>
-                                @break
-                            @case('cancelled')
-                                <span class="label label-default">Cancelled</span>
-                                @break
-                            @case('refunded')
-                                <span class="label label-info">Refunded</span>
-                                @break
-                            @default
-                                <span class="label label-default">{{ ucfirst($payment->status) }}</span>
-                        @endswitch
-                    </dd>
-                    
-                    <dt>Amount:</dt>
-                    <dd>{{ $currencySymbol }}{{ number_format($payment->amount, 2) }}</dd>
-                    
+            <div class="block-content">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Payment ID</div>
+                            <div class="fs-lg fw-semibold">#{{ $payment->id }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Transaction ID</div>
+                            <div class="fs-sm"><code>{{ $payment->gateway_transaction_id ?? 'N/A' }}</code></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Gateway</div>
+                            <div>{{ ucfirst($payment->gateway) }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Status</div>
+                            <div>
+                                @switch($payment->status)
+                                    @case('pending')
+                                        <span class="badge bg-warning">Pending</span>
+                                        @break
+                                    @case('completed')
+                                        <span class="badge bg-success">Completed</span>
+                                        @break
+                                    @case('failed')
+                                        <span class="badge bg-danger">Failed</span>
+                                        @break
+                                    @case('cancelled')
+                                        <span class="badge bg-secondary">Cancelled</span>
+                                        @break
+                                    @case('refunded')
+                                        <span class="badge bg-info">Refunded</span>
+                                        @break
+                                    @default
+                                        <span class="badge bg-secondary">{{ ucfirst($payment->status) }}</span>
+                                @endswitch
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Currency</div>
+                            <div>{{ strtoupper($payment->currency) }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Amount</div>
+                            <div class="fs-lg fw-bold text-success">{{ $currencySymbol }}{{ number_format($payment->amount, 2) }}</div>
+                        </div>
+                    </div>
                     @if($payment->fee_amount > 0)
-                    <dt>Gateway Fee:</dt>
-                    <dd>{{ $currencySymbol }}{{ number_format($payment->fee_amount, 2) }}</dd>
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Gateway Fee</div>
+                            <div class="text-muted">{{ $currencySymbol }}{{ number_format($payment->fee_amount, 2) }}</div>
+                        </div>
+                    </div>
                     @endif
-                    
-                    <dt>Currency:</dt>
-                    <dd>{{ strtoupper($payment->currency) }}</dd>
-                    
-                    <dt>Created:</dt>
-                    <dd>{{ $payment->created_at->format('M j, Y \a\t g:i A') }}</dd>
-                    
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Created</div>
+                            <div>{{ $payment->created_at->format('M j, Y \a\t g:i A') }}</div>
+                        </div>
+                    </div>
                     @if($payment->completed_at)
-                    <dt>Completed:</dt>
-                    <dd>{{ $payment->completed_at->format('M j, Y \a\t g:i A') }}</dd>
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Completed</div>
+                            <div>{{ $payment->completed_at->format('M j, Y \a\t g:i A') }}</div>
+                        </div>
+                    </div>
                     @endif
-                </dl>
+                </div>
                 
                 @if($payment->gateway_metadata)
                 <hr>
-                <h4>Gateway Information</h4>
-                <pre class="small">{{ json_encode($payment->gateway_metadata, JSON_PRETTY_PRINT) }}</pre>
+                <div class="p-3">
+                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-2">Gateway Information</div>
+                    <pre class="language-json fs-sm"><code>{{ json_encode($payment->gateway_metadata, JSON_PRETTY_PRINT) }}</code></pre>
+                </div>
                 @endif
             </div>
         </div>
         
         @if($payment->order)
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Related Order</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-shopping-cart me-1"></i>Related Order
+                </h3>
             </div>
             
-            <div class="box-body">
-                <dl class="dl-horizontal">
-                    <dt>Order ID:</dt>
-                    <dd>
-                        <a href="{{ route('admin.shop.orders.show', $payment->order->id) }}">
-                            #{{ $payment->order->id }}
-                        </a>
-                    </dd>
-                    
-                    <dt>Customer:</dt>
-                    <dd>
-                        @if($payment->order->user)
-                            <a href="{{ route('admin.users.view', $payment->order->user->id) }}">
-                                {{ $payment->order->user->username }}
-                            </a>
-                        @else
-                            <span class="text-muted">N/A</span>
-                        @endif
-                    </dd>
-                    
-                    <dt>Plan:</dt>
-                    <dd>
-                        @if($payment->order->plan)
-                            {{ $payment->order->plan->name }}
-                            @if($payment->order->plan->category)
-                                <small class="text-muted">({{ $payment->order->plan->category->name }})</small>
-                            @endif
-                        @else
-                            <span class="text-muted">N/A</span>
-                        @endif
-                    </dd>
-                    
-                    <dt>Order Status:</dt>
-                    <dd>
-                        @switch($payment->order->status)
-                            @case('pending')
-                                <span class="label label-warning">Pending</span>
-                                @break
-                            @case('processing')
-                                <span class="label label-info">Processing</span>
-                                @break
-                            @case('active')
-                                <span class="label label-success">Active</span>
-                                @break
-                            @case('suspended')
-                                <span class="label label-danger">Suspended</span>
-                                @break
-                            @case('cancelled')
-                                <span class="label label-default">Cancelled</span>
-                                @break
-                            @case('terminated')
-                                <span class="label label-danger">Terminated</span>
-                                @break
-                            @default
-                                <span class="label label-default">{{ ucfirst($payment->order->status) }}</span>
-                        @endswitch
-                    </dd>
-                    
-                    <dt>Order Amount:</dt>
-                    <dd>{{ $currencySymbol }}{{ number_format($payment->order->amount, 2) }}</dd>
-                </dl>
+            <div class="block-content">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Order ID</div>
+                            <div>
+                                <a href="{{ route('admin.shop.orders.show', $payment->order->id) }}" class="link-fx">
+                                    #{{ $payment->order->id }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Customer</div>
+                            <div>
+                                @if($payment->order->user)
+                                    <a href="{{ route('admin.users.view', $payment->order->user->id) }}" class="link-fx">
+                                        {{ $payment->order->user->username }}
+                                    </a>
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Plan</div>
+                            <div>
+                                @if($payment->order->plan)
+                                    {{ $payment->order->plan->name }}
+                                    @if($payment->order->plan->category)
+                                        <br><small class="text-muted">({{ $payment->order->plan->category->name }})</small>
+                                    @endif
+                                @else
+                                    <span class="text-muted">N/A</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Order Status</div>
+                            <div>
+                                @switch($payment->order->status)
+                                    @case('pending')
+                                        <span class="badge bg-warning">Pending</span>
+                                        @break
+                                    @case('processing')
+                                        <span class="badge bg-info">Processing</span>
+                                        @break
+                                    @case('active')
+                                        <span class="badge bg-success">Active</span>
+                                        @break
+                                    @case('suspended')
+                                        <span class="badge bg-danger">Suspended</span>
+                                        @break
+                                    @case('cancelled')
+                                        <span class="badge bg-secondary">Cancelled</span>
+                                        @break
+                                    @case('terminated')
+                                        <span class="badge bg-danger">Terminated</span>
+                                        @break
+                                    @default
+                                        <span class="badge bg-secondary">{{ ucfirst($payment->order->status) }}</span>
+                                @endswitch
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Order Amount</div>
+                            <div class="fs-lg fw-semibold">{{ $currencySymbol }}{{ number_format($payment->order->amount, 2) }}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         @endif
     </div>
     
-    <div class="col-md-4">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Actions</h3>
+    <div class="col-lg-4">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-cogs me-1"></i>Actions
+                </h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 @if($payment->status === 'completed' && !$payment->refunded_at)
                     <form action="{{ route('admin.shop.payments.refund', $payment->id) }}" method="POST" class="form-refund">
                         @csrf
-                        <div class="form-group">
-                            <label for="refund_amount">Refund Amount</label>
+                        <div class="mb-3">
+                            <label for="refund_amount" class="form-label">Refund Amount</label>
                             <div class="input-group">
-                                <span class="input-group-addon">$</span>
+                                <span class="input-group-text">$</span>
                                 <input type="number" 
                                        name="refund_amount" 
                                        id="refund_amount" 
@@ -204,8 +271,8 @@
                             </div>
                         </div>
                         
-                        <div class="form-group">
-                            <label for="refund_reason">Reason (Optional)</label>
+                        <div class="mb-3">
+                            <label for="refund_reason" class="form-label">Reason (Optional)</label>
                             <textarea name="refund_reason" 
                                       id="refund_reason" 
                                       class="form-control" 
@@ -213,59 +280,81 @@
                                       placeholder="Reason for refund..."></textarea>
                         </div>
                         
-                        <button type="submit" class="btn btn-warning btn-sm">
-                            <i class="fa fa-undo"></i> Process Refund
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fa fa-undo me-1"></i> Process Refund
                         </button>
                     </form>
                 @elseif($payment->refunded_at)
-                    <p class="text-info">
-                        <i class="fa fa-info-circle"></i>
-                        This payment was refunded on {{ $payment->refunded_at->format('M j, Y') }}.
-                    </p>
+                    <div class="alert alert-info d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="fa fa-info-circle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            This payment was refunded on {{ $payment->refunded_at->format('M j, Y') }}.
+                        </div>
+                    </div>
                 @else
-                    <p class="text-muted">
-                        <i class="fa fa-info-circle"></i>
-                        No actions available for {{ $payment->status }} payments.
-                    </p>
+                    <div class="alert alert-secondary d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="fa fa-info-circle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            No actions available for {{ $payment->status }} payments.
+                        </div>
+                    </div>
                 @endif
                 
                 <hr>
                 
-                <a href="{{ route('admin.shop.payments.index') }}" class="btn btn-default btn-sm">
-                    <i class="fa fa-arrow-left"></i> Back to Payments
+                <a href="{{ route('admin.shop.payments.index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fa fa-arrow-left me-1"></i> Back to Payments
                 </a>
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Payment Timeline</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-history me-1"></i>Payment Timeline
+                </h3>
             </div>
             
-            <div class="box-body">
-                <ul class="list-unstyled timeline">
-                    <li>
-                        <i class="fa fa-plus text-green"></i>
-                        <strong>Payment Created</strong><br>
-                        <small class="text-muted">{{ $payment->created_at->format('M j, Y \a\t g:i A') }}</small>
-                    </li>
+            <div class="block-content">
+                <div class="timeline timeline-alt">
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-success">
+                            <i class="fa fa-plus"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="fw-semibold">Payment Created</div>
+                            <small class="text-muted">{{ $payment->created_at->format('M j, Y \a\t g:i A') }}</small>
+                        </div>
+                    </div>
                     
                     @if($payment->completed_at)
-                    <li>
-                        <i class="fa fa-check text-green"></i>
-                        <strong>Payment Completed</strong><br>
-                        <small class="text-muted">{{ $payment->completed_at->format('M j, Y \a\t g:i A') }}</small>
-                    </li>
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-success">
+                            <i class="fa fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="fw-semibold">Payment Completed</div>
+                            <small class="text-muted">{{ $payment->completed_at->format('M j, Y \a\t g:i A') }}</small>
+                        </div>
+                    </div>
                     @endif
                     
                     @if($payment->refunded_at)
-                    <li>
-                        <i class="fa fa-undo text-yellow"></i>
-                        <strong>Payment Refunded</strong><br>
-                        <small class="text-muted">{{ $payment->refunded_at->format('M j, Y \a\t g:i A') }}</small>
-                    </li>
+                    <div class="timeline-item">
+                        <div class="timeline-point timeline-point-warning">
+                            <i class="fa fa-undo"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="fw-semibold">Payment Refunded</div>
+                            <small class="text-muted">{{ $payment->refunded_at->format('M j, Y \a\t g:i A') }}</small>
+                        </div>
+                    </div>
                     @endif
-                </ul>
+                </div>
             </div>
         </div>
     </div>

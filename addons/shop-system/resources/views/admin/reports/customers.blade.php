@@ -39,13 +39,15 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Customer Analytics</h3>
-                <div class="box-tools pull-right">
-                    <form method="GET" style="display: inline-block;">
-                        <select name="period" onchange="this.form.submit()" class="form-control" style="width: auto; display: inline-block;">
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-users me-1"></i>Customer Analytics
+                </h3>
+                <div class="block-options">
+                    <form method="GET" class="d-inline-block">
+                        <select name="period" onchange="this.form.submit()" class="form-select form-select-sm">
                             <option value="7" {{ $period == 7 ? 'selected' : '' }}>Last 7 Days</option>
                             <option value="30" {{ $period == 30 ? 'selected' : '' }}>Last 30 Days</option>
                             <option value="90" {{ $period == 90 ? 'selected' : '' }}>Last 90 Days</option>
@@ -54,66 +56,68 @@
                     </form>
                 </div>
             </div>
-            <div class="box-body">
-                <div class="row">
+            <div class="block-content">
+                <div class="row g-3">
                     <div class="col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-blue">
-                                <i class="fa fa-users"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">New Customers</span>
-                                <span class="info-box-number">{{ $newCustomers }}</span>
+                        <div class="block block-rounded text-center bg-primary-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-primary">
+                                    <i class="fa fa-users"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">New Customers</div>
+                                <div class="fs-3 fw-bold text-dark">{{ $newCustomers }}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-green">
-                                <i class="fa fa-user-plus"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Active Customers</span>
-                                <span class="info-box-number">{{ count($topCustomers) }}</span>
+                        <div class="block block-rounded text-center bg-success-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-success">
+                                    <i class="fa fa-user-plus"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">Active Customers</div>
+                                <div class="fs-3 fw-bold text-dark">{{ count($topCustomers) }}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-yellow">
-                                <i class="fa fa-usd"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Avg Lifetime Value</span>
-                                <span class="info-box-number">${{ number_format($customerLifetimeValue, 2) }}</span>
+                        <div class="block block-rounded text-center bg-warning-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-warning">
+                                    <i class="fa fa-dollar-sign"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">Avg Lifetime Value</div>
+                                <div class="fs-3 fw-bold text-dark">${{ number_format($customerLifetimeValue, 2) }}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-red">
-                                <i class="fa fa-bar-chart"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Growth Rate</span>
-                                <span class="info-box-number">+{{ round($newCustomers / max(1, $period) * 30, 1) }}%</span>
+                        <div class="block block-rounded text-center bg-danger-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-danger">
+                                    <i class="fa fa-chart-line"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">Growth Rate</div>
+                                <div class="fs-3 fw-bold text-dark">+{{ round($newCustomers / max(1, $period) * 30, 1) }}%</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Top Customers by Revenue</h3>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="block block-rounded">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">
+                                    <i class="fa fa-crown me-1"></i>Top Customers by Revenue
+                                </h3>
                             </div>
-                            <div class="box-body">
+                            <div class="block-content block-content-full">
                                 <div class="table-responsive">
-                                    <table class="table table-striped">
+                                    <table class="table table-hover table-vcenter">
                                         <thead>
                                             <tr>
                                                 <th>Customer</th>
@@ -128,25 +132,25 @@
                                             @forelse($topCustomers as $customer)
                                                 <tr>
                                                     <td>
-                                                        <strong>{{ $customer->name ?: 'Unknown' }}</strong>
-                                                        <br>
-                                                        <small class="text-muted">ID: {{ $customer->user_id }}</small>
-                                                    </td>
-                                                    <td>{{ $customer->email ?: 'N/A' }}</td>
-                                                    <td>
-                                                        <span class="badge bg-blue">{{ $customer->total_orders }}</span>
+                                                        <div class="fw-semibold">{{ $customer->name ?: 'Unknown' }}</div>
+                                                        <div class="fs-sm text-muted">ID: {{ $customer->user_id }}</div>
                                                     </td>
                                                     <td>
-                                                        <strong class="text-green">${{ number_format($customer->total_spent, 2) }}</strong>
+                                                        <div class="fs-sm">{{ $customer->email ?: 'N/A' }}</div>
                                                     </td>
                                                     <td>
-                                                        ${{ number_format($customer->total_orders > 0 ? $customer->total_spent / $customer->total_orders : 0, 2) }}
+                                                        <span class="badge bg-primary">{{ $customer->total_orders }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="fw-semibold text-success">${{ number_format($customer->total_spent, 2) }}</div>
+                                                    </td>
+                                                    <td>
+                                                        <span class="fw-semibold">${{ number_format($customer->total_orders > 0 ? $customer->total_spent / $customer->total_orders : 0, 2) }}</span>
                                                     </td>
                                                     <td>
                                                         @if($customer->last_order_date)
-                                                            {{ \Carbon\Carbon::parse($customer->last_order_date)->format('M d, Y') }}
-                                                            <br>
-                                                            <small class="text-muted">{{ \Carbon\Carbon::parse($customer->last_order_date)->diffForHumans() }}</small>
+                                                            <div class="fs-sm">{{ \Carbon\Carbon::parse($customer->last_order_date)->format('M d, Y') }}</div>
+                                                            <div class="fs-sm text-muted">{{ \Carbon\Carbon::parse($customer->last_order_date)->diffForHumans() }}</div>
                                                         @else
                                                             <span class="text-muted">No orders</span>
                                                         @endif
@@ -165,24 +169,28 @@
                     </div>
                 </div>
                 
-                <div class="row">
+                <div class="row g-3 mt-2">
                     <div class="col-md-6">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Customer Acquisition</h3>
+                        <div class="block block-rounded">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">
+                                    <i class="fa fa-chart-line me-1"></i>Customer Acquisition
+                                </h3>
                             </div>
-                            <div class="box-body">
+                            <div class="block-content">
                                 <canvas id="acquisitionChart" height="200"></canvas>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-md-6">
-                        <div class="box box-primary">
-                            <div class="box-header with-border">
-                                <h3 class="box-title">Customer Value Distribution</h3>
+                        <div class="block block-rounded">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">
+                                    <i class="fa fa-chart-pie me-1"></i>Customer Value Distribution
+                                </h3>
                             </div>
-                            <div class="box-body">
+                            <div class="block-content">
                                 <canvas id="valueChart" height="200"></canvas>
                             </div>
                         </div>

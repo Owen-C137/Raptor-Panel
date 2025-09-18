@@ -32,65 +32,85 @@
 @endsection
 
 @section('content')
-<div class="row">
+<div class="row mb-4">
     {{-- Key Metrics Cards --}}
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-success">
-            <div class="inner">
-                <h3>{{ $currencySymbol }}{{ number_format($metrics['total_revenue'], 2) }}</h3>
-                <p>Total Revenue</p>
+    <div class="col-sm-6 col-xxl-3">
+        <div class="block block-rounded d-flex flex-column h-100 mb-3">
+            <div class="block-content block-content-full flex-grow-1 d-flex justify-content-between align-items-center">
+                <dl class="mb-0">
+                    <dt class="fs-3 fw-bold">{{ $currencySymbol }}{{ number_format($metrics['total_revenue'], 2) }}</dt>
+                    <dd class="fs-sm fw-medium text-muted mb-0">Total Revenue</dd>
+                </dl>
+                <div class="item item-rounded-lg bg-body-light">
+                    <i class="fa fa-money fs-3 text-success"></i>
+                </div>
             </div>
-            <div class="icon">
-                <i class="fa fa-money"></i>
+            <div class="bg-body-light rounded-bottom">
+                <a class="block-content block-content-full block-content-sm fs-sm fw-medium d-flex align-items-center justify-content-between" href="{{ route('admin.shop.orders.index') }}">
+                    <span>View Orders</span>
+                    <i class="fas fa-arrow-alt-circle-right ms-1 opacity-25 fs-base"></i>
+                </a>
             </div>
-            <a href="{{ route('admin.shop.orders.index') }}" class="small-box-footer">
-                View Orders <i class="fa fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
 
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-info">
-            <div class="inner">
-                <h3>{{ $metrics['total_orders'] }}</h3>
-                <p>Total Orders</p>
+    <div class="col-sm-6 col-xxl-3">
+        <div class="block block-rounded d-flex flex-column h-100 mb-3">
+            <div class="block-content block-content-full flex-grow-1 d-flex justify-content-between align-items-center">
+                <dl class="mb-0">
+                    <dt class="fs-3 fw-bold">{{ $metrics['total_orders'] }}</dt>
+                    <dd class="fs-sm fw-medium text-muted mb-0">Total Orders</dd>
+                </dl>
+                <div class="item item-rounded-lg bg-body-light">
+                    <i class="fa fa-shopping-cart fs-3 text-info"></i>
+                </div>
             </div>
-            <div class="icon">
-                <i class="fa fa-shopping-cart"></i>
+            <div class="bg-body-light rounded-bottom">
+                <a class="block-content block-content-full block-content-sm fs-sm fw-medium d-flex align-items-center justify-content-between" href="{{ route('admin.shop.orders.index') }}">
+                    <span>Manage Orders</span>
+                    <i class="fas fa-arrow-alt-circle-right ms-1 opacity-25 fs-base"></i>
+                </a>
             </div>
-            <a href="{{ route('admin.shop.orders.index') }}" class="small-box-footer">
-                Manage Orders <i class="fa fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
 
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-warning">
-            <div class="inner">
-                <h3>{{ $metrics['active_subscriptions'] }}</h3>
-                <p>Active Subscriptions</p>
+    <div class="col-sm-6 col-xxl-3">
+        <div class="block block-rounded d-flex flex-column h-100 mb-3">
+            <div class="block-content block-content-full flex-grow-1 d-flex justify-content-between align-items-center">
+                <dl class="mb-0">
+                    <dt class="fs-3 fw-bold">{{ $metrics['active_subscriptions'] }}</dt>
+                    <dd class="fs-sm fw-medium text-muted mb-0">Active Subscriptions</dd>
+                </dl>
+                <div class="item item-rounded-lg bg-body-light">
+                    <i class="fa fa-sync-alt fs-3 text-warning"></i>
+                </div>
             </div>
-            <div class="icon">
-                <i class="fa fa-sync-alt"></i>
+            <div class="bg-body-light rounded-bottom">
+                <a class="block-content block-content-full block-content-sm fs-sm fw-medium d-flex align-items-center justify-content-between" href="{{ route('admin.shop.orders.index', ['status' => 'active']) }}">
+                    <span>View Active</span>
+                    <i class="fas fa-arrow-alt-circle-right ms-1 opacity-25 fs-base"></i>
+                </a>
             </div>
-            <a href="{{ route('admin.shop.orders.index', ['status' => 'active']) }}" class="small-box-footer">
-                View Active <i class="fa fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
 
-    <div class="col-lg-3 col-6">
-        <div class="small-box bg-danger">
-            <div class="inner">
-                <h3>{{ $metrics['pending_orders'] }}</h3>
-                <p>Pending Orders</p>
+    <div class="col-sm-6 col-xxl-3">
+        <div class="block block-rounded d-flex flex-column h-100 mb-3">
+            <div class="block-content block-content-full flex-grow-1 d-flex justify-content-between align-items-center">
+                <dl class="mb-0">
+                    <dt class="fs-3 fw-bold">{{ $metrics['pending_orders'] }}</dt>
+                    <dd class="fs-sm fw-medium text-muted mb-0">Pending Orders</dd>
+                </dl>
+                <div class="item item-rounded-lg bg-body-light">
+                    <i class="fa fa-clock fs-3 text-danger"></i>
+                </div>
             </div>
-            <div class="icon">
-                <i class="fa fa-clock"></i>
+            <div class="bg-body-light rounded-bottom">
+                <a class="block-content block-content-full block-content-sm fs-sm fw-medium d-flex align-items-center justify-content-between" href="{{ route('admin.shop.orders.index', ['status' => 'pending']) }}">
+                    <span>Review Pending</span>
+                    <i class="fas fa-arrow-alt-circle-right ms-1 opacity-25 fs-base"></i>
+                </a>
             </div>
-            <a href="{{ route('admin.shop.orders.index', ['status' => 'pending']) }}" class="small-box-footer">
-                Review Pending <i class="fa fa-arrow-circle-right"></i>
-            </a>
         </div>
     </div>
 </div>
@@ -98,21 +118,21 @@
 <div class="row">
     {{-- Revenue Chart --}}
     <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fa fa-chart-line"></i>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-line me-1 text-muted"></i>
                     Revenue Overview
                 </h3>
-                <div class="card-tools">
+                <div class="block-options">
                     <div class="btn-group btn-group-sm" data-toggle="btn-toggle">
-                        <button type="button" class="btn btn-default active" data-period="7">7 Days</button>
-                        <button type="button" class="btn btn-default" data-period="30">30 Days</button>
-                        <button type="button" class="btn btn-default" data-period="90">90 Days</button>
+                        <button type="button" class="btn btn-outline-secondary active" data-period="7">7 Days</button>
+                        <button type="button" class="btn btn-outline-secondary" data-period="30">30 Days</button>
+                        <button type="button" class="btn btn-outline-secondary" data-period="90">90 Days</button>
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="block-content">
                 <canvas id="revenueChart" height="300"></canvas>
             </div>
         </div>
@@ -120,43 +140,60 @@
 
     {{-- Quick Stats --}}
     <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fa fa-tachometer-alt"></i>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fas fa-tachometer-alt me-1 text-muted"></i>
                     Today's Activity
                 </h3>
             </div>
-            <div class="card-body">
-                <div class="info-box mb-3">
-                    <span class="info-box-icon bg-success"><i class="fa fa-shopping-bag"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">New Orders Today</span>
-                        <span class="info-box-number">{{ $todayStats['orders'] }}</span>
+            <div class="block-content">
+                <div class="row items-push">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-shopping-bag fa-2x text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $todayStats['orders'] }}</div>
+                                <div class="text-muted fs-sm">New Orders Today</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-money fa-2x text-info"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $currencySymbol }}{{ number_format($todayStats['revenue'], 2) }}</div>
+                                <div class="text-muted fs-sm">Revenue Today</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="info-box mb-3">
-                    <span class="info-box-icon bg-info"><i class="fa fa-money"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Revenue Today</span>
-                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($todayStats['revenue'], 2) }}</span>
+                <div class="row items-push">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-server fa-2x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $todayStats['servers'] }}</div>
+                                <div class="text-muted fs-sm">Servers Created</div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="info-box mb-3">
-                    <span class="info-box-icon bg-warning"><i class="fa fa-server"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Servers Created</span>
-                        <span class="info-box-number">{{ $todayStats['servers'] }}</span>
-                    </div>
-                </div>
-
-                <div class="info-box">
-                    <span class="info-box-icon bg-danger"><i class="fa fa-exclamation-triangle"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Failed Payments</span>
-                        <span class="info-box-number">{{ $todayStats['failed_payments'] }}</span>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-exclamation-triangle fa-2x text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $todayStats['failed_payments'] }}</div>
+                                <div class="text-muted fs-sm">Failed Payments</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -167,22 +204,22 @@
 <div class="row">
     {{-- Recent Orders --}}
     <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fa fa-list"></i>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fa fa-list me-1 text-muted"></i>
                     Recent Orders
                 </h3>
-                <div class="card-tools">
-                    <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-tool">
+                <div class="block-options">
+                    <a href="{{ route('admin.shop.orders.index') }}" class="btn-block-option">
                         <i class="fa fa-external-link-alt"></i>
                     </a>
                 </div>
             </div>
-            <div class="card-body p-0">
+            <div class="block-content block-content-full">
                 @if($recentOrders->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-hover table-vcenter">
                         <thead>
                             <tr>
                                 <th>Order #</th>
@@ -191,7 +228,7 @@
                                 <th>Status</th>
                                 <th>Total</th>
                                 <th>Date</th>
-                                <th>Actions</th>
+                                <th class="text-center" style="width: 100px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -227,7 +264,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="badge badge-{{ $order->getStatusColor() }}">
+                                    <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-{{ $order->getStatusColor() }}-light text-{{ $order->getStatusColor() }}">
                                         {{ $order->getStatusLabel() }}
                                     </span>
                                 </td>
@@ -237,14 +274,14 @@
                                     </strong>
                                 </td>
                                 <td>{{ $order->created_at->format('M d, H:i') }}</td>
-                                <td>
-                                    <div class="btn-group btn-group-sm">
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('admin.shop.orders.show', $order) }}" 
-                                           class="btn btn-outline-primary">
+                                           class="btn btn-sm btn-alt-secondary">
                                             <i class="fa fa-eye"></i>
                                         </a>
                                         @if($order->canProcess())
-                                        <button class="btn btn-outline-success process-order-btn" 
+                                        <button class="btn btn-sm btn-alt-success process-order-btn" 
                                                 data-order-id="{{ $order->id }}">
                                             <i class="fa fa-play"></i>
                                         </button>
@@ -269,22 +306,22 @@
     {{-- Top Categories & System Health --}}
     <div class="col-lg-4">
         {{-- Top Categories --}}
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fa fa-star"></i>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fa fa-star me-1 text-muted"></i>
                     Top Categories
                 </h3>
             </div>
-            <div class="card-body">
+            <div class="block-content">
                 @if($topCategories->count() > 0)
                 @foreach($topCategories as $category)
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center py-2">
                     <div>
                         <div class="fw-bold">{{ $category->name }}</div>
                         <small class="text-muted">{{ $category->order_count }} orders</small>
                     </div>
-                    <span class="badge badge-primary">
+                    <span class="badge bg-primary">
                         {{ $currencySymbol }}{{ number_format($category->total_revenue, 0) }}
                     </span>
                 </div>
@@ -296,39 +333,39 @@
         </div>
 
         {{-- System Health --}}
-        <div class="card mt-3">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fa fa-heartbeat"></i>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fa fa-heartbeat me-1 text-muted"></i>
                     System Health
                 </h3>
             </div>
-            <div class="card-body">
+            <div class="block-content">
                 <div class="health-metrics">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between align-items-center py-2">
                         <span>Payment Success Rate</span>
-                        <span class="badge badge-{{ $systemHealth['payment_success_rate'] >= 95 ? 'success' : 'warning' }}">
+                        <span class="badge bg-{{ $systemHealth['payment_success_rate'] >= 95 ? 'success' : 'warning' }}">
                             {{ number_format($systemHealth['payment_success_rate'], 1) }}%
                         </span>
                     </div>
                     
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between align-items-center py-2">
                         <span>Server Provision Success</span>
-                        <span class="badge badge-{{ $systemHealth['provision_success_rate'] >= 98 ? 'success' : 'warning' }}">
+                        <span class="badge bg-{{ $systemHealth['provision_success_rate'] >= 98 ? 'success' : 'warning' }}">
                             {{ number_format($systemHealth['provision_success_rate'], 1) }}%
                         </span>
                     </div>
                     
-                    <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="d-flex justify-content-between align-items-center py-2">
                         <span>Queue Processing</span>
-                        <span class="badge badge-{{ $systemHealth['queue_healthy'] ? 'success' : 'danger' }}">
+                        <span class="badge bg-{{ $systemHealth['queue_healthy'] ? 'success' : 'danger' }}">
                             {{ $systemHealth['queue_healthy'] ? 'Healthy' : 'Issues' }}
                         </span>
                     </div>
                     
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex justify-content-between align-items-center py-2">
                         <span>Renewal Success Rate</span>
-                        <span class="badge badge-{{ $systemHealth['renewal_success_rate'] >= 90 ? 'success' : 'warning' }}">
+                        <span class="badge bg-{{ $systemHealth['renewal_success_rate'] >= 90 ? 'success' : 'warning' }}">
                             {{ number_format($systemHealth['renewal_success_rate'], 1) }}%
                         </span>
                     </div>
@@ -341,39 +378,39 @@
 {{-- Quick Actions --}}
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">
-                    <i class="fa fa-bolt"></i>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fa fa-bolt me-1 text-muted"></i>
                     Quick Actions
                 </h3>
             </div>
-            <div class="card-body">
+            <div class="block-content">
                 <div class="row">
                     <div class="col-md-3 mb-3">
-                        <a href="{{ route('admin.shop.categories.create') }}" class="btn btn-success btn-lg btn-block">
-                            <i class="fa fa-plus"></i>
+                        <a href="{{ route('admin.shop.categories.create') }}" class="btn btn-success btn-lg w-100">
+                            <i class="fa fa-plus me-1"></i>
                             Add Category
                         </a>
                     </div>
                     
                     <div class="col-md-3 mb-3">
-                        <a href="{{ route('admin.shop.coupons.create') }}" class="btn btn-info btn-lg btn-block">
-                            <i class="fa fa-ticket-alt"></i>
+                        <a href="{{ route('admin.shop.coupons.create') }}" class="btn btn-info btn-lg w-100">
+                            <i class="fas fa-ticket-alt me-1"></i>
                             Create Coupon
                         </a>
                     </div>
                     
                     <div class="col-md-3 mb-3">
-                        <button class="btn btn-warning btn-lg btn-block" onclick="AdminShop.processRenewals()">
-                            <i class="fa fa-sync-alt"></i>
+                        <button class="btn btn-warning btn-lg w-100" onclick="AdminShop.processRenewals()">
+                            <i class="fas fa-sync-alt me-1"></i>
                             Process Renewals
                         </button>
                     </div>
                     
                     <div class="col-md-3 mb-3">
-                        <a href="{{ route('admin.shop.reports.index') }}" class="btn btn-secondary btn-lg btn-block">
-                            <i class="fa fa-chart-bar"></i>
+                        <a href="{{ route('admin.shop.reports.index') }}" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fa fa-chart-bar me-1"></i>
                             View Reports
                         </a>
                     </div>
@@ -552,16 +589,6 @@ window.AdminShop = {
 
 @section('footer-styles')
 <style>
-.small-box {
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.info-box {
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
 .order-items-summary {
     max-width: 200px;
 }
@@ -570,25 +597,17 @@ window.AdminShop = {
     font-size: 0.9em;
 }
 
-.card {
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-}
-
 @media (max-width: 768px) {
-    .small-box .inner h3 {
-        font-size: 1.5rem;
-    }
-    
-    .info-box-number {
-        font-size: 1.2rem;
-    }
-    
     .table-responsive {
         border: none;
+    }
+    
+    .btn-group {
+        flex-direction: column;
+    }
+    
+    .btn-group .btn {
+        margin-bottom: 2px;
     }
 }
 </style>

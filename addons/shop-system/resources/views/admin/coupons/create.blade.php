@@ -10,7 +10,7 @@
     <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
       <div class="flex-grow-1">
         <h1 class="h3 fw-bold mb-1">
-          Create Coupon Add a new discount coupon
+          Create Coupon
         </h1>
         <h2 class="fs-base lh-base fw-medium text-muted mb-0">
           Add a new discount coupon
@@ -31,68 +31,70 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <form method="POST" action="{{ route('admin.shop.coupons.store') }}">
             @csrf
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Basic Information</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-info-circle me-1"></i>Basic Information
+                    </h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="code">Coupon Code <span class="text-danger">*</span></label>
+                            <div class="mb-3">
+                                <label for="code" class="form-label">Coupon Code <span class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="text" name="code" id="code" class="form-control" 
                                            value="{{ old('code') }}" required placeholder="Enter coupon code">
-                                    <span class="input-group-btn">
-                                        <button type="button" class="btn btn-default" onclick="generateCode()">
-                                            <i class="fa fa-refresh"></i> Generate
-                                        </button>
-                                    </span>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="generateCode()">
+                                        <i class="fa fa-refresh me-1"></i> Generate
+                                    </button>
                                 </div>
                                 @error('code')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="name">Display Name</label>
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Display Name</label>
                                 <input type="text" name="name" id="name" class="form-control" 
                                        value="{{ old('name') }}" placeholder="Friendly name for internal use">
                                 @error('name')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="description">Description</label>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
                         <textarea name="description" id="description" class="form-control" rows="3">{{ old('description') }}</textarea>
                         @error('description')
-                            <span class="text-danger">{{ $message }}</span>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Discount Settings</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-tag me-1"></i>Discount Settings
+                    </h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="type">Discount Type <span class="text-danger">*</span></label>
-                                <select name="type" id="type" class="form-control" required>
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Discount Type <span class="text-danger">*</span></label>
+                                <select name="type" id="type" class="form-select" required>
                                     <option value="percentage" {{ old('type') === 'percentage' ? 'selected' : '' }}>
                                         Percentage (%)
                                     </option>
@@ -101,21 +103,21 @@
                                     </option>
                                 </select>
                                 @error('type')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="value">Discount Value <span class="text-danger">*</span></label>
+                            <div class="mb-3">
+                                <label for="value" class="form-label">Discount Value <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-addon" id="discount-symbol">%</span>
+                                    <span class="input-group-text" id="discount-symbol">%</span>
                                     <input type="number" name="value" id="value" class="form-control" 
                                            value="{{ old('value') }}" step="0.01" min="0" required>
                                 </div>
                                 @error('value')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -123,35 +125,35 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="minimum_amount">Minimum Order Amount</label>
+                            <div class="mb-3">
+                                <label for="minimum_amount" class="form-label">Minimum Order Amount</label>
                                 <div class="input-group">
-                                    <span class="input-group-addon">$</span>
+                                    <span class="input-group-text">$</span>
                                     <input type="number" name="minimum_amount" id="minimum_amount" class="form-control" 
                                            value="{{ old('minimum_amount', 0) }}" step="0.01" min="0">
                                 </div>
-                                <small class="form-text text-muted">
+                                <small class="text-muted">
                                     Minimum order amount required to use this coupon (0 = no minimum).
                                 </small>
                                 @error('minimum_amount')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6" id="maximum-discount-group">
-                            <div class="form-group">
-                                <label for="maximum_discount">Maximum Discount</label>
+                            <div class="mb-3">
+                                <label for="maximum_discount" class="form-label">Maximum Discount</label>
                                 <div class="input-group">
-                                    <span class="input-group-addon">$</span>
+                                    <span class="input-group-text">$</span>
                                     <input type="number" name="maximum_discount" id="maximum_discount" class="form-control" 
                                            value="{{ old('maximum_discount', 0) }}" step="0.01" min="0">
                                 </div>
-                                <small class="form-text text-muted">
+                                <small class="text-muted">
                                     Maximum discount amount for percentage coupons (0 = no limit).
                                 </small>
                                 @error('maximum_discount')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -159,37 +161,39 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Usage Restrictions</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-lock me-1"></i>Usage Restrictions
+                    </h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="usage_limit">Total Usage Limit</label>
+                            <div class="mb-3">
+                                <label for="usage_limit" class="form-label">Total Usage Limit</label>
                                 <input type="number" name="usage_limit" id="usage_limit" class="form-control" 
                                        value="{{ old('usage_limit') }}" min="1" placeholder="Unlimited">
-                                <small class="form-text text-muted">
+                                <small class="text-muted">
                                     How many times this coupon can be used in total (blank = unlimited).
                                 </small>
                                 @error('usage_limit')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="usage_limit_per_user">Usage Limit Per User</label>
+                            <div class="mb-3">
+                                <label for="usage_limit_per_user" class="form-label">Usage Limit Per User</label>
                                 <input type="number" name="usage_limit_per_user" id="usage_limit_per_user" class="form-control" 
                                        value="{{ old('usage_limit_per_user') }}" min="1" placeholder="Unlimited">
-                                <small class="form-text text-muted">
+                                <small class="text-muted">
                                     How many times each user can use this coupon (blank = unlimited).
                                 </small>
                                 @error('usage_limit_per_user')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -197,29 +201,29 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="valid_from">Valid From</label>
+                            <div class="mb-3">
+                                <label for="valid_from" class="form-label">Valid From</label>
                                 <input type="datetime-local" name="valid_from" id="valid_from" class="form-control" 
                                        value="{{ old('valid_from') }}">
-                                <small class="form-text text-muted">
+                                <small class="text-muted">
                                     When this coupon becomes active (blank = immediately).
                                 </small>
                                 @error('valid_from')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="valid_until">Valid Until</label>
+                            <div class="mb-3">
+                                <label for="valid_until" class="form-label">Valid Until</label>
                                 <input type="datetime-local" name="valid_until" id="valid_until" class="form-control" 
                                        value="{{ old('valid_until') }}">
-                                <small class="form-text text-muted">
+                                <small class="text-muted">
                                     When this coupon expires (blank = never expires).
                                 </small>
                                 @error('valid_until')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -227,41 +231,43 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Product Restrictions</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-shopping-bag me-1"></i>Product Restrictions
+                    </h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label>Applicable Products</label>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="product_restriction" value="all" 
-                                       {{ old('product_restriction', 'all') === 'all' ? 'checked' : '' }}>
+                <div class="block-content">
+                    <div class="mb-3">
+                        <label class="form-label">Applicable Products</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="product_restriction" id="restriction_all" value="all" 
+                                   {{ old('product_restriction', 'all') === 'all' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="restriction_all">
                                 All products
                             </label>
                         </div>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="product_restriction" value="specific" 
-                                       {{ old('product_restriction') === 'specific' ? 'checked' : '' }}>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="product_restriction" id="restriction_specific" value="specific" 
+                                   {{ old('product_restriction') === 'specific' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="restriction_specific">
                                 Specific products only
                             </label>
                         </div>
-                        <div class="radio">
-                            <label>
-                                <input type="radio" name="product_restriction" value="categories" 
-                                       {{ old('product_restriction') === 'categories' ? 'checked' : '' }}>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="product_restriction" id="restriction_categories" value="categories" 
+                                   {{ old('product_restriction') === 'categories' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="restriction_categories">
                                 Specific categories only
                             </label>
                         </div>
                     </div>
                     
                     <div id="specific-products" style="display: none;">
-                        <div class="form-group">
-                            <label for="applicable_products">Select Plans</label>
-                            <select name="applicable_products[]" id="applicable_products" class="form-control" multiple>
+                        <div class="mb-3">
+                            <label for="applicable_products" class="form-label">Select Plans</label>
+                            <select name="applicable_products[]" id="applicable_products" class="form-select" multiple>
                                 @foreach($plans as $plan)
                                     <option value="{{ $plan->id }}" 
                                             {{ in_array($plan->id, old('applicable_products', [])) ? 'selected' : '' }}>
@@ -273,9 +279,9 @@
                     </div>
                     
                     <div id="specific-categories" style="display: none;">
-                        <div class="form-group">
-                            <label for="applicable_categories">Select Categories</label>
-                            <select name="applicable_categories[]" id="applicable_categories" class="form-control" multiple>
+                        <div class="mb-3">
+                            <label for="applicable_categories" class="form-label">Select Categories</label>
+                            <select name="applicable_categories[]" id="applicable_categories" class="form-select" multiple>
                                 @foreach($categories as $category)
                                     <option value="{{ $category->id }}" 
                                             {{ in_array($category->id, old('applicable_categories', [])) ? 'selected' : '' }}>
@@ -288,51 +294,55 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Status</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-toggle-on me-1"></i>Status
+                    </h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="active">Coupon Status</label>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" name="active" id="active" value="1" 
+                <div class="block-content">
+                    <div class="mb-3">
+                        <label for="active" class="form-label">Coupon Status</label>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" name="active" id="active" value="1" class="form-check-input"
                                    {{ old('active', true) ? 'checked' : '' }}>
-                            <label for="active" class="strong">Active</label>
+                            <label for="active" class="form-check-label fw-medium">Active</label>
                         </div>
-                        <small class="form-text text-muted">
+                        <small class="text-muted">
                             Inactive coupons cannot be used by customers.
                         </small>
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-footer">
+            <div class="block block-rounded">
+                <div class="block-content text-center">
                     <button type="submit" class="btn btn-success">
-                        <i class="fa fa-save"></i> Create Coupon
+                        <i class="fa fa-save me-1"></i> Create Coupon
                     </button>
-                    <a href="{{ route('admin.shop.coupons.index') }}" class="btn btn-default">
-                        <i class="fa fa-arrow-left"></i> Cancel
+                    <a href="{{ route('admin.shop.coupons.index') }}" class="btn btn-secondary ms-2">
+                        <i class="fa fa-arrow-left me-1"></i> Cancel
                     </a>
                 </div>
             </div>
         </form>
     </div>
     
-    <div class="col-md-4">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Coupon Preview</h3>
+    <div class="col-lg-4">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-eye me-1"></i>Coupon Preview
+                </h3>
             </div>
             
-            <div class="box-body">
-                <div id="coupon-preview" class="well">
-                    <h4 id="preview-code">COUPON-CODE</h4>
-                    <p id="preview-description">Coupon description will appear here.</p>
-                    <div id="preview-discount">
-                        <strong id="discount-text">0% off</strong>
+            <div class="block-content">
+                <div id="coupon-preview" class="p-3 bg-light rounded">
+                    <h4 id="preview-code" class="mb-2">COUPON-CODE</h4>
+                    <p id="preview-description" class="text-muted mb-2">Coupon description will appear here.</p>
+                    <div id="preview-discount" class="mb-2">
+                        <span id="discount-text" class="badge bg-primary">0% off</span>
                     </div>
                     <div id="preview-restrictions" class="text-muted">
                         <small>No restrictions</small>
@@ -341,15 +351,17 @@
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Coupon Tips</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-lightbulb me-1"></i>Coupon Tips
+                </h3>
             </div>
             
-            <div class="box-body">
-                <div class="callout callout-info">
-                    <h4><i class="fa fa-lightbulb-o"></i> Tips!</h4>
-                    <ul class="list-unstyled">
+            <div class="block-content">
+                <div class="alert alert-info">
+                    <h4 class="alert-heading"><i class="fa fa-lightbulb me-1"></i> Tips!</h4>
+                    <ul class="list-unstyled mb-0">
                         <li>• Use memorable coupon codes</li>
                         <li>• Set reasonable expiration dates</li>
                         <li>• Consider usage limits to control costs</li>
@@ -365,83 +377,99 @@
 @section('footer-scripts')
     @parent
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            const typeSelect = document.getElementById('type');
+            const discountSymbol = document.getElementById('discount-symbol');
+            const maxDiscountGroup = document.getElementById('maximum-discount-group');
+            const productRestrictionInputs = document.querySelectorAll('input[name="product_restriction"]');
+            const specificProducts = document.getElementById('specific-products');
+            const specificCategories = document.getElementById('specific-categories');
+            
             // Update discount symbol based on type
-            $('#type').on('change', function() {
-                var symbol = $(this).val() === 'percentage' ? '%' : '$';
-                $('#discount-symbol').text(symbol);
+            typeSelect.addEventListener('change', function() {
+                const symbol = this.value === 'percentage' ? '%' : '$';
+                discountSymbol.textContent = symbol;
                 
                 // Show/hide maximum discount field
-                if ($(this).val() === 'percentage') {
-                    $('#maximum-discount-group').show();
+                if (this.value === 'percentage') {
+                    maxDiscountGroup.style.display = 'block';
                 } else {
-                    $('#maximum-discount-group').hide();
+                    maxDiscountGroup.style.display = 'none';
                 }
                 
                 updatePreview();
             });
             
             // Show/hide product restriction fields
-            $('input[name="product_restriction"]').on('change', function() {
-                $('#specific-products, #specific-categories').hide();
-                
-                if ($(this).val() === 'specific') {
-                    $('#specific-products').show();
-                } else if ($(this).val() === 'categories') {
-                    $('#specific-categories').show();
-                }
-                
-                updatePreview();
+            productRestrictionInputs.forEach(function(input) {
+                input.addEventListener('change', function() {
+                    specificProducts.style.display = 'none';
+                    specificCategories.style.display = 'none';
+                    
+                    if (this.value === 'specific') {
+                        specificProducts.style.display = 'block';
+                    } else if (this.value === 'categories') {
+                        specificCategories.style.display = 'block';
+                    }
+                    
+                    updatePreview();
+                });
             });
             
             // Update preview in real-time
-            $('#code, #description, #value, #type, #minimum_amount').on('input change', updatePreview);
+            const previewInputs = ['code', 'description', 'value', 'type', 'minimum_amount'];
+            previewInputs.forEach(function(inputId) {
+                const element = document.getElementById(inputId);
+                if (element) {
+                    element.addEventListener('input', updatePreview);
+                    element.addEventListener('change', updatePreview);
+                }
+            });
             
             // Initialize
-            $('#type').trigger('change');
+            typeSelect.dispatchEvent(new Event('change'));
             updatePreview();
         });
         
         function generateCode() {
-            var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            var code = '';
-            for (var i = 0; i < 8; i++) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
                 code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
-            $('#code').val(code);
+            document.getElementById('code').value = code;
             updatePreview();
         }
         
         function updatePreview() {
-            var code = $('#code').val() || 'COUPON-CODE';
-            var description = $('#description').val() || 'Coupon description will appear here.';
-            var type = $('#type').val();
-            var value = $('#value').val() || '0';
-            var minAmount = $('#minimum_amount').val();
+            const code = document.getElementById('code').value || 'COUPON-CODE';
+            const description = document.getElementById('description').value || 'Coupon description will appear here.';
+            const type = document.getElementById('type').value;
+            const value = document.getElementById('value').value || '0';
+            const minAmount = document.getElementById('minimum_amount').value;
             
-            $('#preview-code').text(code);
-            $('#preview-description').text(description);
+            document.getElementById('preview-code').textContent = code;
+            document.getElementById('preview-description').textContent = description;
             
-            var discountText = type === 'percentage' ? value + '% off' : '$' + value + ' off';
-            $('#discount-text').text(discountText);
+            const discountText = type === 'percentage' ? value + '% off' : '$' + value + ' off';
+            document.getElementById('discount-text').textContent = discountText;
             
-            var restrictions = [];
+            const restrictions = [];
             if (minAmount && minAmount > 0) {
                 restrictions.push('Minimum order: $' + minAmount);
             }
             
-            var restrictionType = $('input[name="product_restriction"]:checked').val();
+            const restrictionType = document.querySelector('input[name="product_restriction"]:checked')?.value;
             if (restrictionType === 'specific') {
                 restrictions.push('Applies to selected products only');
             } else if (restrictionType === 'categories') {
                 restrictions.push('Applies to selected categories only');
             }
             
-            $('#preview-restrictions').html(
+            document.getElementById('preview-restrictions').innerHTML = 
                 restrictions.length > 0 
                     ? '<small>' + restrictions.join('<br>') + '</small>'
-                    : '<small>No restrictions</small>'
-            );
+                    : '<small>No restrictions</small>';
         }
     </script>
 @endsection

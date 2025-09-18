@@ -10,7 +10,7 @@
     <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
       <div class="flex-grow-1">
         <h1 class="h3 fw-bold mb-1">
-          Payments Manage payment transactions
+          Payments
         </h1>
         <h2 class="fs-base lh-base fw-medium text-muted mb-0">
           Manage payment transactions
@@ -30,27 +30,29 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Payment Transactions</h3>
-                <div class="box-tools">
-                    <a href="{{ route('admin.shop.settings.payment-gateways') }}" class="btn btn-primary btn-sm">
-                        <i class="fa fa-cog"></i> Gateway Settings
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-credit-card me-1"></i>Payment Transactions
+                </h3>
+                <div class="block-options">
+                    <a href="{{ route('admin.shop.settings.payment-gateways') }}" class="btn btn-sm btn-primary">
+                        <i class="fa fa-cog me-1"></i> Gateway Settings
                     </a>
                 </div>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 <div class="row">
                     <div class="col-sm-3">
-                        <div class="form-group">
+                        <div class="mb-3">
                             <input type="text" id="searchPayments" class="form-control" placeholder="Search payments...">
                         </div>
                     </div>
                     <div class="col-sm-3">
-                        <div class="form-group">
-                            <select id="filterStatus" class="form-control">
+                        <div class="mb-3">
+                            <select id="filterStatus" class="form-select">
                                 <option value="">All Status</option>
                                 <option value="completed">Completed</option>
                                 <option value="pending">Pending</option>
@@ -61,8 +63,8 @@
                         </div>
                     </div>
                     <div class="col-sm-3">
-                        <div class="form-group">
-                            <select id="filterGateway" class="form-control">
+                        <div class="mb-3">
+                            <select id="filterGateway" class="form-select">
                                 <option value="">All Gateways</option>
                                 <option value="paypal">PayPal</option>
                                 <option value="stripe">Stripe</option>
@@ -71,26 +73,27 @@
                         </div>
                     </div>
                     <div class="col-sm-3">
-                        <div class="form-group">
+                        <div class="mb-3">
                             <input type="date" id="filterDate" class="form-control" placeholder="Filter by date">
                         </div>
                     </div>
                 </div>
                 
-                <table class="table table-bordered table-hover" id="paymentsTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Order</th>
-                            <th>Customer</th>
-                            <th>Amount</th>
-                            <th>Gateway</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div class="table-responsive">
+                    <table class="table table-hover table-vcenter" id="paymentsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Order</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Gateway</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                         @forelse($payments as $payment)
                             <tr data-status="{{ $payment->status }}" data-gateway="{{ $payment->gateway }}" 
                                 data-date="{{ $payment->created_at->format('Y-m-d') }}">
@@ -128,63 +131,63 @@
                                 <td>
                                     @switch($payment->gateway)
                                         @case('paypal')
-                                            <span class="label" style="background-color: #0070ba; color: white;">PayPal</span>
+                                            <span class="badge" style="background-color: #0070ba; color: white;">PayPal</span>
                                             @break
                                         @case('stripe')
-                                            <span class="label" style="background-color: #635bff; color: white;">Stripe</span>
+                                            <span class="badge" style="background-color: #635bff; color: white;">Stripe</span>
                                             @break
                                         @case('credits')
-                                            <span class="label label-info">Credits</span>
+                                            <span class="badge bg-info">Credits</span>
                                             @break
                                         @default
-                                            <span class="label label-default">{{ ucfirst($payment->gateway) }}</span>
+                                            <span class="badge bg-secondary">{{ ucfirst($payment->gateway) }}</span>
                                     @endswitch
                                 </td>
                                 <td>
                                     @switch($payment->status)
                                         @case('completed')
-                                            <span class="label label-success">Completed</span>
+                                            <span class="badge bg-success">Completed</span>
                                             @break
                                         @case('pending')
-                                            <span class="label label-warning">Pending</span>
+                                            <span class="badge bg-warning">Pending</span>
                                             @break
                                         @case('failed')
-                                            <span class="label label-danger">Failed</span>
+                                            <span class="badge bg-danger">Failed</span>
                                             @break
                                         @case('cancelled')
-                                            <span class="label label-default">Cancelled</span>
+                                            <span class="badge bg-secondary">Cancelled</span>
                                             @break
                                         @case('refunded')
-                                            <span class="label label-info">Refunded</span>
+                                            <span class="badge bg-info">Refunded</span>
                                             @break
                                         @default
-                                            <span class="label label-default">{{ ucfirst($payment->status) }}</span>
+                                            <span class="badge bg-secondary">{{ ucfirst($payment->status) }}</span>
                                     @endswitch
                                 </td>
                                 <td>
                                     {{ $payment->created_at->format('M d, Y') }}
                                     <br><small class="text-muted">{{ $payment->created_at->format('g:i A') }}</small>
                                 </td>
-                                <td>
-                                    <div class="btn-group">
+                                <td class="text-center">
+                                    <div class="btn-group" role="group">
                                         <a href="{{ route('admin.shop.payments.show', $payment->id) }}" 
-                                           class="btn btn-xs btn-primary" title="View Details">
+                                           class="btn btn-sm btn-primary" title="View Details">
                                             <i class="fa fa-eye"></i>
                                         </a>
                                         
                                         @if($payment->status === 'completed' && !$payment->refunded_at)
-                                            <button class="btn btn-xs btn-warning" 
+                                            <button class="btn btn-sm btn-warning" 
                                                     onclick="refundPayment({{ $payment->id }})" title="Refund">
                                                 <i class="fa fa-undo"></i>
                                             </button>
                                         @endif
                                         
                                         @if($payment->status === 'pending')
-                                            <button class="btn btn-xs btn-success" 
+                                            <button class="btn btn-sm btn-success" 
                                                     onclick="completePayment({{ $payment->id }})" title="Complete">
                                                 <i class="fa fa-check"></i>
                                             </button>
-                                            <button class="btn btn-xs btn-danger" 
+                                            <button class="btn btn-sm btn-danger" 
                                                     onclick="cancelPayment({{ $payment->id }})" title="Cancel">
                                                 <i class="fa fa-times"></i>
                                             </button>
@@ -195,7 +198,11 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="text-center">
-                                    <p class="text-muted">No payments found.</p>
+                                    <div class="py-4">
+                                        <i class="fa fa-credit-card fa-2x text-muted mb-3"></i>
+                                        <h4 class="text-muted">No payments found</h4>
+                                        <p class="text-muted">No payments match your current criteria.</p>
+                                    </div>
                                 </td>
                             </tr>
                         @endforelse
@@ -204,7 +211,7 @@
             </div>
             
             @if(method_exists($payments, 'links'))
-                <div class="box-footer">
+                <div class="block-content block-content-full">
                     {{ $payments->links() }}
                 </div>
             @endif
@@ -214,50 +221,38 @@
 
 <!-- Payment Statistics -->
 <div class="row">
-    <div class="col-lg-3 col-xs-6">
-        <div class="small-box bg-green">
-            <div class="inner">
-                <h3>{{ $currencySymbol }}{{ number_format($stats['total_revenue'] ?? 0, 0) }}</h3>
-                <p>Total Revenue</p>
-            </div>
-            <div class="icon">
-                <i class="fa fa-money"></i>
+    <div class="col-6 col-lg-3">
+        <div class="block block-rounded text-center">
+            <div class="block-content">
+                <div class="fs-2 fw-bold text-success">{{ $currencySymbol }}{{ number_format($stats['total_revenue'] ?? 0, 0) }}</div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Revenue</div>
             </div>
         </div>
     </div>
     
-    <div class="col-lg-3 col-xs-6">
-        <div class="small-box bg-aqua">
-            <div class="inner">
-                <h3>{{ $stats['total_payments'] ?? $payments->count() }}</h3>
-                <p>Total Payments</p>
-            </div>
-            <div class="icon">
-                <i class="fa fa-credit-card"></i>
+    <div class="col-6 col-lg-3">
+        <div class="block block-rounded text-center">
+            <div class="block-content">
+                <div class="fs-2 fw-bold text-primary">{{ $stats['total_payments'] ?? $payments->count() }}</div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Payments</div>
             </div>
         </div>
     </div>
     
-    <div class="col-lg-3 col-xs-6">
-        <div class="small-box bg-yellow">
-            <div class="inner">
-                <h3>{{ $stats['pending_payments'] ?? 0 }}</h3>
-                <p>Pending Payments</p>
-            </div>
-            <div class="icon">
-                <i class="fa fa-clock-o"></i>
+    <div class="col-6 col-lg-3">
+        <div class="block block-rounded text-center">
+            <div class="block-content">
+                <div class="fs-2 fw-bold text-warning">{{ $stats['pending_payments'] ?? 0 }}</div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Pending Payments</div>
             </div>
         </div>
     </div>
     
-    <div class="col-lg-3 col-xs-6">
-        <div class="small-box bg-red">
-            <div class="inner">
-                <h3>{{ $stats['failed_payments'] ?? 0 }}</h3>
-                <p>Failed Payments</p>
-            </div>
-            <div class="icon">
-                <i class="fa fa-exclamation-triangle"></i>
+    <div class="col-6 col-lg-3">
+        <div class="block block-rounded text-center">
+            <div class="block-content">
+                <div class="fs-2 fw-bold text-danger">{{ $stats['failed_payments'] ?? 0 }}</div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Failed Payments</div>
             </div>
         </div>
     </div>
@@ -267,64 +262,57 @@
 @section('footer-scripts')
     @parent
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Search functionality
-            $('#searchPayments').on('keyup', function() {
-                var value = $(this).val().toLowerCase();
-                $("#paymentsTable tbody tr").filter(function() {
-                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            document.getElementById('searchPayments').addEventListener('keyup', function() {
+                const value = this.value.toLowerCase();
+                const rows = document.querySelectorAll('#paymentsTable tbody tr');
+                rows.forEach(function(row) {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.indexOf(value) > -1 ? '' : 'none';
                 });
             });
             
             // Status filter
-            $('#filterStatus').on('change', function() {
-                var status = $(this).val();
-                if (status === '') {
-                    $("#paymentsTable tbody tr").show();
-                } else {
-                    $("#paymentsTable tbody tr").each(function() {
-                        var rowStatus = $(this).data('status');
-                        if (rowStatus === status) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                }
+            document.getElementById('filterStatus').addEventListener('change', function() {
+                const status = this.value;
+                const rows = document.querySelectorAll('#paymentsTable tbody tr');
+                rows.forEach(function(row) {
+                    if (status === '') {
+                        row.style.display = '';
+                    } else {
+                        const rowStatus = row.dataset.status;
+                        row.style.display = rowStatus === status ? '' : 'none';
+                    }
+                });
             });
             
             // Gateway filter
-            $('#filterGateway').on('change', function() {
-                var gateway = $(this).val();
-                if (gateway === '') {
-                    $("#paymentsTable tbody tr").show();
-                } else {
-                    $("#paymentsTable tbody tr").each(function() {
-                        var rowGateway = $(this).data('gateway');
-                        if (rowGateway === gateway) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                }
+            document.getElementById('filterGateway').addEventListener('change', function() {
+                const gateway = this.value;
+                const rows = document.querySelectorAll('#paymentsTable tbody tr');
+                rows.forEach(function(row) {
+                    if (gateway === '') {
+                        row.style.display = '';
+                    } else {
+                        const rowGateway = row.dataset.gateway;
+                        row.style.display = rowGateway === gateway ? '' : 'none';
+                    }
+                });
             });
             
             // Date filter
-            $('#filterDate').on('change', function() {
-                var date = $(this).val();
-                if (date === '') {
-                    $("#paymentsTable tbody tr").show();
-                } else {
-                    $("#paymentsTable tbody tr").each(function() {
-                        var rowDate = $(this).data('date');
-                        if (rowDate === date) {
-                            $(this).show();
-                        } else {
-                            $(this).hide();
-                        }
-                    });
-                }
+            document.getElementById('filterDate').addEventListener('change', function() {
+                const date = this.value;
+                const rows = document.querySelectorAll('#paymentsTable tbody tr');
+                rows.forEach(function(row) {
+                    if (date === '') {
+                        row.style.display = '';
+                    } else {
+                        const rowDate = row.dataset.date;
+                        row.style.display = rowDate === date ? '' : 'none';
+                    }
+                });
             });
         });
         
@@ -342,44 +330,52 @@
         
         function refundPayment(paymentId) {
             if (confirm('Are you sure you want to refund this payment? This action may not be reversible.')) {
-                $.ajax({
-                    url: '/admin/shop/payments/' + paymentId + '/refund',
-                    type: 'POST',
-                    data: {
-                        _token: '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            location.reload();
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    },
-                    error: function() {
-                        alert('An error occurred while processing the refund.');
+                fetch('/admin/shop/payments/' + paymentId + '/refund', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while processing the refund.');
                 });
             }
         }
         
         function updatePaymentStatus(paymentId, status) {
-            $.ajax({
-                url: '{{ url('admin/shop/payments') }}/' + paymentId + '/update-status',
-                type: 'POST',
-                data: {
-                    status: status,
-                    _token: '{{ csrf_token() }}'
+            fetch('{{ url('admin/shop/payments') }}/' + paymentId + '/update-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 },
-                success: function(response) {
-                    if (response.success) {
-                        location.reload();
-                    } else {
-                        alert('Error: ' + response.message);
-                    }
-                },
-                error: function() {
-                    alert('An error occurred while updating the payment status.');
+                body: JSON.stringify({
+                    status: status
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the payment status.');
             });
         }
     </script>

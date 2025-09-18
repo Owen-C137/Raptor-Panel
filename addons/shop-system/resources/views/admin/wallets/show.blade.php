@@ -10,7 +10,7 @@
     <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
       <div class="flex-grow-1">
         <h1 class="h3 fw-bold mb-1">
-          Wallet Details {{ $user->username }}
+          Wallet Details
         </h1>
         <h2 class="fs-base lh-base fw-medium text-muted mb-0">
           {{ $user->username }}
@@ -33,26 +33,26 @@
     <div class="row">
         <!-- User Information -->
         <div class="col-md-4">
-            <div class="box box-primary">
-                <div class="box-header with-border">
-                    <h3 class="box-title">User Information</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">User Information</h3>
                 </div>
-                <div class="box-body">
-                    <div class="form-group">
-                        <label>Full Name:</label>
-                        <p>{{ $user->name_first }} {{ $user->name_last }}</p>
+                <div class="block-content">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-semibold">Full Name:</div>
+                        <div class="col-sm-8">{{ $user->name_first }} {{ $user->name_last }}</div>
                     </div>
-                    <div class="form-group">
-                        <label>Username:</label>
-                        <p>{{ $user->username }}</p>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-semibold">Username:</div>
+                        <div class="col-sm-8">{{ $user->username }}</div>
                     </div>
-                    <div class="form-group">
-                        <label>Email:</label>
-                        <p>{{ $user->email }}</p>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-semibold">Email:</div>
+                        <div class="col-sm-8">{{ $user->email }}</div>
                     </div>
-                    <div class="form-group">
-                        <label>Member Since:</label>
-                        <p>{{ $user->created_at->format('M d, Y') }}</p>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-semibold">Member Since:</div>
+                        <div class="col-sm-8">{{ $user->created_at->format('M d, Y') }}</div>
                     </div>
                 </div>
             </div>
@@ -60,45 +60,42 @@
 
         <!-- Wallet Summary -->
         <div class="col-md-8">
-            <div class="box box-success">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Wallet Summary</h3>
-                    <div class="box-tools pull-right">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Wallet Summary</h3>
+                    <div class="block-options">
                         <button type="button" class="btn btn-sm btn-success" onclick="addFunds()">
                             <i class="fa fa-plus"></i> Add Funds
                         </button>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="removeFunds()">
+                        <button type="button" class="btn btn-sm btn-danger ms-1" onclick="removeFunds()">
                             <i class="fa fa-minus"></i> Remove Funds
                         </button>
                     </div>
                 </div>
-                <div class="box-body">
-                    <div class="row">
+                <div class="block-content">
+                    <div class="row text-center">
                         <div class="col-sm-4">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-green">
-                                    <i class="fa fa-money"></i>
-                                </span>
-                                <h5 class="description-header">${{ number_format($wallet->balance, 2) }}</h5>
-                                <span class="description-text">CURRENT BALANCE</span>
+                            <div class="py-3">
+                                <div class="fs-1 fw-bold text-success">${{ number_format($wallet->balance, 2) }}</div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted">
+                                    <i class="fa fa-money me-1"></i>Current Balance
+                                </div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="description-block border-right">
-                                <span class="description-percentage text-blue">
-                                    <i class="fa fa-arrow-up"></i>
-                                </span>
-                                <h5 class="description-header">${{ number_format($wallet->total_deposited, 2) }}</h5>
-                                <span class="description-text">TOTAL DEPOSITED</span>
+                            <div class="py-3">
+                                <div class="fs-1 fw-bold text-primary">${{ number_format($wallet->total_deposited, 2) }}</div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted">
+                                    <i class="fa fa-arrow-up me-1"></i>Total Deposited
+                                </div>
                             </div>
                         </div>
                         <div class="col-sm-4">
-                            <div class="description-block">
-                                <span class="description-percentage text-red">
-                                    <i class="fa fa-arrow-down"></i>
-                                </span>
-                                <h5 class="description-header">${{ number_format($wallet->total_spent, 2) }}</h5>
-                                <span class="description-text">TOTAL SPENT</span>
+                            <div class="py-3">
+                                <div class="fs-1 fw-bold text-danger">${{ number_format($wallet->total_spent, 2) }}</div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted">
+                                    <i class="fa fa-arrow-down me-1"></i>Total Spent
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -109,91 +106,93 @@
 
     <!-- Transaction History -->
     <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Transaction History</h3>
-                    <div class="box-tools pull-right">
+        <div class="col-12">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Transaction History</h3>
+                    <div class="block-options">
                         <button type="button" class="btn btn-sm btn-primary" onclick="exportTransactions()">
                             <i class="fa fa-download"></i> Export
                         </button>
                     </div>
                 </div>
-                <div class="box-body table-responsive no-padding">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Description</th>
-                                <th>Balance After</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($transactions as $transaction)
+                <div class="block-content">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-vcenter">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <span class="text-muted">{{ $transaction->created_at->format('M d, Y H:i') }}</span>
-                                    </td>
-                                    <td>
-                                        @if($transaction->type === 'deposit')
-                                            <span class="label label-success">
-                                                <i class="fa fa-plus"></i> Deposit
-                                            </span>
-                                        @elseif($transaction->type === 'withdrawal')
-                                            <span class="label label-warning">
-                                                <i class="fa fa-minus"></i> Withdrawal
-                                            </span>
-                                        @elseif($transaction->type === 'purchase')
-                                            <span class="label label-primary">
-                                                <i class="fa fa-shopping-cart"></i> Purchase
-                                            </span>
-                                        @elseif($transaction->type === 'refund')
-                                            <span class="label label-info">
-                                                <i class="fa fa-undo"></i> Refund
-                                            </span>
-                                        @else
-                                            <span class="label label-default">{{ ucfirst($transaction->type) }}</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        @if($transaction->type === 'deposit' || $transaction->type === 'refund')
-                                            <span class="text-green">+${{ number_format($transaction->amount, 2) }}</span>
-                                        @else
-                                            <span class="text-red">-${{ number_format($transaction->amount, 2) }}</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="text-muted">{{ $transaction->description ?: 'No description' }}</span>
-                                    </td>
-                                    <td>
-                                        <strong>${{ number_format($transaction->balance_after, 2) }}</strong>
-                                    </td>
-                                    <td>
-                                        @if($transaction->status === 'completed')
-                                            <span class="label label-success">Completed</span>
-                                        @elseif($transaction->status === 'pending')
-                                            <span class="label label-warning">Pending</span>
-                                        @elseif($transaction->status === 'failed')
-                                            <span class="label label-danger">Failed</span>
-                                        @else
-                                            <span class="label label-default">{{ ucfirst($transaction->status) }}</span>
-                                        @endif
-                                    </td>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Amount</th>
+                                    <th>Description</th>
+                                    <th>Balance After</th>
+                                    <th>Status</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No transactions found</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($transactions as $transaction)
+                                    <tr>
+                                        <td>
+                                            <span class="text-muted">{{ $transaction->created_at->format('M d, Y H:i') }}</span>
+                                        </td>
+                                        <td>
+                                            @if($transaction->type === 'deposit')
+                                                <span class="badge bg-success">
+                                                    <i class="fa fa-plus"></i> Deposit
+                                                </span>
+                                            @elseif($transaction->type === 'withdrawal')
+                                                <span class="badge bg-warning">
+                                                    <i class="fa fa-minus"></i> Withdrawal
+                                                </span>
+                                            @elseif($transaction->type === 'purchase')
+                                                <span class="badge bg-primary">
+                                                    <i class="fa fa-shopping-cart"></i> Purchase
+                                                </span>
+                                            @elseif($transaction->type === 'refund')
+                                                <span class="badge bg-info">
+                                                    <i class="fa fa-undo"></i> Refund
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ ucfirst($transaction->type) }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($transaction->type === 'deposit' || $transaction->type === 'refund')
+                                                <span class="text-success fw-semibold">+${{ number_format($transaction->amount, 2) }}</span>
+                                            @else
+                                                <span class="text-danger fw-semibold">-${{ number_format($transaction->amount, 2) }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="text-muted">{{ $transaction->description ?: 'No description' }}</span>
+                                        </td>
+                                        <td>
+                                            <strong>${{ number_format($transaction->balance_after, 2) }}</strong>
+                                        </td>
+                                        <td>
+                                            @if($transaction->status === 'completed')
+                                                <span class="badge bg-success">Completed</span>
+                                            @elseif($transaction->status === 'pending')
+                                                <span class="badge bg-warning">Pending</span>
+                                            @elseif($transaction->status === 'failed')
+                                                <span class="badge bg-danger">Failed</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ ucfirst($transaction->status) }}</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No transactions found</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 @if($transactions->hasPages())
-                    <div class="box-footer">
+                    <div class="block-content block-content-full">
                         {{ $transactions->links() }}
                     </div>
                 @endif
@@ -203,23 +202,23 @@
 
     <!-- Quick Actions -->
     <div class="row">
-        <div class="col-xs-12">
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Quick Actions</h3>
+        <div class="col-12">
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Quick Actions</h3>
                 </div>
-                <div class="box-body">
+                <div class="block-content">
                     <div class="btn-group" role="group">
-                        <a href="{{ route('admin.shop.wallets.index') }}" class="btn btn-default">
+                        <a href="{{ route('admin.shop.wallets.index') }}" class="btn btn-outline-secondary">
                             <i class="fa fa-arrow-left"></i> Back to Wallet Management
                         </a>
-                        <a href="{{ route('admin.users.view', $user) }}" class="btn btn-info">
+                        <a href="{{ route('admin.users.view', $user) }}" class="btn btn-outline-info">
                             <i class="fa fa-user"></i> View User Profile
                         </a>
-                        <a href="{{ route('admin.shop.payments.index') }}" class="btn btn-success">
+                        <a href="{{ route('admin.shop.payments.index') }}" class="btn btn-outline-success">
                             <i class="fa fa-list"></i> All Payments
                         </a>
-                        <button type="button" class="btn btn-warning" onclick="exportTransactions()">
+                        <button type="button" class="btn btn-outline-warning" onclick="exportTransactions()">
                             <i class="fa fa-download"></i> Export Transactions
                         </button>
                     </div>

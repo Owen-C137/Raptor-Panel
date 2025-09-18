@@ -40,16 +40,18 @@
 @section('content')
 <div class="row">
     <!-- Period Selector -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Customer Analysis Period</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-calendar-alt me-1"></i>Customer Analysis Period
+                </h3>
             </div>
-            <div class="box-body">
-                <form method="GET" action="{{ route('admin.shop.analytics.customers') }}" class="form-inline">
-                    <div class="form-group">
-                        <label for="period">Period:</label>
-                        <select name="period" id="period" class="form-control" onchange="this.form.submit()">
+            <div class="block-content">
+                <form method="GET" action="{{ route('admin.shop.analytics.customers') }}" class="row g-3">
+                    <div class="col-auto">
+                        <label for="period" class="form-label">Period:</label>
+                        <select name="period" id="period" class="form-select" onchange="this.form.submit()">
                             <option value="7" {{ $period == '7' ? 'selected' : '' }}>Last 7 days</option>
                             <option value="30" {{ $period == '30' ? 'selected' : '' }}>Last 30 days</option>
                             <option value="90" {{ $period == '90' ? 'selected' : '' }}>Last 90 days</option>
@@ -65,48 +67,34 @@
 <div class="row">
     <!-- New Customers -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">New Customers</h3>
-            </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-green">
-                        <i class="fa fa-user-plus"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">New Customers</span>
-                        <span class="info-box-number">{{ number_format($customerData['new_customers'] ?? 0) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar bg-green" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-description">Last {{ $period }} days</span>
-                    </div>
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full">
+                <div class="fs-2 fw-bold text-success">
+                    <i class="fa fa-user-plus"></i>
                 </div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">New Customers</div>
+                <div class="fs-3 fw-bold text-dark">{{ number_format($customerData['new_customers'] ?? 0) }}</div>
+                <div class="progress mb-2" style="height: 5px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                </div>
+                <div class="fs-sm text-muted">Last {{ $period }} days</div>
             </div>
         </div>
     </div>
 
     <!-- Returning Customers -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Returning Customers</h3>
-            </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-blue">
-                        <i class="fa fa-user-check"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Returning Customers</span>
-                        <span class="info-box-number">{{ number_format($customerData['returning_customers'] ?? 0) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar bg-blue" style="width: {{ min(100, ($customerData['returning_customers'] ?? 0) / max(1, $customerData['new_customers'] ?? 1) * 100) }}%"></div>
-                        </div>
-                        <span class="progress-description">Repeat purchases</span>
-                    </div>
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full">
+                <div class="fs-2 fw-bold text-primary">
+                    <i class="fa fa-user-check"></i>
                 </div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Returning Customers</div>
+                <div class="fs-3 fw-bold text-dark">{{ number_format($customerData['returning_customers'] ?? 0) }}</div>
+                <div class="progress mb-2" style="height: 5px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ min(100, ($customerData['returning_customers'] ?? 0) / max(1, $customerData['new_customers'] ?? 1) * 100) }}%"></div>
+                </div>
+                <div class="fs-sm text-muted">Repeat purchases</div>
             </div>
         </div>
     </div>
@@ -115,48 +103,34 @@
 <div class="row">
     <!-- Average Order Value -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Average Order Value</h3>
-            </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-yellow">
-                        <i class="fa fa-money"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Average Order Value</span>
-                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($customerData['average_order_value'] ?? 0, 2) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar bg-yellow" style="width: 75%"></div>
-                        </div>
-                        <span class="progress-description">Per customer transaction</span>
-                    </div>
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full">
+                <div class="fs-2 fw-bold text-warning">
+                    <i class="fa fa-dollar-sign"></i>
                 </div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Average Order Value</div>
+                <div class="fs-3 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($customerData['average_order_value'] ?? 0, 2) }}</div>
+                <div class="progress mb-2" style="height: 5px;">
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: 75%"></div>
+                </div>
+                <div class="fs-sm text-muted">Per customer transaction</div>
             </div>
         </div>
     </div>
 
     <!-- Total Wallet Balance -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Customer Wallets</h3>
-            </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-purple">
-                        <i class="fa fa-wallet"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Wallet Balance</span>
-                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($customerData['total_wallet_balance'] ?? 0, 2) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar bg-purple" style="width: 60%"></div>
-                        </div>
-                        <span class="progress-description">Customer credit balance</span>
-                    </div>
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full">
+                <div class="fs-2 fw-bold text-info">
+                    <i class="fa fa-wallet"></i>
                 </div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Wallet Balance</div>
+                <div class="fs-3 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($customerData['total_wallet_balance'] ?? 0, 2) }}</div>
+                <div class="progress mb-2" style="height: 5px;">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: 60%"></div>
+                </div>
+                <div class="fs-sm text-muted">Customer credit balance</div>
             </div>
         </div>
     </div>
@@ -164,48 +138,50 @@
 
 <div class="row">
     <!-- Customer Metrics -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Customer Engagement Metrics</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-bar me-1"></i>Customer Engagement Metrics
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="row">
+            <div class="block-content">
+                <div class="row text-center">
                     <div class="col-md-3">
-                        <div class="description-block border-right">
-                            <span class="description-percentage text-green">
+                        <div class="py-3 border-end">
+                            <div class="fs-3 fw-bold text-success mb-1">
                                 <i class="fa fa-caret-up"></i>
                                 {{ number_format((($customerData['returning_customers'] ?? 0) / max(1, ($customerData['new_customers'] ?? 1)) * 100), 1) }}%
-                            </span>
-                            <h5 class="description-header">{{ number_format($customerData['returning_customers'] ?? 0) }}</h5>
-                            <span class="description-text">Return Rate</span>
+                            </div>
+                            <div class="fs-1 fw-bold text-dark">{{ number_format($customerData['returning_customers'] ?? 0) }}</div>
+                            <div class="fs-sm text-muted text-uppercase fw-semibold">Return Rate</div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="description-block border-right">
-                            <span class="description-percentage text-blue">
-                                <i class="fa fa-money"></i>
-                            </span>
-                            <h5 class="description-header">{{ $currencySymbol }}{{ number_format($customerData['average_order_value'] ?? 0, 0) }}</h5>
-                            <span class="description-text">Avg Order</span>
+                        <div class="py-3 border-end">
+                            <div class="fs-3 fw-bold text-primary mb-1">
+                                <i class="fa fa-dollar-sign"></i>
+                            </div>
+                            <div class="fs-1 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($customerData['average_order_value'] ?? 0, 0) }}</div>
+                            <div class="fs-sm text-muted text-uppercase fw-semibold">Avg Order</div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="description-block border-right">
-                            <span class="description-percentage text-yellow">
+                        <div class="py-3 border-end">
+                            <div class="fs-3 fw-bold text-warning mb-1">
                                 <i class="fa fa-wallet"></i>
-                            </span>
-                            <h5 class="description-header">{{ $currencySymbol }}{{ number_format($customerData['total_wallet_balance'] ?? 0, 0) }}</h5>
-                            <span class="description-text">Credit Balance</span>
+                            </div>
+                            <div class="fs-1 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($customerData['total_wallet_balance'] ?? 0, 0) }}</div>
+                            <div class="fs-sm text-muted text-uppercase fw-semibold">Credit Balance</div>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="description-block">
-                            <span class="description-percentage text-red">
+                        <div class="py-3">
+                            <div class="fs-3 fw-bold text-danger mb-1">
                                 <i class="fa fa-users"></i>
-                            </span>
-                            <h5 class="description-header">{{ number_format(($customerData['new_customers'] ?? 0) + ($customerData['returning_customers'] ?? 0)) }}</h5>
-                            <span class="description-text">Total Customers</span>
+                            </div>
+                            <div class="fs-1 fw-bold text-dark">{{ number_format(($customerData['new_customers'] ?? 0) + ($customerData['returning_customers'] ?? 0)) }}</div>
+                            <div class="fs-sm text-muted text-uppercase fw-semibold">Total Customers</div>
                         </div>
                     </div>
                 </div>
@@ -216,28 +192,40 @@
 
 <div class="row">
     <!-- Quick Actions -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Quick Actions</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-bolt me-1"></i>Quick Actions
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="btn-group" role="group">
-                    <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-default">
-                        <i class="fa fa-arrow-left"></i> Back to Analytics Overview
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-success">
-                        <i class="fa fa-money"></i> View Revenue Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-info">
-                        <i class="fa fa-shopping-cart"></i> View Orders Report
-                    </a>
-                    <a href="{{ route('admin.users') }}" class="btn btn-primary">
-                        <i class="fa fa-users"></i> Manage Users
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-warning">
-                        <i class="fa fa-download"></i> Export All Data
-                    </a>
+            <div class="block-content">
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-outline-secondary">
+                            <i class="fa fa-arrow-left me-1"></i>Back to Analytics Overview
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-outline-success">
+                            <i class="fa fa-dollar-sign me-1"></i>View Revenue Report
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-outline-info">
+                            <i class="fa fa-shopping-cart me-1"></i>View Orders Report
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.users') }}" class="btn btn-outline-primary">
+                            <i class="fa fa-users me-1"></i>Manage Users
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-outline-warning">
+                            <i class="fa fa-download me-1"></i>Export All Data
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -246,36 +234,52 @@
 
 @if(isset($customerData['top_customers']) && count($customerData['top_customers']) > 0)
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Top Customers by Spending</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-crown me-1"></i>Top Customers by Spending
+                </h3>
             </div>
-            <div class="box-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Customer</th>
-                            <th>Email</th>
-                            <th>Total Spent</th>
-                            <th>Orders</th>
-                            <th>Average Order</th>
-                            <th>Last Order</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($customerData['top_customers'] as $customer)
-                        <tr>
-                            <td>{{ $customer['name'] ?? 'Unknown' }}</td>
-                            <td>{{ $customer['email'] ?? 'N/A' }}</td>
-                            <td>{{ $currencySymbol }}{{ number_format($customer['total_spent'] ?? 0, 2) }}</td>
-                            <td>{{ number_format($customer['order_count'] ?? 0) }}</td>
-                            <td>{{ $currencySymbol }}{{ number_format(($customer['total_spent'] ?? 0) / max(1, $customer['order_count'] ?? 1), 2) }}</td>
-                            <td>{{ $customer['last_order'] ?? 'N/A' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="block-content block-content-full">
+                <div class="table-responsive">
+                    <table class="table table-hover table-vcenter">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Email</th>
+                                <th>Total Spent</th>
+                                <th>Orders</th>
+                                <th>Average Order</th>
+                                <th>Last Order</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($customerData['top_customers'] as $customer)
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">{{ $customer['name'] ?? 'Unknown' }}</div>
+                                </td>
+                                <td>
+                                    <div class="fs-sm text-muted">{{ $customer['email'] ?? 'N/A' }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success fs-sm">{{ $currencySymbol }}{{ number_format($customer['total_spent'] ?? 0, 2) }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{ number_format($customer['order_count'] ?? 0) }}</span>
+                                </td>
+                                <td>
+                                    <span class="fs-sm">{{ $currencySymbol }}{{ number_format(($customer['total_spent'] ?? 0) / max(1, $customer['order_count'] ?? 1), 2) }}</span>
+                                </td>
+                                <td>
+                                    <div class="fs-sm">{{ $customer['last_order'] ?? 'N/A' }}</div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -40,8 +40,8 @@ class WalletManagementController extends Controller
      */
     public function show(User $user)
     {
-        $wallet = $this->walletService->getWallet($user);
-        $transactions = WalletTransaction::where('user_wallet_id', $wallet->id)
+        $wallet = $this->walletService->getWallet($user->id);
+        $transactions = WalletTransaction::where('wallet_id', $wallet->id)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -58,8 +58,9 @@ class WalletManagementController extends Controller
             'reason' => 'required|string|max:255'
         ]);
 
-        $wallet = $this->walletService->addFunds(
-            $user, 
+        $wallet = $this->walletService->getWallet($user->id);
+        $transaction = $this->walletService->addFunds(
+            $wallet, 
             $request->amount, 
             $request->reason,
             'admin_credit'
@@ -81,8 +82,9 @@ class WalletManagementController extends Controller
         ]);
 
         try {
-            $wallet = $this->walletService->deductFunds(
-                $user, 
+            $wallet = $this->walletService->getWallet($user->id);
+            $transaction = $this->walletService->deductFunds(
+                $wallet, 
                 $request->amount, 
                 $request->reason,
                 'admin_debit'
@@ -103,8 +105,8 @@ class WalletManagementController extends Controller
      */
     public function transactions(User $user)
     {
-        $wallet = $this->walletService->getWallet($user);
-        $transactions = WalletTransaction::where('user_wallet_id', $wallet->id)
+        $wallet = $this->walletService->getWallet($user->id);
+        $transactions = WalletTransaction::where('wallet_id', $wallet->id)
             ->orderBy('created_at', 'desc')
             ->paginate(50);
 

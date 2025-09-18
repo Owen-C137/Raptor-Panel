@@ -92,6 +92,12 @@ class InjectShopNavigation
                                     <span class="nav-main-link-name">Payments</span>
                                 </a>
                             </li>
+                            <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.wallets\') ? \'open\' : \'\' }}">
+                                <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.wallets\') ? \'active\' : \'\' }}" href="/admin/shop/wallets">
+                                    <i class="nav-main-link-icon fa fa-money"></i>
+                                    <span class="nav-main-link-name">Wallet Management</span>
+                                </a>
+                            </li>
                             <li class="nav-main-item {{ starts_with(Route::currentRouteName(), \'admin.shop.coupons\') ? \'open\' : \'\' }}">
                                 <a class="nav-main-link {{ starts_with(Route::currentRouteName(), \'admin.shop.coupons\') ? \'active\' : \'\' }}" href="/admin/shop/coupons">
                                     <i class="nav-main-link-icon fa fa-tag"></i>

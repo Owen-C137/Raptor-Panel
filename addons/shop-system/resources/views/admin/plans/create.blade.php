@@ -6,23 +6,23 @@
 
 @push('head-scripts')
     <style>
-        .converter-section .box-body .form-group.has-success .form-control {
+        .converter-section .block-content .mb-4.is-valid .form-control {
             border-color: #00a65a;
         }
         
-        .converter-section .box-body .form-group.has-error .form-control {
+        .converter-section .block-content .mb-4.is-invalid .form-control {
             border-color: #dd4b39;
         }
         
-        .converter-section .box-body .form-group.has-success .form-text {
+        .converter-section .block-content .mb-4.is-valid .form-text {
             color: #00a65a;
         }
         
-        .converter-section .box-body .form-group.has-error .form-text {
+        .converter-section .block-content .mb-4.is-invalid .form-text {
             color: #dd4b39;
         }
         
-        .converter-section .callout-success {
+        .converter-section .alert-success {
             border-left-color: #00a65a;
         }
         
@@ -63,34 +63,34 @@
         <form method="POST" action="{{ route('admin.shop.plans.store') }}">
             @csrf
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Plan Information</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Plan Information</h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="name">Plan Name <span class="text-danger">*</span></label>
+                <div class="block-content">
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Plan Name <span class="text-danger">*</span></label>
                         <input type="text" name="name" id="name" class="form-control" 
                                value="{{ old('name') }}" required>
                         @error('name')
-                            <span class="text-danger">{{ $message }}</span>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="description">Description</label>
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Description</label>
                         <textarea name="description" id="description" class="form-control" rows="4">{{ old('description') }}</textarea>
                         @error('description')
-                            <span class="text-danger">{{ $message }}</span>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="category_id">Game Category <span class="text-danger">*</span></label>
-                                <select name="category_id" id="category_id" class="form-control" required>
+                            <div class="mb-4">
+                                <label for="category_id" class="form-label">Game Category <span class="text-danger">*</span></label>
+                                <select name="category_id" id="category_id" class="form-select" required>
                                     <option value="">Select a game category</option>
                                     @foreach($categories as $category)
                                         <option value="{{ $category->id }}" 
@@ -100,18 +100,18 @@
                                     @endforeach
                                 </select>
                                 @error('category_id')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="sort_order">Sort Order</label>
+                            <div class="mb-4">
+                                <label for="sort_order" class="form-label">Sort Order</label>
                                 <input type="number" name="sort_order" id="sort_order" class="form-control" 
                                        value="{{ old('sort_order', 0) }}" min="0">
                                 @error('sort_order')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -119,19 +119,19 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Pricing & Billing</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Pricing & Billing</h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     <div id="billing-cycles">
                         <div class="billing-cycle-item">
                             <div class="row">
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Billing Cycle</label>
-                                        <select name="billing_cycles[0][cycle]" class="form-control">
+                                    <div class="mb-4">
+                                        <label class="form-label">Billing Cycle</label>
+                                        <select name="billing_cycles[0][cycle]" class="form-select">
                                             <option value="monthly" {{ old('billing_cycles.0.cycle') == 'monthly' ? 'selected' : '' }}>Monthly</option>
                                             <option value="quarterly" {{ old('billing_cycles.0.cycle') == 'quarterly' ? 'selected' : '' }}>Quarterly</option>
                                             <option value="semi_annually" {{ old('billing_cycles.0.cycle') == 'semi_annually' ? 'selected' : '' }}>Semi-Annually</option>
@@ -141,23 +141,23 @@
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Price ({{ $currencySymbol }})</label>
+                                    <div class="mb-4">
+                                        <label class="form-label">Price ({{ $currencySymbol }})</label>
                                         <input type="number" name="billing_cycles[0][price]" class="form-control" 
                                                step="0.01" min="0" value="{{ old('billing_cycles.0.price', '9.99') }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>Setup Fee ({{ $currencySymbol }})</label>
+                                    <div class="mb-4">
+                                        <label class="form-label">Setup Fee ({{ $currencySymbol }})</label>
                                         <input type="number" name="billing_cycles[0][setup_fee]" class="form-control" 
                                                step="0.01" min="0" value="{{ old('billing_cycles.0.setup_fee', '0') }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
-                                    <div class="form-group">
-                                        <label>&nbsp;</label>
-                                        <button type="button" class="btn btn-success btn-sm add-cycle" style="display: block;">
+                                    <div class="mb-4">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="button" class="btn btn-success btn-sm add-cycle d-block">
                                             <i class="fa fa-plus"></i> Add Cycle
                                         </button>
                                     </div>
@@ -168,34 +168,34 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Server Resources</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Server Resources</h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="cpu">CPU Percentage</label>
+                            <div class="mb-4">
+                                <label for="cpu" class="form-label">CPU Percentage</label>
                                 <input type="number" name="server_limits[cpu]" id="cpu" class="form-control" 
                                        value="{{ old('server_limits.cpu') }}" min="0" placeholder="100">
-                                <small class="form-text text-muted">
+                                <div class="form-text text-muted">
                                     CPU percentage (100 = 1 core)
-                                </small>
+                                </div>
                                 @error('server_limits.cpu')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="memory">Memory (MiB)</label>
+                            <div class="mb-4">
+                                <label for="memory" class="form-label">Memory (MiB)</label>
                                 <input type="number" name="server_limits[memory]" id="memory" class="form-control" 
                                        value="{{ old('server_limits.memory') }}" min="0" placeholder="1024">
                                 @error('server_limits.memory')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -203,26 +203,26 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="disk">Disk Space (MB)</label>
+                            <div class="mb-4">
+                                <label for="disk" class="form-label">Disk Space (MB)</label>
                                 <input type="number" name="server_limits[disk]" id="disk" class="form-control" 
                                        value="{{ old('server_limits.disk') }}" min="0" placeholder="5120">
                                 @error('server_limits.disk')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="swap">Swap Memory (MB)</label>
+                            <div class="mb-4">
+                                <label for="swap" class="form-label">Swap Memory (MB)</label>
                                 <input type="number" name="server_limits[swap]" id="swap" class="form-control" 
                                        value="{{ old('server_limits.swap', 0) }}" min="-1">
-                                <small class="form-text text-muted">
+                                <div class="form-text text-muted">
                                     Set to -1 for unlimited swap
-                                </small>
+                                </div>
                                 @error('server_limits.swap')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -230,25 +230,25 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="io">IO Priority</label>
+                            <div class="mb-4">
+                                <label for="io" class="form-label">IO Priority</label>
                                 <input type="number" name="server_limits[io]" id="io" class="form-control" 
                                        value="{{ old('server_limits.io', 500) }}" min="10" max="1000">
                                 @error('server_limits.io')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="oom_disabled">OOM Killer</label>
-                                <select name="server_limits[oom_disabled]" id="oom_disabled" class="form-control">
+                            <div class="mb-4">
+                                <label for="oom_disabled" class="form-label">OOM Killer</label>
+                                <select name="server_limits[oom_disabled]" id="oom_disabled" class="form-select">
                                     <option value="0" {{ old('server_limits.oom_disabled', '0') == '0' ? 'selected' : '' }}>Enabled</option>
                                     <option value="1" {{ old('server_limits.oom_disabled') == '1' ? 'selected' : '' }}>Disabled</option>
                                 </select>
                                 @error('server_limits.oom_disabled')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -256,31 +256,31 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Feature Limits</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Feature Limits</h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="databases">Database Limit</label>
+                            <div class="mb-4">
+                                <label for="databases" class="form-label">Database Limit</label>
                                 <input type="number" name="server_feature_limits[databases]" id="databases" class="form-control" 
                                        value="{{ old('server_feature_limits.databases', 1) }}" min="0">
                                 @error('server_feature_limits.databases')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
                         
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="allocations">Allocation Limit</label>
+                            <div class="mb-4">
+                                <label for="allocations" class="form-label">Allocation Limit</label>
                                 <input type="number" name="server_feature_limits[allocations]" id="allocations" class="form-control" 
                                        value="{{ old('server_feature_limits.allocations', 1) }}" min="0">
                                 @error('server_feature_limits.allocations')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -288,12 +288,12 @@
                     
                     <div class="row">
                         <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="backups">Backup Limit</label>
+                            <div class="mb-4">
+                                <label for="backups" class="form-label">Backup Limit</label>
                                 <input type="number" name="server_feature_limits[backups]" id="backups" class="form-control" 
                                        value="{{ old('server_feature_limits.backups', 1) }}" min="0">
                                 @error('server_feature_limits.backups')
-                                    <span class="text-danger">{{ $message }}</span>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
@@ -301,15 +301,15 @@
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Server Configuration</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Server Configuration</h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="egg_id">Egg</label>
-                        <select name="egg_id" id="egg_id" class="form-control">
+                <div class="block-content">
+                    <div class="mb-4">
+                        <label for="egg_id" class="form-label">Egg</label>
+                        <select name="egg_id" id="egg_id" class="form-select">
                             <option value="">Select an egg (optional)</option>
                             @foreach($eggs as $egg)
                                 <option value="{{ $egg->id }}" {{ old('egg_id') == $egg->id ? 'selected' : '' }}>
@@ -318,13 +318,13 @@
                             @endforeach
                         </select>
                         @error('egg_id')
-                            <span class="text-danger">{{ $message }}</span>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="allowed_locations">Allowed Locations</label>
-                        <select name="allowed_locations[]" id="allowed_locations" class="form-control" multiple>
+                    <div class="mb-4">
+                        <label for="allowed_locations" class="form-label">Allowed Locations</label>
+                        <select name="allowed_locations[]" id="allowed_locations" class="form-select" multiple>
                             @foreach($locations as $location)
                                 <option value="{{ $location->id }}" 
                                         {{ in_array($location->id, old('allowed_locations', [])) ? 'selected' : '' }}>
@@ -332,17 +332,17 @@
                                 </option>
                             @endforeach
                         </select>
-                        <small class="form-text text-muted">
+                        <div class="form-text text-muted">
                             Leave empty to allow all locations. Hold Ctrl/Cmd to select multiple.
-                        </small>
+                        </div>
                         @error('allowed_locations')
-                            <span class="text-danger">{{ $message }}</span>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="allowed_nodes">Allowed Nodes</label>
-                        <select name="allowed_nodes[]" id="allowed_nodes" class="form-control" multiple>
+                    <div class="mb-4">
+                        <label for="allowed_nodes" class="form-label">Allowed Nodes</label>
+                        <select name="allowed_nodes[]" id="allowed_nodes" class="form-select" multiple>
                             @foreach($nodes as $node)
                                 <option value="{{ $node->id }}" 
                                         {{ in_array($node->id, old('allowed_nodes', [])) ? 'selected' : '' }}>
@@ -350,42 +350,42 @@
                                 </option>
                             @endforeach
                         </select>
-                        <small class="form-text text-muted">
+                        <div class="form-text text-muted">
                             Leave empty to allow all nodes. Hold Ctrl/Cmd to select multiple.
-                        </small>
+                        </div>
                         @error('allowed_nodes')
-                            <span class="text-danger">{{ $message }}</span>
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
                         @enderror
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Plan Status</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Plan Status</h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" id="visible" name="visible" value="1" 
+                <div class="block-content">
+                    <div class="mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="visible" name="visible" value="1" 
                                    {{ old('visible', true) ? 'checked' : '' }}>
-                            <label for="visible" class="strong">Visible to Customers</label>
+                            <label class="form-check-label fw-medium" for="visible">Visible to Customers</label>
                         </div>
-                        <small class="form-text text-muted">
+                        <div class="form-text text-muted">
                             Hidden plans are not shown in the shop but existing orders remain active.
-                        </small>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-footer">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fa fa-save"></i> Create Plan
+            <div class="block block-rounded">
+                <div class="block-content block-content-full">
+                    <button type="submit" class="btn btn-success me-1">
+                        <i class="fa fa-save me-1"></i> Create Plan
                     </button>
-                    <a href="{{ route('admin.shop.plans.index') }}" class="btn btn-default">
-                        <i class="fa fa-arrow-left"></i> Back to Plans
+                    <a href="{{ route('admin.shop.plans.index') }}" class="btn btn-alt-secondary">
+                        <i class="fa fa-arrow-left me-1"></i> Back to Plans
                     </a>
                 </div>
             </div>
@@ -393,73 +393,83 @@
     </div>
     
     <div class="col-md-4">
-        <div class="box converter-section">
-            <div class="box-header with-border">
-                <h3 class="box-title">Resource Converters</h3>
-                <div class="box-tools pull-right">
-                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
+        <div class="block block-rounded converter-section">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">Resource Converters</h3>
+                <div class="block-options">
+                    <button type="button" class="btn-block-option" data-toggle="block-option" data-action="content_toggle">
                         <i class="fa fa-minus"></i>
                     </button>
                 </div>
             </div>
             
-            <div class="box-body">
-                <div class="callout callout-success">
-                    <h4><i class="fa fa-calculator"></i> Quick Converters</h4>
-                    <p class="text-muted">Use these converters to easily calculate resource values.</p>
+            <div class="block-content">
+                <div class="alert alert-success d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-calculator"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading mb-1">Quick Converters</h4>
+                        <p class="mb-0 text-muted">Use these converters to easily calculate resource values.</p>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="memory_converter">Memory (GB)</label>
+                <div class="mb-4">
+                    <label for="memory_converter" class="form-label">Memory (GB)</label>
                     <div class="input-group input-group-sm">
                         <input type="number" id="memory_converter" class="form-control" 
                                placeholder="Enter GB" min="0" step="0.1">
-                        <span class="input-group-addon">GB</span>
+                        <span class="input-group-text">GB</span>
                     </div>
-                    <small class="form-text text-success" id="memory_conversion_result">
+                    <div class="form-text text-success" id="memory_conversion_result">
                         <i class="fa fa-arrow-right"></i> <span id="memory_result_text">Enter GB to see MiB conversion</span>
-                    </small>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="disk_converter">Disk Space (GB)</label>
+                <div class="mb-4">
+                    <label for="disk_converter" class="form-label">Disk Space (GB)</label>
                     <div class="input-group input-group-sm">
                         <input type="number" id="disk_converter" class="form-control" 
                                placeholder="Enter GB" min="0" step="0.1">
-                        <span class="input-group-addon">GB</span>
+                        <span class="input-group-text">GB</span>
                     </div>
-                    <small class="form-text text-success" id="disk_conversion_result">
+                    <div class="form-text text-success" id="disk_conversion_result">
                         <i class="fa fa-arrow-right"></i> <span id="disk_result_text">Enter GB to see MB conversion</span>
-                    </small>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label for="cpu_converter">CPU Cores</label>
+                <div class="mb-4">
+                    <label for="cpu_converter" class="form-label">CPU Cores</label>
                     <div class="input-group input-group-sm">
                         <input type="number" id="cpu_converter" class="form-control" 
                                placeholder="Enter cores" min="0" step="0.1">
-                        <span class="input-group-addon">Cores</span>
+                        <span class="input-group-text">Cores</span>
                     </div>
-                    <small class="form-text text-success" id="cpu_conversion_result">
+                    <div class="form-text text-success" id="cpu_conversion_result">
                         <i class="fa fa-arrow-right"></i> <span id="cpu_result_text">Enter cores to see % conversion</span>
-                    </small>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Plan Guidelines</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">Plan Guidelines</h3>
             </div>
-            <div class="box-body">
-                <div class="callout callout-info">
-                    <h4><i class="fa fa-info-circle"></i> Tips</h4>
-                    <ul>
-                        <li><strong>Pricing:</strong> Add multiple billing cycles for discounts</li>
-                        <li><strong>Resources:</strong> Use converters for easy calculations</li>
-                        <li><strong>Limits:</strong> Set realistic limits based on your infrastructure</li>
-                        <li><strong>Visibility:</strong> Hide plans during testing</li>
-                    </ul>
+            <div class="block-content">
+                <div class="alert alert-info d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-info-circle"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading mb-2">Tips</h4>
+                        <ul class="mb-0">
+                            <li><strong>Pricing:</strong> Add multiple billing cycles for discounts</li>
+                            <li><strong>Resources:</strong> Use converters for easy calculations</li>
+                            <li><strong>Limits:</strong> Set realistic limits based on your infrastructure</li>
+                            <li><strong>Visibility:</strong> Hide plans during testing</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -610,19 +620,19 @@
     }
 
     function updateConverterStatus(element, isValid) {
-        const parent = element.closest('.form-group');
+        const parent = element.closest('.mb-4');
         const helpText = parent.querySelector('.form-text');
         
         if (isValid) {
-            parent.classList.remove('has-error');
-            parent.classList.add('has-success');
+            parent.classList.remove('is-invalid');
+            parent.classList.add('is-valid');
             element.style.borderColor = '#00a65a';
             if (helpText) {
                 helpText.style.color = '#00a65a';
             }
         } else {
-            parent.classList.remove('has-success');
-            parent.classList.add('has-error');
+            parent.classList.remove('is-valid');
+            parent.classList.add('is-invalid');
             element.style.borderColor = '#dd4b39';
             if (helpText) {
                 helpText.style.color = '#dd4b39';
@@ -639,9 +649,9 @@
                 <div class="billing-cycle-item">
                     <div class="row">
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Billing Cycle</label>
-                                <select name="billing_cycles[${cycleCount}][cycle]" class="form-control">
+                            <div class="mb-4">
+                                <label class="form-label">Billing Cycle</label>
+                                <select name="billing_cycles[${cycleCount}][cycle]" class="form-select">
                                     <option value="monthly">Monthly</option>
                                     <option value="quarterly">Quarterly</option>
                                     <option value="semi_annually">Semi-Annually</option>
@@ -651,23 +661,23 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Price ({{ $currencySymbol }})</label>
+                            <div class="mb-4">
+                                <label class="form-label">Price ({{ $currencySymbol }})</label>
                                 <input type="number" name="billing_cycles[${cycleCount}][price]" class="form-control" 
                                        step="0.01" min="0" placeholder="0.00">
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Setup Fee ({{ $currencySymbol }})</label>
+                            <div class="mb-4">
+                                <label class="form-label">Setup Fee ({{ $currencySymbol }})</label>
                                 <input type="number" name="billing_cycles[${cycleCount}][setup_fee]" class="form-control" 
                                        step="0.01" min="0" placeholder="0.00">
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group">
-                                <label>&nbsp;</label>
-                                <button type="button" class="btn btn-danger btn-sm remove-cycle" style="display: block;">
+                            <div class="mb-4">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-danger btn-sm remove-cycle d-block">
                                     <i class="fa fa-minus"></i> Remove
                                 </button>
                             </div>

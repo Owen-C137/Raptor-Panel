@@ -39,245 +39,332 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-8">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Order Details</h3>
+    <div class="col-lg-8">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-info-circle me-1"></i>Order Details
+                </h3>
             </div>
             
-            <div class="box-body">
-                <dl class="dl-horizontal">
-                    <dt>Order ID:</dt>
-                    <dd>#{{ $order->id }}</dd>
-                    
-                    <dt>UUID:</dt>
-                    <dd><code>{{ $order->uuid }}</code></dd>
-                    
-                    <dt>Status:</dt>
-                    <dd>
-                        @switch($order->status)
-                            @case('pending')
-                                <span class="label label-warning">Pending</span>
-                                @break
-                            @case('processing')
-                                <span class="label label-info">Processing</span>
-                                @break
-                            @case('active')
-                                <span class="label label-success">Active</span>
-                                @break
-                            @case('suspended')
-                                <span class="label label-danger">Suspended</span>
-                                @break
-                            @case('cancelled')
-                                <span class="label label-default">Cancelled</span>
-                                @break
-                            @case('terminated')
-                                <span class="label label-danger">Terminated</span>
-                                @break
-                            @default
-                                <span class="label label-default">{{ ucfirst($order->status) }}</span>
-                        @endswitch
-                    </dd>
-                    
-                    <dt>Customer:</dt>
-                    <dd>
-                        <a href="{{ route('admin.users.view', $order->user_id) }}">
-                            {{ $order->user->username }} ({{ $order->user->email }})
-                        </a>
-                    </dd>
-                    
-                    <dt>Plan:</dt>
-                    <dd>
-                        {{ $order->plan->name ?? 'N/A' }}
-                        @if($order->plan && $order->plan->category)
-                            <br><small class="text-muted">Category: {{ $order->plan->category->name }}</small>
-                        @endif
-                    </dd>
-                    
-                    <dt>Amount:</dt>
-                    <dd>
-                        <strong>{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</strong>
-                        @if($order->setup_fee > 0)
-                            <br><small>Setup Fee: {{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</small>
-                        @endif
-                    </dd>
-                    
-                    <dt>Currency:</dt>
-                    <dd>{{ strtoupper($order->currency) }}</dd>
-                    
-                    <dt>Billing Cycle:</dt>
-                    <dd>{{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</dd>
-                    
-                    <dt>Created:</dt>
-                    <dd>{{ $order->created_at->format('F d, Y \a\t g:i A') }}</dd>
-                    
+            <div class="block-content">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Order ID</div>
+                            <div class="fs-lg fw-semibold">#{{ $order->id }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">UUID</div>
+                            <div class="fs-sm"><code>{{ $order->uuid }}</code></div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Status</div>
+                            <div>
+                                @switch($order->status)
+                                    @case('pending')
+                                        <span class="badge bg-warning">Pending</span>
+                                        @break
+                                    @case('processing')
+                                        <span class="badge bg-info">Processing</span>
+                                        @break
+                                    @case('active')
+                                        <span class="badge bg-success">Active</span>
+                                        @break
+                                    @case('suspended')
+                                        <span class="badge bg-danger">Suspended</span>
+                                        @break
+                                    @case('cancelled')
+                                        <span class="badge bg-secondary">Cancelled</span>
+                                        @break
+                                    @case('terminated')
+                                        <span class="badge bg-danger">Terminated</span>
+                                        @break
+                                    @default
+                                        <span class="badge bg-secondary">{{ ucfirst($order->status) }}</span>
+                                @endswitch
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Customer</div>
+                            <div>
+                                <a href="{{ route('admin.users.view', $order->user_id) }}" class="link-fx">
+                                    {{ $order->user->username }}
+                                </a>
+                                <br><small class="text-muted">{{ $order->user->email }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Plan</div>
+                            <div>
+                                {{ $order->plan->name ?? 'N/A' }}
+                                @if($order->plan && $order->plan->category)
+                                    <br><small class="text-muted">Category: {{ $order->plan->category->name }}</small>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Amount</div>
+                            <div>
+                                <strong class="fs-lg">{{ $currencySymbol }}{{ number_format($order->amount, 2) }}</strong>
+                                @if($order->setup_fee > 0)
+                                    <br><small class="text-muted">Setup Fee: {{ $currencySymbol }}{{ number_format($order->setup_fee, 2) }}</small>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Currency</div>
+                            <div>{{ strtoupper($order->currency) }}</div>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Billing Cycle</div>
+                            <div>{{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="p-3">
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Created</div>
+                            <div>{{ $order->created_at->format('F d, Y \a\t g:i A') }}</div>
+                        </div>
+                    </div>
                     @if($order->next_due_at)
-                        <dt>Next Due:</dt>
-                        <dd>
-                            {{ $order->next_due_at->format('F d, Y') }}
-                            @if($order->next_due_at->isPast())
-                                <span class="text-danger">(Overdue)</span>
-                            @endif
-                        </dd>
+                        <div class="col-sm-6">
+                            <div class="p-3">
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Next Due</div>
+                                <div>
+                                    {{ $order->next_due_at->format('F d, Y') }}
+                                    @if($order->next_due_at->isPast())
+                                        <span class="text-danger fw-semibold">(Overdue)</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     @endif
-                    
+                </div>
+                
+                @if($order->last_renewed_at || $order->expires_at || $order->server_id)
+                <div class="row">
                     @if($order->last_renewed_at)
-                        <dt>Last Renewed:</dt>
-                        <dd>{{ $order->last_renewed_at->format('F d, Y \a\t g:i A') }}</dd>
+                        <div class="col-sm-4">
+                            <div class="p-3">
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Last Renewed</div>
+                                <div>{{ $order->last_renewed_at->format('F d, Y \a\t g:i A') }}</div>
+                            </div>
+                        </div>
                     @endif
                     
                     @if($order->expires_at)
-                        <dt>Expires:</dt>
-                        <dd>{{ $order->expires_at->format('F d, Y \a\t g:i A') }}</dd>
+                        <div class="col-sm-4">
+                            <div class="p-3">
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Expires</div>
+                                <div>{{ $order->expires_at->format('F d, Y \a\t g:i A') }}</div>
+                            </div>
+                        </div>
                     @endif
                     
                     @if($order->server_id)
-                        <dt>Server:</dt>
-                        <dd>
-                            <a href="{{ route('admin.servers.view', $order->server_id) }}">
-                                Server #{{ $order->server_id }}
-                            </a>
-                        </dd>
+                        <div class="col-sm-4">
+                            <div class="p-3">
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Server</div>
+                                <div>
+                                    <a href="{{ route('admin.servers.view', $order->server_id) }}" class="link-fx">
+                                        Server #{{ $order->server_id }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     @endif
-                </dl>
+                </div>
+                @endif
             </div>
         </div>
         
         @if($order->server_config)
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Server Configuration</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-server me-1"></i>Server Configuration
+                    </h3>
                 </div>
-                <div class="box-body">
-                    <pre><code>{{ json_encode($order->server_config, JSON_PRETTY_PRINT) }}</code></pre>
+                <div class="block-content">
+                    <pre class="language-json"><code>{{ json_encode($order->server_config, JSON_PRETTY_PRINT) }}</code></pre>
                 </div>
             </div>
         @endif
 
         @if($order->hasBillingDetails())
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Billing Information</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-credit-card me-1"></i>Billing Information
+                    </h3>
                 </div>
-                <div class="box-body">
-                    <dl class="dl-horizontal">
+                <div class="block-content">
+                    <div class="row">
                         @if($order->getCustomerName())
-                            <dt>Customer Name:</dt>
-                            <dd>{{ $order->getCustomerName() }}</dd>
+                            <div class="col-sm-6">
+                                <div class="p-3">
+                                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Customer Name</div>
+                                    <div>{{ $order->getCustomerName() }}</div>
+                                </div>
+                            </div>
                         @endif
                         
                         @if($order->getCustomerEmail())
-                            <dt>Email:</dt>
-                            <dd>{{ $order->getCustomerEmail() }}</dd>
+                            <div class="col-sm-6">
+                                <div class="p-3">
+                                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Email</div>
+                                    <div>{{ $order->getCustomerEmail() }}</div>
+                                </div>
+                            </div>
                         @endif
                         
                         @if(!empty($order->billing_details['company']))
-                            <dt>Company:</dt>
-                            <dd>{{ $order->billing_details['company'] }}</dd>
-                        @endif
-                        
-                        @if($order->getBillingAddress())
-                            <dt>Billing Address:</dt>
-                            <dd>
-                                <address style="white-space: pre-line;">{{ $order->getBillingAddress() }}</address>
-                            </dd>
+                            <div class="col-sm-6">
+                                <div class="p-3">
+                                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Company</div>
+                                    <div>{{ $order->billing_details['company'] }}</div>
+                                </div>
+                            </div>
                         @endif
                         
                         @if($order->payment_method)
-                            <dt>Payment Method:</dt>
-                            <dd>{{ ucfirst($order->payment_method) }}</dd>
+                            <div class="col-sm-6">
+                                <div class="p-3">
+                                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Payment Method</div>
+                                    <div>{{ ucfirst($order->payment_method) }}</div>
+                                </div>
+                            </div>
                         @endif
-                    </dl>
+                    </div>
+                        
+                    @if($order->getBillingAddress())
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="p-3">
+                                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Billing Address</div>
+                                    <address class="mb-0" style="white-space: pre-line;">{{ $order->getBillingAddress() }}</address>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                 </div>
             </div>
         @endif
     </div>
     
-    <div class="col-md-4">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Actions</h3>
+    <div class="col-lg-4">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-cogs me-1"></i>Actions
+                </h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 @if($order->status === 'pending')
-                    <button class="btn btn-success btn-block" onclick="updateOrderStatus('processing')">
-                        <i class="fa fa-play"></i> Start Processing
+                    <button class="btn btn-success w-100 mb-2" onclick="updateOrderStatus('processing')">
+                        <i class="fa fa-play me-1"></i> Start Processing
                     </button>
                 @endif
                 
                 @if($order->status === 'processing')
-                    <button class="btn btn-success btn-block" onclick="updateOrderStatus('active')">
-                        <i class="fa fa-check"></i> Activate Order
+                    <button class="btn btn-success w-100 mb-2" onclick="updateOrderStatus('active')">
+                        <i class="fa fa-check me-1"></i> Activate Order
                     </button>
                 @endif
                 
                 @if($order->status === 'active')
-                    <button class="btn btn-warning btn-block" onclick="updateOrderStatus('suspended')">
-                        <i class="fa fa-pause"></i> Suspend Order
+                    <button class="btn btn-warning w-100 mb-2" onclick="updateOrderStatus('suspended')">
+                        <i class="fa fa-pause me-1"></i> Suspend Order
                     </button>
                 @endif
                 
                 @if($order->status === 'suspended')
-                    <button class="btn btn-success btn-block" onclick="updateOrderStatus('active')">
-                        <i class="fa fa-play"></i> Unsuspend Order
+                    <button class="btn btn-success w-100 mb-2" onclick="updateOrderStatus('active')">
+                        <i class="fa fa-play me-1"></i> Unsuspend Order
                     </button>
                 @endif
                 
                 @if(in_array($order->status, ['active', 'suspended']))
-                    <button class="btn btn-danger btn-block" onclick="updateOrderStatus('terminated')">
-                        <i class="fa fa-stop"></i> Terminate Order
+                    <button class="btn btn-danger w-100 mb-2" onclick="updateOrderStatus('terminated')">
+                        <i class="fa fa-stop me-1"></i> Terminate Order
                     </button>
                 @endif
                 
                 <hr>
                 
-                <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-default btn-block">
-                    <i class="fa fa-arrow-left"></i> Back to Orders
+                <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-outline-secondary w-100">
+                    <i class="fa fa-arrow-left me-1"></i> Back to Orders
                 </a>
             </div>
         </div>
         
         @if($order->payments && $order->payments->count() > 0)
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Payment History</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-history me-1"></i>Payment History
+                    </h3>
                 </div>
                 
-                <div class="box-body">
+                <div class="block-content">
                     @foreach($order->payments->take(5) as $payment)
-                        <div class="media">
-                            <div class="media-body">
-                                <h5 class="media-heading">
+                        <div class="d-flex">
+                            <div class="flex-grow-1">
+                                <div class="fs-sm fw-semibold">
                                     {{ $currencySymbol }}{{ number_format($payment->amount, 2) }}
-                                    <small class="text-muted">{{ $payment->created_at->format('M d, Y') }}</small>
-                                </h5>
-                                <p class="margin-bottom-5">
+                                    <small class="text-muted ms-2">{{ $payment->created_at->format('M d, Y') }}</small>
+                                </div>
+                                <div class="mt-1">
                                     @switch($payment->status)
                                         @case('completed')
-                                            <span class="label label-success">Completed</span>
+                                            <span class="badge bg-success">Completed</span>
                                             @break
                                         @case('pending')
-                                            <span class="label label-warning">Pending</span>
+                                            <span class="badge bg-warning">Pending</span>
                                             @break
                                         @case('failed')
-                                            <span class="label label-danger">Failed</span>
+                                            <span class="badge bg-danger">Failed</span>
                                             @break
                                         @case('cancelled')
-                                            <span class="label label-default">Cancelled</span>
+                                            <span class="badge bg-secondary">Cancelled</span>
                                             @break
                                         @default
-                                            <span class="label label-default">{{ ucfirst($payment->status) }}</span>
+                                            <span class="badge bg-secondary">{{ ucfirst($payment->status) }}</span>
                                     @endswitch
-                                </p>
+                                </div>
                             </div>
                         </div>
-                        @if(!$loop->last)<hr>@endif
+                        @if(!$loop->last)<hr class="my-3">@endif
                     @endforeach
                     
                     @if($order->payments->count() > 5)
-                        <div class="text-center">
-                            <a href="{{ route('admin.shop.payments.index', ['order' => $order->id]) }}" class="btn btn-sm btn-default">
+                        <div class="text-center mt-3">
+                            <a href="{{ route('admin.shop.payments.index', ['order' => $order->id]) }}" class="btn btn-sm btn-outline-primary">
                                 View All Payments
                             </a>
                         </div>
@@ -294,23 +381,28 @@
     <script>
         function updateOrderStatus(newStatus) {
             if (confirm('Are you sure you want to change the order status to ' + newStatus + '?')) {
-                $.ajax({
-                    url: '{{ route('admin.shop.orders.update-status', $order->id) }}',
-                    type: 'POST',
-                    data: {
-                        status: newStatus,
-                        _token: '{{ csrf_token() }}'
+                fetch('{{ route('admin.shop.orders.update-status', $order->id) }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
                     },
-                    success: function(response) {
-                        if (response.success) {
-                            location.reload();
-                        } else {
-                            alert('Error updating status: ' + response.message);
-                        }
-                    },
-                    error: function() {
-                        alert('An error occurred while updating the order status.');
+                    body: JSON.stringify({
+                        status: newStatus
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating status: ' + data.message);
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred while updating the order status.');
                 });
             }
         }

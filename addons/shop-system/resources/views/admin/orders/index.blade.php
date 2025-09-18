@@ -36,13 +36,15 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Order List</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-shopping-cart me-1"></i>Order Management
+                </h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 <!-- Search and Filter Form -->
                 <div class="row">
                     <div class="col-md-4">
@@ -50,21 +52,19 @@
                             <div class="input-group">
                                 <input type="text" name="search" class="form-control" placeholder="Search orders..." 
                                        value="{{ $search }}" autocomplete="off">
-                                <div class="input-group-btn">
-                                    <button type="submit" class="btn btn-default">
-                                        <i class="fa fa-search"></i>
-                                    </button>
-                                    @if($search)
-                                        <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-default">
-                                            <i class="fa fa-times"></i>
-                                        </a>
-                                    @endif
-                                </div>
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                                @if($search)
+                                    <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-outline-secondary">
+                                        <i class="fa fa-times"></i>
+                                    </a>
+                                @endif
                             </div>
                         </form>
                     </div>
-                    <div class="col-md-3">
-                        <select class="form-control" onchange="window.location.href=this.value">
+                    <div class="col-md-4">
+                        <select class="form-select" onchange="window.location.href=this.value">
                             <option value="{{ route('admin.shop.orders.index') }}">All Status</option>
                             @foreach($statuses as $key => $label)
                                 <option value="{{ route('admin.shop.orders.index', ['status' => $key]) }}"
@@ -74,8 +74,8 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3">
-                        <select class="form-control" onchange="window.location.href=this.value">
+                    <div class="col-md-4">
+                        <select class="form-select" onchange="window.location.href=this.value">
                             <option value="{{ route('admin.shop.orders.index') }}">All Users</option>
                             @foreach($users as $u)
                                 <option value="{{ route('admin.shop.orders.index', ['user' => $u->id]) }}"
@@ -90,7 +90,7 @@
             
             @if($orders->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover table-vcenter">
                         <thead>
                             <tr>
                                 <th>Order ID</th>
@@ -127,7 +127,7 @@
                                         @if($order->server)
                                             <div class="server-links-container">
                                                 <a href="{{ route('admin.servers.view', $order->server->id) }}" 
-                                                   class="btn btn-xs btn-info server-link" 
+                                                   class="btn btn-sm btn-info server-link" 
                                                    title="Manage Server">
                                                     <i class="fa fa-server"></i> {{ $order->server->name }}
                                                 </a>
@@ -146,29 +146,29 @@
                                     <td>
                                         @switch($order->status)
                                             @case('pending')
-                                                <span class="label label-warning">Pending</span>
+                                                <span class="badge bg-warning">Pending</span>
                                                 @break
                                             @case('processing')
-                                                <span class="label label-info">Processing</span>
+                                                <span class="badge bg-info">Processing</span>
                                                 @break
                                             @case('active')
-                                                <span class="label label-success">Active</span>
+                                                <span class="badge bg-success">Active</span>
                                                 @break
                                             @case('suspended')
-                                                <span class="label label-danger">Suspended</span>
+                                                <span class="badge bg-danger">Suspended</span>
                                                 @break
                                             @case('cancelled')
-                                                <span class="label label-default">Cancelled</span>
+                                                <span class="badge bg-secondary">Cancelled</span>
                                                 @break
                                             @case('terminated')
-                                                <span class="label label-danger">Terminated</span>
+                                                <span class="badge bg-danger">Terminated</span>
                                                 @break
                                             @default
-                                                <span class="label label-default">{{ ucfirst($order->status) }}</span>
+                                                <span class="badge bg-secondary">{{ ucfirst($order->status) }}</span>
                                         @endswitch
                                     </td>
                                     <td>
-                                        <span class="label label-default">{{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</span>
+                                        <span class="badge bg-outline-secondary">{{ ucfirst(str_replace('_', ' ', $order->billing_cycle)) }}</span>
                                     </td>
                                     <td>
                                         @if($order->next_due_at)
@@ -186,11 +186,11 @@
                                     </td>
                                     <td>
                                         <a href="{{ route('admin.shop.orders.show', $order->id) }}" 
-                                           class="btn btn-xs btn-primary">
+                                           class="btn btn-sm btn-primary">
                                             <i class="fa fa-eye"></i> View
                                         </a>
                                         <button type="button" 
-                                                class="btn btn-xs btn-danger"
+                                                class="btn btn-sm btn-danger"
                                                 onclick="showDeleteOrderModal({{ $order->id }}, '{{ addslashes($order->user->username) }}', {{ $order->server ? 'true' : 'false' }}, '{{ $order->server ? addslashes($order->server->name) : '' }}')"
                                                 data-server-count="{{ $order->server ? 1 : 0 }}">
                                             <i class="fa fa-trash"></i> Delete
@@ -202,16 +202,20 @@
                     </table>
                 </div>
                 
-                <div class="box-footer">
+                <div class="block-content block-content-full">
                     <div class="row">
-                        <div class="col-md-12 text-center">
+                        <div class="col-12 text-center">
                             {{ $orders->appends(request()->query())->links() }}
                         </div>
                     </div>
                 </div>
             @else
-                <div class="box-body text-center">
-                    <p>No orders found matching your criteria.</p>
+                <div class="block-content text-center">
+                    <div class="py-4">
+                        <i class="fa fa-shopping-cart fa-2x text-muted mb-3"></i>
+                        <h4 class="text-muted">No orders found</h4>
+                        <p class="text-muted">No orders found matching your criteria.</p>
+                    </div>
                 </div>
             @endif
         </div>
@@ -219,47 +223,62 @@
 </div>
 
 <!-- Delete Order Modal -->
-<div class="modal fade" id="deleteOrderModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="deleteOrderModal" tabindex="-1" role="dialog" aria-labelledby="deleteOrderModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">
-                    <i class="fa fa-trash text-danger"></i> Delete Order
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <p><strong>Are you sure you want to delete this order?</strong></p>
-                <p>Order: <span id="delete-order-details"></span></p>
-                
-                <div id="server-deletion-section" style="display: none;">
-                    <hr>
-                    <div class="alert alert-warning">
-                        <h5><i class="fa fa-server"></i> Server Connected</h5>
-                        <p>This order has an associated server: <strong id="delete-server-name"></strong></p>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" id="delete-server-checkbox" name="delete_server" value="1" checked>
-                            <label for="delete-server-checkbox" class="strong">Also delete the associated server</label>
-                        </div>
-                        <small class="text-muted">
-                            <i class="fa fa-warning"></i> 
-                            If unchecked, the server will remain but will no longer be linked to this order.
-                        </small>
+            <div class="block block-rounded block-transparent mb-0">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-trash text-danger me-1"></i> Delete Order
+                    </h3>
+                    <div class="block-options">
+                        <button type="button" class="btn-block-option" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="fa fa-fw fa-times"></i>
+                        </button>
                     </div>
                 </div>
-                
-                <div class="alert alert-danger">
-                    <i class="fa fa-exclamation-triangle"></i>
-                    <strong>Warning:</strong> This action cannot be undone.
+                <div class="block-content fs-sm">
+                    <p><strong>Are you sure you want to delete this order?</strong></p>
+                    <p>Order: <span id="delete-order-details"></span></p>
+                    
+                    <div id="server-deletion-section" style="display: none;">
+                        <hr>
+                        <div class="alert alert-warning d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-server"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h5 class="alert-heading">Server Connected</h5>
+                                <p class="mb-2">This order has an associated server: <strong id="delete-server-name"></strong></p>
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="delete-server-checkbox" name="delete_server" value="1" checked>
+                                    <label class="form-check-label fw-medium" for="delete-server-checkbox">
+                                        Also delete the associated server
+                                    </label>
+                                </div>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fa fa-warning"></i> 
+                                    If unchecked, the server will remain but will no longer be linked to this order.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-danger d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="fa fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <strong>Warning:</strong> This action cannot be undone.
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirm-delete-order-btn">
-                    <i class="fa fa-trash"></i> <span id="delete-order-btn-text">Delete Order</span>
-                </button>
+                <div class="block-content block-content-full text-end bg-body-light">
+                    <button type="button" class="btn btn-sm btn-alt-secondary me-1" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-danger" id="confirm-delete-order-btn">
+                        <i class="fa fa-trash"></i> <span id="delete-order-btn-text">Delete Order</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -274,57 +293,79 @@
         function showDeleteOrderModal(orderId, username, hasServer, serverName) {
             currentOrderId = orderId;
             
-            $('#delete-order-details').text('Order #' + orderId + ' for ' + username);
+            document.getElementById('delete-order-details').textContent = 'Order #' + orderId + ' for ' + username;
             
             if (hasServer) {
-                $('#delete-server-name').text(serverName);
-                $('#server-deletion-section').show();
+                document.getElementById('delete-server-name').textContent = serverName;
+                document.getElementById('server-deletion-section').style.display = 'block';
             } else {
-                $('#server-deletion-section').hide();
+                document.getElementById('server-deletion-section').style.display = 'none';
             }
             
             // Update button text based on initial checkbox state
             updateDeleteOrderButtonText();
             
-            $('#deleteOrderModal').modal('show');
+            const modal = new bootstrap.Modal(document.getElementById('deleteOrderModal'));
+            modal.show();
         }
 
         function updateDeleteOrderButtonText() {
-            const deleteServerChecked = $('#delete-server-checkbox').is(':checked');
-            const hasServer = $('#server-deletion-section').is(':visible');
+            const deleteServerChecked = document.getElementById('delete-server-checkbox') ? 
+                document.getElementById('delete-server-checkbox').checked : false;
+            const hasServer = document.getElementById('server-deletion-section').style.display !== 'none';
             
             let buttonText = 'Delete Order';
             if (hasServer && deleteServerChecked) {
                 buttonText = 'Delete Order & Server';
             }
             
-            $('#delete-order-btn-text').text(buttonText);
+            document.getElementById('delete-order-btn-text').textContent = buttonText;
         }
 
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
             // Update button text when checkbox changes
-            $('#delete-server-checkbox').on('change', function() {
-                updateDeleteOrderButtonText();
-            });
+            const deleteServerCheckbox = document.getElementById('delete-server-checkbox');
+            if (deleteServerCheckbox) {
+                deleteServerCheckbox.addEventListener('change', function() {
+                    updateDeleteOrderButtonText();
+                });
+            }
 
             // Handle delete confirmation
-            $('#confirm-delete-order-btn').on('click', function() {
+            document.getElementById('confirm-delete-order-btn').addEventListener('click', function() {
                 if (!currentOrderId) return;
                 
-                const deleteServer = $('#delete-server-checkbox').is(':checked');
+                const deleteServerCheckbox = document.getElementById('delete-server-checkbox');
+                const deleteServer = deleteServerCheckbox ? deleteServerCheckbox.checked : false;
                 
                 // Create form and submit
-                const form = $('<form>')
-                    .attr('method', 'POST')
-                    .attr('action', `/admin/shop/orders/${currentOrderId}`)
-                    .append($('<input>').attr('type', 'hidden').attr('name', '_token').val('{{ csrf_token() }}'))
-                    .append($('<input>').attr('type', 'hidden').attr('name', '_method').val('DELETE'));
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/shop/orders/${currentOrderId}`;
+                
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+                
+                // Add method override
+                const methodInput = document.createElement('input');
+                methodInput.type = 'hidden';
+                methodInput.name = '_method';
+                methodInput.value = 'DELETE';
+                form.appendChild(methodInput);
                 
                 if (deleteServer) {
-                    form.append($('<input>').attr('type', 'hidden').attr('name', 'delete_server').val('1'));
+                    const deleteServerInput = document.createElement('input');
+                    deleteServerInput.type = 'hidden';
+                    deleteServerInput.name = 'delete_server';
+                    deleteServerInput.value = '1';
+                    form.appendChild(deleteServerInput);
                 }
                 
-                $('body').append(form);
+                document.body.appendChild(form);
                 form.submit();
             });
         });
@@ -336,18 +377,29 @@
     .server-links-container .server-link {
         text-decoration: none;
         color: #fff;
-        transition: all 0.2s ease;
+        transition: all 0.15s ease-in-out;
+        display: inline-block;
     }
     
     .server-links-container .server-link:hover {
         text-decoration: none;
+        color: #fff;
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
     }
     
     .server-links-container .server-link:focus {
         text-decoration: none;
         color: #fff;
+    }
+
+    .table-vcenter td {
+        vertical-align: middle;
+    }
+
+    .badge {
+        font-weight: 600;
+        font-size: 0.875em;
     }
 </style>
 @endpush

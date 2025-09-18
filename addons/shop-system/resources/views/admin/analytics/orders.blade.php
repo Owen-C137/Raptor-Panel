@@ -40,16 +40,18 @@
 @section('content')
 <div class="row">
     <!-- Period Selector -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Orders Period</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-calendar-alt me-1"></i>Orders Period
+                </h3>
             </div>
-            <div class="box-body">
-                <form method="GET" action="{{ route('admin.shop.analytics.orders') }}" class="form-inline">
-                    <div class="form-group">
-                        <label for="period">Period:</label>
-                        <select name="period" id="period" class="form-control" onchange="this.form.submit()">
+            <div class="block-content">
+                <form method="GET" action="{{ route('admin.shop.analytics.orders') }}" class="row g-3">
+                    <div class="col-auto">
+                        <label for="period" class="form-label">Period:</label>
+                        <select name="period" id="period" class="form-select" onchange="this.form.submit()">
                             <option value="7" {{ $period == '7' ? 'selected' : '' }}>Last 7 days</option>
                             <option value="30" {{ $period == '30' ? 'selected' : '' }}>Last 30 days</option>
                             <option value="90" {{ $period == '90' ? 'selected' : '' }}>Last 90 days</option>
@@ -65,48 +67,34 @@
 <div class="row">
     <!-- Total Orders -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Total Orders</h3>
-            </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-blue">
-                        <i class="fa fa-shopping-cart"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Orders</span>
-                        <span class="info-box-number">{{ number_format($orderData['total'] ?? 0) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar bg-blue" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-description">Last {{ $period }} days</span>
-                    </div>
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full">
+                <div class="fs-2 fw-bold text-primary">
+                    <i class="fa fa-shopping-cart"></i>
                 </div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Total Orders</div>
+                <div class="fs-3 fw-bold text-dark">{{ number_format($orderData['total'] ?? 0) }}</div>
+                <div class="progress mb-2" style="height: 5px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                </div>
+                <div class="fs-sm text-muted">Last {{ $period }} days</div>
             </div>
         </div>
     </div>
 
     <!-- Daily Average -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Daily Average</h3>
-            </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-green">
-                        <i class="fa fa-calendar-day"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Average Daily Orders</span>
-                        <span class="info-box-number">{{ number_format($orderData['average_daily'] ?? 0, 1) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar bg-green" style="width: 85%"></div>
-                        </div>
-                        <span class="progress-description">Per day over {{ $period }} days</span>
-                    </div>
+        <div class="block block-rounded text-center">
+            <div class="block-content block-content-full">
+                <div class="fs-2 fw-bold text-success">
+                    <i class="fa fa-calendar-day"></i>
                 </div>
+                <div class="fs-sm fw-semibold text-uppercase text-muted">Average Daily Orders</div>
+                <div class="fs-3 fw-bold text-dark">{{ number_format($orderData['average_daily'] ?? 0, 1) }}</div>
+                <div class="progress mb-2" style="height: 5px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                </div>
+                <div class="fs-sm text-muted">Per day over {{ $period }} days</div>
             </div>
         </div>
     </div>
@@ -114,22 +102,31 @@
 
 @if(isset($orderData['status_breakdown']) && count($orderData['status_breakdown']) > 0)
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Orders by Status</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-pie me-1"></i>Orders by Status
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="row">
+            <div class="block-content">
+                <div class="row g-3">
                     @foreach($orderData['status_breakdown'] as $status => $count)
                     <div class="col-md-3">
-                        <div class="info-box">
-                            <span class="info-box-icon 
-                                @if($status == 'active') bg-green
-                                @elseif($status == 'pending') bg-yellow  
-                                @elseif($status == 'suspended') bg-orange
-                                @elseif($status == 'terminated') bg-red
-                                @else bg-gray
+                        <div class="block block-rounded text-center py-3
+                            @if($status == 'active') bg-success-light
+                            @elseif($status == 'pending') bg-warning-light
+                            @elseif($status == 'suspended') bg-danger-light
+                            @elseif($status == 'terminated') bg-dark-light
+                            @else bg-secondary-light
+                            @endif
+                        ">
+                            <div class="fs-1 fw-bold 
+                                @if($status == 'active') text-success
+                                @elseif($status == 'pending') text-warning
+                                @elseif($status == 'suspended') text-danger
+                                @elseif($status == 'terminated') text-dark
+                                @else text-secondary
                                 @endif
                             ">
                                 <i class="fa fa-
@@ -140,11 +137,9 @@
                                     @else question-circle
                                     @endif
                                 "></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">{{ ucfirst($status) }}</span>
-                                <span class="info-box-number">{{ number_format($count) }}</span>
                             </div>
+                            <div class="fs-sm fw-semibold text-uppercase text-muted mt-2">{{ ucfirst($status) }}</div>
+                            <div class="fs-3 fw-bold text-dark">{{ number_format($count) }}</div>
                         </div>
                     </div>
                     @endforeach
@@ -157,28 +152,40 @@
 
 <div class="row">
     <!-- Quick Actions -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Quick Actions</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-bolt me-1"></i>Quick Actions
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="btn-group" role="group">
-                    <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-default">
-                        <i class="fa fa-arrow-left"></i> Back to Analytics Overview
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-success">
-                        <i class="fa fa-money"></i> View Revenue Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-info">
-                        <i class="fa fa-users"></i> View Customers Report
-                    </a>
-                    <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-primary">
-                        <i class="fa fa-list"></i> Manage Orders
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-warning">
-                        <i class="fa fa-download"></i> Export All Data
-                    </a>
+            <div class="block-content">
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-outline-secondary">
+                            <i class="fa fa-arrow-left me-1"></i>Back to Analytics Overview
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-outline-success">
+                            <i class="fa fa-dollar-sign me-1"></i>View Revenue Report
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-outline-info">
+                            <i class="fa fa-users me-1"></i>View Customers Report
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.orders.index') }}" class="btn btn-outline-primary">
+                            <i class="fa fa-list me-1"></i>Manage Orders
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-outline-warning">
+                            <i class="fa fa-download me-1"></i>Export All Data
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -187,46 +194,60 @@
 
 @if(isset($orderData['recent_orders']) && count($orderData['recent_orders']) > 0)
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Recent Orders</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-list me-1"></i>Recent Orders
+                </h3>
             </div>
-            <div class="box-body">
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Plan</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($orderData['recent_orders'] as $order)
-                        <tr>
-                            <td>{{ $order['id'] ?? 'N/A' }}</td>
-                            <td>{{ $order['customer'] ?? 'Unknown' }}</td>
-                            <td>{{ $order['plan'] ?? 'N/A' }}</td>
-                            <td>{{ $currencySymbol }}{{ number_format($order['amount'] ?? 0, 2) }}</td>
-                            <td>
-                                <span class="label 
-                                    @if($order['status'] == 'active') label-success
-                                    @elseif($order['status'] == 'pending') label-warning
-                                    @elseif($order['status'] == 'suspended') label-danger
-                                    @else label-default
-                                    @endif
-                                ">
-                                    {{ ucfirst($order['status'] ?? 'unknown') }}
-                                </span>
-                            </td>
-                            <td>{{ $order['date'] ?? 'N/A' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="block-content block-content-full">
+                <div class="table-responsive">
+                    <table class="table table-hover table-vcenter">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Plan</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($orderData['recent_orders'] as $order)
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold"># {{ $order['id'] ?? 'N/A' }}</div>
+                                </td>
+                                <td>
+                                    <div class="fw-semibold">{{ $order['customer'] ?? 'Unknown' }}</div>
+                                </td>
+                                <td>
+                                    <div>{{ $order['plan'] ?? 'N/A' }}</div>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-success">{{ $currencySymbol }}{{ number_format($order['amount'] ?? 0, 2) }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge 
+                                        @if($order['status'] == 'active') bg-success
+                                        @elseif($order['status'] == 'pending') bg-warning
+                                        @elseif($order['status'] == 'suspended') bg-danger
+                                        @else bg-secondary
+                                        @endif
+                                    ">
+                                        {{ ucfirst($order['status'] ?? 'unknown') }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fs-sm">{{ $order['date'] ?? 'N/A' }}</div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

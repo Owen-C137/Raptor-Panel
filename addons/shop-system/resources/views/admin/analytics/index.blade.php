@@ -37,16 +37,18 @@
 @section('content')
 <div class="row">
     <!-- Period Selector -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Analytics Period</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-calendar-alt me-1"></i>Analytics Period
+                </h3>
             </div>
-            <div class="box-body">
-                <form method="GET" action="{{ route('admin.shop.analytics.index') }}" class="form-inline">
-                    <div class="form-group">
-                        <label for="period">Period:</label>
-                        <select name="period" id="period" class="form-control" onchange="this.form.submit()">
+            <div class="block-content">
+                <form method="GET" action="{{ route('admin.shop.analytics.index') }}" class="row g-3">
+                    <div class="col-auto">
+                        <label for="period" class="form-label">Period:</label>
+                        <select name="period" id="period" class="form-select" onchange="this.form.submit()">
                             <option value="7" {{ $period == '7' ? 'selected' : '' }}>Last 7 days</option>
                             <option value="30" {{ $period == '30' ? 'selected' : '' }}>Last 30 days</option>
                             <option value="90" {{ $period == '90' ? 'selected' : '' }}>Last 90 days</option>
@@ -61,56 +63,66 @@
 
 <div class="row">
     <!-- Revenue Analytics -->
-    <div class="col-md-6 col-sm-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Revenue Analytics</h3>
+    <div class="col-md-6">
+        <div class="block block-rounded text-center">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-line me-1"></i>Revenue Analytics
+                </h3>
             </div>
-            <div class="box-body">
+            <div class="block-content block-content-full">
                 @if(isset($analytics['revenue']))
-                <div class="info-box">
-                    <span class="info-box-icon bg-green">
-                        <i class="fa fa-money"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Revenue</span>
-                        <span class="info-box-number">{{ $currencySymbol }}{{ number_format($analytics['revenue']['total'] ?? 0, 2) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-description">Last {{ $period }} days</span>
+                <div class="py-3">
+                    <div class="fs-2 fw-bold text-success mb-2">
+                        <i class="fa fa-dollar-sign"></i>
                     </div>
+                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Total Revenue</div>
+                    <div class="fs-3 fw-bold text-dark">{{ $currencySymbol }}{{ number_format($analytics['revenue']['total'] ?? 0, 2) }}</div>
+                    <div class="progress mt-3 mb-2" style="height: 5px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <div class="fs-sm text-muted">Last {{ $period }} days</div>
                 </div>
                 @else
-                <p class="text-muted">No revenue data available for the selected period.</p>
+                <div class="py-4">
+                    <div class="text-muted">
+                        <i class="fa fa-info-circle fs-2 mb-2"></i>
+                        <div>No revenue data available for the selected period.</div>
+                    </div>
+                </div>
                 @endif
             </div>
         </div>
     </div>
 
     <!-- Orders Analytics -->
-    <div class="col-md-6 col-sm-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Orders Analytics</h3>
+    <div class="col-md-6">
+        <div class="block block-rounded text-center">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-shopping-cart me-1"></i>Orders Analytics
+                </h3>
             </div>
-            <div class="box-body">
+            <div class="block-content block-content-full">
                 @if(isset($analytics['orders']))
-                <div class="info-box">
-                    <span class="info-box-icon bg-blue">
+                <div class="py-3">
+                    <div class="fs-2 fw-bold text-primary mb-2">
                         <i class="fa fa-shopping-cart"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Orders</span>
-                        <span class="info-box-number">{{ number_format($analytics['orders']['count'] ?? 0) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-description">Last {{ $period }} days</span>
                     </div>
+                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Total Orders</div>
+                    <div class="fs-3 fw-bold text-dark">{{ number_format($analytics['orders']['count'] ?? 0) }}</div>
+                    <div class="progress mt-3 mb-2" style="height: 5px;">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <div class="fs-sm text-muted">Last {{ $period }} days</div>
                 </div>
                 @else
-                <p class="text-muted">No order data available for the selected period.</p>
+                <div class="py-4">
+                    <div class="text-muted">
+                        <i class="fa fa-info-circle fs-2 mb-2"></i>
+                        <div>No order data available for the selected period.</div>
+                    </div>
+                </div>
                 @endif
             </div>
         </div>
@@ -119,56 +131,66 @@
 
 <div class="row">
     <!-- Category Analytics -->
-    <div class="col-md-6 col-sm-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Category Analytics</h3>
+    <div class="col-md-6">
+        <div class="block block-rounded text-center">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-tags me-1"></i>Category Analytics
+                </h3>
             </div>
-            <div class="box-body">
+            <div class="block-content block-content-full">
                 @if(isset($analytics['categories']))
-                <div class="info-box">
-                    <span class="info-box-icon bg-yellow">
+                <div class="py-3">
+                    <div class="fs-2 fw-bold text-warning mb-2">
                         <i class="fa fa-tags"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Active Categories</span>
-                        <span class="info-box-number">{{ number_format($analytics['categories']['count'] ?? 0) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-description">Currently active</span>
                     </div>
+                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Active Categories</div>
+                    <div class="fs-3 fw-bold text-dark">{{ number_format($analytics['categories']['count'] ?? 0) }}</div>
+                    <div class="progress mt-3 mb-2" style="height: 5px;">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <div class="fs-sm text-muted">Currently active</div>
                 </div>
                 @else
-                <p class="text-muted">No category data available.</p>
+                <div class="py-4">
+                    <div class="text-muted">
+                        <i class="fa fa-info-circle fs-2 mb-2"></i>
+                        <div>No category data available.</div>
+                    </div>
+                </div>
                 @endif
             </div>
         </div>
     </div>
 
     <!-- Customer Analytics -->
-    <div class="col-md-6 col-sm-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Customer Analytics</h3>
+    <div class="col-md-6">
+        <div class="block block-rounded text-center">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-users me-1"></i>Customer Analytics
+                </h3>
             </div>
-            <div class="box-body">
+            <div class="block-content block-content-full">
                 @if(isset($analytics['customers']))
-                <div class="info-box">
-                    <span class="info-box-icon bg-red">
+                <div class="py-3">
+                    <div class="fs-2 fw-bold text-danger mb-2">
                         <i class="fa fa-users"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Customers</span>
-                        <span class="info-box-number">{{ number_format($analytics['customers']['count'] ?? 0) }}</span>
-                        <div class="progress">
-                            <div class="progress-bar" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-description">All time</span>
                     </div>
+                    <div class="fs-sm fw-semibold text-uppercase text-muted mb-1">Total Customers</div>
+                    <div class="fs-3 fw-bold text-dark">{{ number_format($analytics['customers']['count'] ?? 0) }}</div>
+                    <div class="progress mt-3 mb-2" style="height: 5px;">
+                        <div class="progress-bar bg-danger" role="progressbar" style="width: 100%"></div>
+                    </div>
+                    <div class="fs-sm text-muted">All time</div>
                 </div>
                 @else
-                <p class="text-muted">No customer data available.</p>
+                <div class="py-4">
+                    <div class="text-muted">
+                        <i class="fa fa-info-circle fs-2 mb-2"></i>
+                        <div>No customer data available.</div>
+                    </div>
+                </div>
                 @endif
             </div>
         </div>
@@ -177,25 +199,39 @@
 
 <div class="row">
     <!-- Quick Actions -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Detailed Reports</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-bar me-1"></i>Detailed Reports
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="btn-group" role="group">
-                    <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-primary">
-                        <i class="fa fa-chart-line"></i> Revenue Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-info">
-                        <i class="fa fa-shopping-cart"></i> Orders Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-success">
-                        <i class="fa fa-users"></i> Customers Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-warning">
-                        <i class="fa fa-download"></i> Export Data
-                    </a>
+            <div class="block-content">
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-3">
+                        <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-outline-primary w-100 py-3">
+                            <div class="fs-3 mb-1"><i class="fa fa-chart-line"></i></div>
+                            <div class="fw-semibold">Revenue Report</div>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-outline-info w-100 py-3">
+                            <div class="fs-3 mb-1"><i class="fa fa-shopping-cart"></i></div>
+                            <div class="fw-semibold">Orders Report</div>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-outline-success w-100 py-3">
+                            <div class="fs-3 mb-1"><i class="fa fa-users"></i></div>
+                            <div class="fw-semibold">Customers Report</div>
+                        </a>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <a href="{{ route('admin.shop.analytics.export') }}" class="btn btn-outline-warning w-100 py-3">
+                            <div class="fs-3 mb-1"><i class="fa fa-download"></i></div>
+                            <div class="fw-semibold">Export Data</div>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

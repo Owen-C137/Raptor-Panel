@@ -39,13 +39,15 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Revenue Analytics</h3>
-                <div class="box-tools pull-right">
-                    <form method="GET" style="display: inline-block;">
-                        <select name="period" onchange="this.form.submit()" class="form-control" style="width: auto; display: inline-block;">
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-dollar-sign me-1"></i>Revenue Analytics
+                </h3>
+                <div class="block-options">
+                    <form method="GET" class="d-inline-block">
+                        <select name="period" onchange="this.form.submit()" class="form-select form-select-sm">
                             <option value="7" {{ $period == 7 ? 'selected' : '' }}>Last 7 Days</option>
                             <option value="30" {{ $period == 30 ? 'selected' : '' }}>Last 30 Days</option>
                             <option value="90" {{ $period == 90 ? 'selected' : '' }}>Last 90 Days</option>
@@ -54,81 +56,111 @@
                     </form>
                 </div>
             </div>
-            <div class="box-body">
-                <div class="row">
+            <div class="block-content">
+                <div class="row g-3 mb-4">
                     <div class="col-md-4">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-green">
-                                <i class="fa fa-usd"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Total Revenue</span>
-                                <span class="info-box-number">${{ number_format($totalRevenue, 2) }}</span>
+                        <div class="block block-rounded text-center bg-success-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-success">
+                                    <i class="fa fa-dollar-sign"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">Total Revenue</div>
+                                <div class="fs-3 fw-bold text-dark">${{ number_format($totalRevenue, 2) }}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-md-4">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-blue">
-                                <i class="fa fa-line-chart"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Average Order Value</span>
-                                <span class="info-box-number">${{ number_format($averageOrderValue, 2) }}</span>
+                        <div class="block block-rounded text-center bg-primary-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-primary">
+                                    <i class="fa fa-chart-line"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">Average Order Value</div>
+                                <div class="fs-3 fw-bold text-dark">${{ number_format($averageOrderValue, 2) }}</div>
                             </div>
                         </div>
                     </div>
                     
                     <div class="col-md-4">
-                        <div class="info-box">
-                            <span class="info-box-icon bg-yellow">
-                                <i class="fa fa-calendar"></i>
-                            </span>
-                            <div class="info-box-content">
-                                <span class="info-box-text">Daily Average</span>
-                                <span class="info-box-number">${{ number_format($totalRevenue / $period, 2) }}</span>
+                        <div class="block block-rounded text-center bg-warning-light">
+                            <div class="block-content py-3">
+                                <div class="fs-1 fw-bold text-warning">
+                                    <i class="fa fa-calendar-day"></i>
+                                </div>
+                                <div class="fs-sm fw-semibold text-uppercase text-muted mt-1">Daily Average</div>
+                                <div class="fs-3 fw-bold text-dark">${{ number_format($totalRevenue / $period, 2) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="block block-rounded">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">
+                                    <i class="fa fa-chart-area me-1"></i>Revenue Trend
+                                </h3>
+                            </div>
+                            <div class="block-content">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <canvas id="revenueChart" height="120"></canvas>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
                 
                 <div class="row">
-                    <div class="col-md-12">
-                        <div class="chart">
-                            <canvas id="revenueChart" height="400"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-12">
-                        <h4>Revenue Breakdown by Date</h4>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Revenue</th>
-                                        <th>Orders</th>
-                                        <th>Average Order Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($revenueData as $data)
-                                        <tr>
-                                            <td>{{ \Carbon\Carbon::parse($data->date)->format('M d, Y') }}</td>
-                                            <td>${{ number_format($data->revenue, 2) }}</td>
-                                            <td>{{ $data->orders }}</td>
-                                            <td>${{ number_format($data->orders > 0 ? $data->revenue / $data->orders : 0, 2) }}</td>
-                                        </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="4" class="text-center">No revenue data available for this period</td>
-                                        </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                    <div class="col-12">
+                        <h4 class="fw-bold mb-3">
+                            <i class="fa fa-table me-1"></i>Revenue Breakdown by Date
+                        </h4>
+                        <div class="block block-rounded">
+                            <div class="block-content block-content-full">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-vcenter">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Revenue</th>
+                                                <th>Orders</th>
+                                                <th>Average Order Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @forelse($revenueData as $data)
+                                                <tr>
+                                                    <td>
+                                                        <span class="fw-semibold">{{ \Carbon\Carbon::parse($data->date)->format('M d, Y') }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-success fs-sm">${{ number_format($data->revenue, 2) }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="fw-semibold">{{ $data->orders }}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span class="badge bg-primary fs-sm">${{ number_format($data->orders > 0 ? $data->revenue / $data->orders : 0, 2) }}</span>
+                                                    </td>
+                                                </tr>
+                                            @empty
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-4">
+                                                        <div class="text-muted">
+                                                            <i class="fa fa-info-circle me-1"></i>
+                                                            No revenue data available for this period
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endforelse
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -142,33 +174,81 @@
     @parent
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        const revenueChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: @json($revenueData->pluck('date')->map(function($date) { return \Carbon\Carbon::parse($date)->format('M d'); })),
-                datasets: [{
-                    label: 'Revenue',
-                    data: @json($revenueData->pluck('revenue')),
-                    borderColor: 'rgb(75, 192, 192)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value, index, values) {
-                                return '$' + value.toFixed(2);
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @json($revenueData->pluck('date')->map(function($date) { return \Carbon\Carbon::parse($date)->format('M d'); })),
+                    datasets: [{
+                        label: 'Revenue',
+                        data: @json($revenueData->pluck('revenue')),
+                        borderColor: '#198754',
+                        backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#198754',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#198754',
+                            borderWidth: 1,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Revenue: $' + context.raw.toFixed(2);
+                                }
                             }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11
+                                },
+                                callback: function(value, index, values) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: '#198754'
                         }
                     }
                 }
-            }
+            });
         });
     </script>
 @endsection

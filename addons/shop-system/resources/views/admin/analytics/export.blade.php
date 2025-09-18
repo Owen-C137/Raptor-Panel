@@ -40,30 +40,28 @@
 @section('content')
 <div class="row">
     <!-- Export Options -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Export Options</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-cog me-1"></i>Export Options
+                </h3>
             </div>
-            <div class="box-body">
-                <form method="GET" action="{{ route('admin.shop.analytics.export') }}" class="form-horizontal">
-                    <div class="form-group">
-                        <label class="col-sm-2 control-label">Period</label>
-                        <div class="col-sm-10">
-                            <select name="period" class="form-control">
-                                <option value="7" {{ $period == '7' ? 'selected' : '' }}>Last 7 days</option>
-                                <option value="30" {{ $period == '30' ? 'selected' : '' }}>Last 30 days</option>
-                                <option value="90" {{ $period == '90' ? 'selected' : '' }}>Last 90 days</option>
-                                <option value="365" {{ $period == '365' ? 'selected' : '' }}>Last 365 days</option>
-                            </select>
-                        </div>
+            <div class="block-content">
+                <form method="GET" action="{{ route('admin.shop.analytics.export') }}" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="period" class="form-label">Period</label>
+                        <select name="period" id="period" class="form-select">
+                            <option value="7" {{ $period == '7' ? 'selected' : '' }}>Last 7 days</option>
+                            <option value="30" {{ $period == '30' ? 'selected' : '' }}>Last 30 days</option>
+                            <option value="90" {{ $period == '90' ? 'selected' : '' }}>Last 90 days</option>
+                            <option value="365" {{ $period == '365' ? 'selected' : '' }}>Last 365 days</option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <div class="col-sm-offset-2 col-sm-10">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-refresh"></i> Update Data
-                            </button>
-                        </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-sync-alt me-1"></i>Update Data
+                        </button>
                     </div>
                 </form>
             </div>
@@ -73,33 +71,60 @@
 
 <div class="row">
     <!-- Export Actions -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Download Reports</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-download me-1"></i>Download Reports
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="alert alert-info">
-                    <i class="fa fa-info-circle"></i>
-                    <strong>Note:</strong> Export functionality will generate downloadable files. This feature can be enhanced to create CSV, PDF, or Excel exports.
+            <div class="block-content">
+                <div class="alert alert-info d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-info-circle fs-3"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-semibold">Note:</div>
+                        <div>Export functionality will generate downloadable files. This feature can be enhanced to create CSV, PDF, or Excel exports.</div>
+                    </div>
                 </div>
                 
-                <div class="btn-group-vertical btn-group-lg" style="width: 100%">
-                    <button class="btn btn-success" onclick="exportData('revenue')">
-                        <i class="fa fa-money"></i> Export Revenue Data (JSON)
-                    </button>
-                    <button class="btn btn-info" onclick="exportData('orders')">
-                        <i class="fa fa-shopping-cart"></i> Export Orders Data (JSON)
-                    </button>
-                    <button class="btn btn-warning" onclick="exportData('customers')">
-                        <i class="fa fa-users"></i> Export Customer Data (JSON)
-                    </button>
-                    <button class="btn btn-primary" onclick="exportData('plans')">
-                        <i class="fa fa-list"></i> Export Plans Data (JSON)
-                    </button>
-                    <button class="btn btn-default" onclick="exportData('all')">
-                        <i class="fa fa-download"></i> Export All Data (JSON)
-                    </button>
+                <div class="row g-3">
+                    <div class="col-md-6 col-lg-4">
+                        <button class="btn btn-outline-success w-100 py-3" onclick="exportData('revenue')">
+                            <div class="fs-2 mb-1"><i class="fa fa-dollar-sign"></i></div>
+                            <div class="fw-semibold">Export Revenue Data</div>
+                            <div class="fs-sm text-muted">JSON Format</div>
+                        </button>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <button class="btn btn-outline-info w-100 py-3" onclick="exportData('orders')">
+                            <div class="fs-2 mb-1"><i class="fa fa-shopping-cart"></i></div>
+                            <div class="fw-semibold">Export Orders Data</div>
+                            <div class="fs-sm text-muted">JSON Format</div>
+                        </button>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <button class="btn btn-outline-warning w-100 py-3" onclick="exportData('customers')">
+                            <div class="fs-2 mb-1"><i class="fa fa-users"></i></div>
+                            <div class="fw-semibold">Export Customer Data</div>
+                            <div class="fs-sm text-muted">JSON Format</div>
+                        </button>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <button class="btn btn-outline-primary w-100 py-3" onclick="exportData('plans')">
+                            <div class="fs-2 mb-1"><i class="fa fa-list"></i></div>
+                            <div class="fw-semibold">Export Plans Data</div>
+                            <div class="fs-sm text-muted">JSON Format</div>
+                        </button>
+                    </div>
+                    <div class="col-md-6 col-lg-4">
+                        <button class="btn btn-outline-secondary w-100 py-3" onclick="exportData('all')">
+                            <div class="fs-2 mb-1"><i class="fa fa-download"></i></div>
+                            <div class="fw-semibold">Export All Data</div>
+                            <div class="fs-sm text-muted">JSON Format</div>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -109,23 +134,27 @@
 <div class="row">
     <!-- Data Preview -->
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Revenue Summary</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-line me-1"></i>Revenue Summary
+                </h3>
             </div>
-            <div class="box-body">
-                <pre class="bg-gray" style="max-height: 300px; overflow-y: auto;">{{ json_encode($data['revenue'], JSON_PRETTY_PRINT) }}</pre>
+            <div class="block-content block-content-full">
+                <pre class="bg-body-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.875rem;">{{ json_encode($data['revenue'], JSON_PRETTY_PRINT) }}</pre>
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Orders Summary</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-shopping-cart me-1"></i>Orders Summary
+                </h3>
             </div>
-            <div class="box-body">
-                <pre class="bg-gray" style="max-height: 300px; overflow-y: auto;">{{ json_encode($data['orders'], JSON_PRETTY_PRINT) }}</pre>
+            <div class="block-content block-content-full">
+                <pre class="bg-body-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.875rem;">{{ json_encode($data['orders'], JSON_PRETTY_PRINT) }}</pre>
             </div>
         </div>
     </div>
@@ -133,23 +162,27 @@
 
 <div class="row">
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Customer Summary</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-users me-1"></i>Customer Summary
+                </h3>
             </div>
-            <div class="box-body">
-                <pre class="bg-gray" style="max-height: 300px; overflow-y: auto;">{{ json_encode($data['customers'], JSON_PRETTY_PRINT) }}</pre>
+            <div class="block-content block-content-full">
+                <pre class="bg-body-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.875rem;">{{ json_encode($data['customers'], JSON_PRETTY_PRINT) }}</pre>
             </div>
         </div>
     </div>
 
     <div class="col-md-6">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Plans Summary</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-list me-1"></i>Plans Summary
+                </h3>
             </div>
-            <div class="box-body">
-                <pre class="bg-gray" style="max-height: 300px; overflow-y: auto;">{{ json_encode($data['plans'], JSON_PRETTY_PRINT) }}</pre>
+            <div class="block-content block-content-full">
+                <pre class="bg-body-light p-3 rounded" style="max-height: 300px; overflow-y: auto; font-size: 0.875rem;">{{ json_encode($data['plans'], JSON_PRETTY_PRINT) }}</pre>
             </div>
         </div>
     </div>
@@ -157,25 +190,35 @@
 
 <div class="row">
     <!-- Quick Actions -->
-    <div class="col-md-12">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Quick Actions</h3>
+    <div class="col-12">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-bolt me-1"></i>Quick Actions
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="btn-group" role="group">
-                    <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-default">
-                        <i class="fa fa-arrow-left"></i> Back to Analytics Overview
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-success">
-                        <i class="fa fa-money"></i> Revenue Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-info">
-                        <i class="fa fa-shopping-cart"></i> Orders Report
-                    </a>
-                    <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-warning">
-                        <i class="fa fa-users"></i> Customers Report
-                    </a>
+            <div class="block-content">
+                <div class="row g-2">
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.index') }}" class="btn btn-outline-secondary">
+                            <i class="fa fa-arrow-left me-1"></i>Back to Analytics Overview
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.revenue') }}" class="btn btn-outline-success">
+                            <i class="fa fa-dollar-sign me-1"></i>Revenue Report
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.orders') }}" class="btn btn-outline-info">
+                            <i class="fa fa-shopping-cart me-1"></i>Orders Report
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.shop.analytics.customers') }}" class="btn btn-outline-warning">
+                            <i class="fa fa-users me-1"></i>Customers Report
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -226,8 +269,14 @@
             link.click();
             document.body.removeChild(link);
             
-            // Show success message
-            toastr.success('Analytics data exported successfully!');
+            // Show success message with OneUI compatibility
+            if (typeof One !== 'undefined' && One.helpers && One.helpers.jqGrowl) {
+                One.helpers.jqGrowl('success', 'Analytics data exported successfully!');
+            } else if (typeof toastr !== 'undefined') {
+                toastr.success('Analytics data exported successfully!');
+            } else {
+                alert('Analytics data exported successfully!');
+            }
         }
     </script>
 @endsection

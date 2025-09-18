@@ -33,286 +33,346 @@
 <div id="alert-container"></div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-lg-8">
         <form id="general-settings-form" method="POST" action="{{ route('admin.shop.settings.general.update') }}">
             @csrf
             @method('PUT')
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">General Settings</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-cog me-1"></i>General Settings
+                    </h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="shop_enabled">Shop Status</label>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="hidden" name="shop_enabled" value="0">
-                            <input type="checkbox" name="shop_enabled" id="shop_enabled" value="1" 
-                                   {{ old('shop_enabled', $settings['shop_enabled'] ?? true) ? 'checked' : '' }}>
-                            <label for="shop_enabled" class="strong">Enable Shop System</label>
+                <div class="block-content">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="shop_enabled" class="form-label">Shop Status</label>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="shop_enabled" value="0">
+                                <input type="checkbox" name="shop_enabled" id="shop_enabled" value="1" 
+                                       class="form-check-input" {{ old('shop_enabled', $settings['shop_enabled'] ?? true) ? 'checked' : '' }}>
+                                <label for="shop_enabled" class="form-check-label fw-semibold">Enable Shop System</label>
+                            </div>
+                            <div class="form-text">
+                                Disable to put the shop in maintenance mode.
+                            </div>
+                            @error('shop_enabled')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <small class="form-text text-muted">
-                            Disable to put the shop in maintenance mode.
-                        </small>
-                        @error('shop_enabled')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="shop_name">Shop Name</label>
-                        <input type="text" name="shop_name" id="shop_name" class="form-control" 
-                               value="{{ old('shop_name', $settings['shop_name'] ?? 'Game Server Shop') }}">
-                        @error('shop_name')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="shop_name" class="form-label">Shop Name</label>
+                            <input type="text" name="shop_name" id="shop_name" class="form-control" 
+                                   value="{{ old('shop_name', $settings['shop_name'] ?? 'Game Server Shop') }}">
+                            @error('shop_name')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="shop_description">Shop Description</label>
-                        <textarea name="shop_description" id="shop_description" class="form-control" rows="3">{{ old('shop_description', $settings['shop_description'] ?? '') }}</textarea>
-                        @error('shop_description')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="shop_description" class="form-label">Shop Description</label>
+                            <textarea name="shop_description" id="shop_description" class="form-control" rows="3">{{ old('shop_description', $settings['shop_description'] ?? '') }}</textarea>
+                            @error('shop_description')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Order Settings</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-shopping-cart me-1"></i>Order Settings
+                    </h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="auto_setup">Automatic Server Setup</label>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="hidden" name="auto_setup" value="0">
-                            <input type="checkbox" name="auto_setup" id="auto_setup" value="1" 
-                                   {{ old('auto_setup', $settings['auto_setup'] ?? true) ? 'checked' : '' }}>
-                            <label for="auto_setup" class="strong">Automatically create servers after payment</label>
+                <div class="block-content">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="auto_setup" class="form-label">Automatic Server Setup</label>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="auto_setup" value="0">
+                                <input type="checkbox" name="auto_setup" id="auto_setup" value="1" 
+                                       class="form-check-input" {{ old('auto_setup', $settings['auto_setup'] ?? true) ? 'checked' : '' }}>
+                                <label for="auto_setup" class="form-check-label fw-semibold">Automatically create servers after payment</label>
+                            </div>
+                            <div class="form-text">
+                                If disabled, servers must be created manually for each order.
+                            </div>
+                            @error('auto_setup')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        <small class="form-text text-muted">
-                            If disabled, servers must be created manually for each order.
-                        </small>
-                        @error('auto_setup')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="require_email_verification">Email Verification</label>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="hidden" name="require_email_verification" value="0">
-                            <input type="checkbox" name="require_email_verification" id="require_email_verification" value="1" 
-                                   {{ old('require_email_verification', $settings['require_email_verification'] ?? false) ? 'checked' : '' }}>
-                            <label for="require_email_verification" class="strong">Require email verification before purchase</label>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="require_email_verification" class="form-label">Email Verification</label>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="require_email_verification" value="0">
+                                <input type="checkbox" name="require_email_verification" id="require_email_verification" value="1" 
+                                       class="form-check-input" {{ old('require_email_verification', $settings['require_email_verification'] ?? false) ? 'checked' : '' }}>
+                                <label for="require_email_verification" class="form-check-label fw-semibold">Require email verification before purchase</label>
+                            </div>
+                            @error('require_email_verification')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        @error('require_email_verification')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="order_prefix">Order ID Prefix</label>
-                        <input type="text" name="order_prefix" id="order_prefix" class="form-control" 
-                               value="{{ old('order_prefix', $settings['order_prefix'] ?? 'ORD') }}" maxlength="10">
-                        <small class="form-text text-muted">
-                            Prefix for order IDs (e.g., "ORD" creates order IDs like ORD-12345).
-                        </small>
-                        @error('order_prefix')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="order_prefix" class="form-label">Order ID Prefix</label>
+                            <input type="text" name="order_prefix" id="order_prefix" class="form-control" 
+                                   value="{{ old('order_prefix', $settings['order_prefix'] ?? 'ORD') }}" maxlength="10">
+                            <div class="form-text">
+                                Prefix for order IDs (e.g., "ORD" creates order IDs like ORD-12345).
+                            </div>
+                            @error('order_prefix')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Credit System</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-coins me-1"></i>Credit System
+                    </h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="credits_enabled">Enable Credits</label>
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="hidden" name="credits_enabled" value="0">
-                            <input type="checkbox" name="credits_enabled" id="credits_enabled" value="1" 
-                                   {{ old('credits_enabled', $settings['credits_enabled'] ?? true) ? 'checked' : '' }}>
-                            <label for="credits_enabled" class="strong">Allow users to purchase and use credits</label>
+                <div class="block-content">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="credits_enabled" class="form-label">Enable Credits</label>
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="credits_enabled" value="0">
+                                <input type="checkbox" name="credits_enabled" id="credits_enabled" value="1" 
+                                       class="form-check-input" {{ old('credits_enabled', $settings['credits_enabled'] ?? true) ? 'checked' : '' }}>
+                                <label for="credits_enabled" class="form-check-label fw-semibold">Allow users to purchase and use credits</label>
+                            </div>
+                            @error('credits_enabled')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        @error('credits_enabled')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
                     </div>
                     
-                    <div class="form-group">
-                        <label for="credit_bonus">Credit Purchase Bonus (%)</label>
-                        <input type="number" name="credit_bonus" id="credit_bonus" class="form-control" 
-                               value="{{ old('credit_bonus', $settings['credit_bonus'] ?? 0) }}" step="0.1" min="0" max="100">
-                        <small class="form-text text-muted">
-                            Percentage bonus when users purchase credits (e.g., 5% = $105 credits for $100).
-                        </small>
-                        @error('credit_bonus')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="credit_bonus" class="form-label">Credit Purchase Bonus (%)</label>
+                            <input type="number" name="credit_bonus" id="credit_bonus" class="form-control" 
+                                   value="{{ old('credit_bonus', $settings['credit_bonus'] ?? 0) }}" step="0.1" min="0" max="100">
+                            <div class="form-text">
+                                Percentage bonus when users purchase credits (e.g., 5% = $105 credits for $100).
+                            </div>
+                            @error('credit_bonus')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="minimum_credit_purchase">Minimum Credit Purchase</label>
-                        <div class="input-group">
-                            <span class="input-group-addon">$</span>
-                            <input type="number" name="minimum_credit_purchase" id="minimum_credit_purchase" class="form-control" 
-                                   value="{{ old('minimum_credit_purchase', $settings['minimum_credit_purchase'] ?? 5) }}" step="0.01" min="1">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="minimum_credit_purchase" class="form-label">Minimum Credit Purchase</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="minimum_credit_purchase" id="minimum_credit_purchase" class="form-control" 
+                                       value="{{ old('minimum_credit_purchase', $settings['minimum_credit_purchase'] ?? 5) }}" step="0.01" min="1">
+                            </div>
+                            @error('minimum_credit_purchase')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
-                        @error('minimum_credit_purchase')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
                     </div>
                 </div>
             </div>
-            
+
             <!-- Payment Gateways section removed - use dedicated Payment Gateway page instead -->
 
-            <div class="box">
-                <div class="box-header with-border">
-                    <h3 class="box-title">Email Notifications</h3>
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">
+                        <i class="fa fa-envelope me-1"></i>Email Notifications
+                    </h3>
                 </div>
                 
-                <div class="box-body">
-                    <div class="form-group">
-                        <label for="admin_email">Admin Email</label>
-                        <input type="email" name="admin_email" id="admin_email" class="form-control" 
-                               value="{{ old('admin_email', $settings['admin_email'] ?? '') }}">
-                        <small class="form-text text-muted">
-                            Email address to receive admin notifications.
-                        </small>
-                        @error('admin_email')
-                            <span class="text-danger">{{ $message }}</span>
-                        @enderror
-                    </div>
-                    
-                    <div class="form-group">
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" name="notify_new_orders" id="notify_new_orders" value="1" 
-                                   {{ old('notify_new_orders', $settings['notify_new_orders'] ?? true) ? 'checked' : '' }}>
-                            <label for="notify_new_orders" class="strong">Notify admin of new orders</label>
+                <div class="block-content">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <label for="admin_email" class="form-label">Admin Email</label>
+                            <input type="email" name="admin_email" id="admin_email" class="form-control" 
+                                   value="{{ old('admin_email', $settings['admin_email'] ?? '') }}">
+                            <div class="form-text">
+                                Email address to receive admin notifications.
+                            </div>
+                            @error('admin_email')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" name="notify_failed_payments" id="notify_failed_payments" value="1" 
-                                   {{ old('notify_failed_payments', $settings['notify_failed_payments'] ?? true) ? 'checked' : '' }}>
-                            <label for="notify_failed_payments" class="strong">Notify admin of failed payments</label>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="notify_new_orders" id="notify_new_orders" value="1" 
+                                       class="form-check-input" {{ old('notify_new_orders', $settings['notify_new_orders'] ?? true) ? 'checked' : '' }}>
+                                <label for="notify_new_orders" class="form-check-label fw-semibold">Notify admin of new orders</label>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="form-group">
-                        <div class="checkbox checkbox-primary no-margin-bottom">
-                            <input type="checkbox" name="send_order_confirmations" id="send_order_confirmations" value="1" 
-                                   {{ old('send_order_confirmations', $settings['send_order_confirmations'] ?? true) ? 'checked' : '' }}>
-                            <label for="send_order_confirmations" class="strong">Send order confirmations to customers</label>
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="notify_failed_payments" id="notify_failed_payments" value="1" 
+                                       class="form-check-input" {{ old('notify_failed_payments', $settings['notify_failed_payments'] ?? true) ? 'checked' : '' }}>
+                                <label for="notify_failed_payments" class="form-check-label fw-semibold">Notify admin of failed payments</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="send_order_confirmations" id="send_order_confirmations" value="1" 
+                                       class="form-check-input" {{ old('send_order_confirmations', $settings['send_order_confirmations'] ?? true) ? 'checked' : '' }}>
+                                <label for="send_order_confirmations" class="form-check-label fw-semibold">Send order confirmations to customers</label>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <div class="box">
-                <div class="box-footer">
-                    <button type="submit" class="btn btn-success" id="save-general-settings-btn">
-                        <i class="fa fa-save"></i> <span id="save-general-btn-text">Save Settings</span>
-                        <i class="fa fa-spinner fa-spin" id="save-general-spinner" style="display: none;"></i>
-                    </button>
-                    <button type="button" class="btn btn-warning" onclick="resetToDefaults()">
-                        <i class="fa fa-refresh"></i> Reset to Defaults
-                    </button>
+            <div class="block block-rounded">
+                <div class="block-content">
+                    <div class="row">
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success" id="save-general-settings-btn">
+                                <i class="fa fa-save me-1"></i><span id="save-general-btn-text">Save Settings</span>
+                                <i class="fa fa-spinner fa-spin" id="save-general-spinner" style="display: none;"></i>
+                            </button>
+                            <button type="button" class="btn btn-warning ms-2" onclick="resetToDefaults()">
+                                <i class="fa fa-undo me-1"></i>Reset to Defaults
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
     </div>
     
-    <div class="col-md-4">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">System Status</h3>
+    <div class="col-lg-4">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-info-circle me-1"></i>System Status
+                </h3>
             </div>
             
-            <div class="box-body">
-                <dl class="dl-horizontal">
-                    <dt>Shop Version:</dt>
-                    <dd>{{ $version ?? '1.0.0' }}</dd>
-                    
-                    <dt>Database:</dt>
-                    <dd>
+            <div class="block-content">
+                <div class="row mb-3">
+                    <div class="col-5 fw-semibold">Shop Version:</div>
+                    <div class="col-7">{{ $version ?? '1.0.0' }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-5 fw-semibold">Database:</div>
+                    <div class="col-7">
                         @if($dbStatus ?? true)
-                            <span class="label label-success">Connected</span>
+                            <span class="badge bg-success">Connected</span>
                         @else
-                            <span class="label label-danger">Error</span>
+                            <span class="badge bg-danger">Error</span>
                         @endif
-                    </dd>
-                    
-                    <dt>Cache:</dt>
-                    <dd>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-5 fw-semibold">Cache:</div>
+                    <div class="col-7">
                         @if($cacheStatus ?? true)
-                            <span class="label label-success">Working</span>
+                            <span class="badge bg-success">Working</span>
                         @else
-                            <span class="label label-warning">Issues</span>
+                            <span class="badge bg-warning">Issues</span>
                         @endif
-                    </dd>
-                    
-                    <dt>Queue:</dt>
-                    <dd>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-5 fw-semibold">Queue:</div>
+                    <div class="col-7">
                         @if($queueStatus ?? true)
-                            <span class="label label-success">Running</span>
+                            <span class="badge bg-success">Running</span>
                         @else
-                            <span class="label label-danger">Stopped</span>
+                            <span class="badge bg-danger">Stopped</span>
                         @endif
-                    </dd>
-                </dl>
+                    </div>
+                </div>
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Quick Actions</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-bolt me-1"></i>Quick Actions
+                </h3>
             </div>
             
-            <div class="box-body">
-                <button class="btn btn-info btn-block" onclick="clearCache()">
-                    <i class="fa fa-refresh"></i> Clear Cache
-                </button>
-                
-                <button class="btn btn-warning btn-block" onclick="runMigrations()">
-                    <i class="fa fa-database"></i> Run Migrations
-                </button>
-                
-                <button class="btn btn-primary btn-block" onclick="testNotifications()">
-                    <i class="fa fa-envelope"></i> Test Notifications
-                </button>
-                
-                <hr>
-                
-                <a href="{{ route('admin.shop.settings.payment-gateways') }}" class="btn btn-default btn-block">
-                    <i class="fa fa-cog"></i> Payment Gateway Settings
-                </a>
+            <div class="block-content">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-info" onclick="clearCache()">
+                        <i class="fa fa-undo me-1"></i>Clear Cache
+                    </button>
+                    
+                    <button class="btn btn-warning" onclick="runMigrations()">
+                        <i class="fa fa-database me-1"></i>Run Migrations
+                    </button>
+                    
+                    <button class="btn btn-primary" onclick="testNotifications()">
+                        <i class="fa fa-envelope me-1"></i>Test Notifications
+                    </button>
+                    
+                    <hr>
+                    
+                    <a href="{{ route('admin.shop.settings.payment-gateways') }}" class="btn btn-secondary">
+                        <i class="fa fa-cog me-1"></i>Payment Gateway Settings
+                    </a>
+                </div>
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Documentation</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-book me-1"></i>Documentation
+                </h3>
             </div>
             
-            <div class="box-body">
-                <p>Need help configuring the shop system?</p>
-                <ul class="list-unstyled">
-                    <li><a href="#" target="_blank"><i class="fa fa-book"></i> Setup Guide</a></li>
-                    <li><a href="#" target="_blank"><i class="fa fa-credit-card"></i> Payment Gateway Setup</a></li>
-                    <li><a href="#" target="_blank"><i class="fa fa-question-circle"></i> FAQ</a></li>
-                    <li><a href="#" target="_blank"><i class="fa fa-bug"></i> Report Issues</a></li>
-                </ul>
+            <div class="block-content">
+                <p class="mb-3">Need help configuring the shop system?</p>
+                <div class="list-group list-group-flush">
+                    <a href="#" target="_blank" class="list-group-item list-group-item-action">
+                        <i class="fa fa-book me-2"></i>Setup Guide
+                    </a>
+                    <a href="#" target="_blank" class="list-group-item list-group-item-action">
+                        <i class="fa fa-credit-card me-2"></i>Payment Gateway Setup
+                    </a>
+                    <a href="#" target="_blank" class="list-group-item list-group-item-action">
+                        <i class="fa fa-question-circle me-2"></i>FAQ
+                    </a>
+                    <a href="#" target="_blank" class="list-group-item list-group-item-action">
+                        <i class="fa fa-bug me-2"></i>Report Issues
+                    </a>
+                </div>
             </div>
         </div>
     </div>

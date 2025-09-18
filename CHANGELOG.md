@@ -2,6 +2,51 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.0.5 - 2025-09-19
+
+### Major Update - Complete Shop System OneUI Bootstrap 5 Conversion 🎨
+
+#### Added
+- 💰 **Wallet Management System** - Complete admin interface for user wallet management
+  - Wallet overview dashboard with user statistics and search functionality
+  - Individual wallet details with transaction history and quick actions
+  - Admin credit/debit functionality with transaction logging
+  - Responsive wallet management tables with modern OneUI styling
+- 🧭 **Enhanced Navigation** - Wallet Management added to Shop Management sidebar
+- 🔧 **Advanced Form Controls** - Modern Bootstrap 5 switches, selects, and input groups
+- 📱 **Responsive Design** - Mobile-optimized layouts throughout shop system
+
+#### Enhanced - Complete UI Modernization (32 Pages Converted)
+- 🏪 **Shop System Core** - All 32 shop system pages converted from AdminLTE to OneUI Bootstrap 5
+  - **Analytics & Reports** (8 pages) - Modern charts, data tables, and export functionality
+  - **Order Management** (6 pages) - Enhanced order processing with improved status indicators
+  - **Plan Management** (6 pages) - Streamlined plan configuration with modern form controls
+  - **Payment System** (4 pages) - Updated payment gateway configuration and transaction views
+  - **Category Management** (2 pages) - Improved category organization with drag-and-drop features
+  - **Settings System** (4 pages) - Complete settings overhaul with tabbed navigation
+  - **Wallet System** (2 pages) - New wallet management interface with transaction tracking
+
+#### Technical Improvements
+- 🎯 **Component Modernization** - All AdminLTE `box` components converted to OneUI `block` structure
+- 🏷️ **Badge System Update** - `label` classes converted to modern Bootstrap 5 `badge` components
+- 📊 **Table Enhancement** - All data tables updated with `table-vcenter` and responsive design
+- 🎛️ **Form Controls** - Complete migration to Bootstrap 5 form components (switches, selects, input groups)
+- 📐 **Grid System** - Updated column classes (`col-xs-*` → `col-*`) and responsive breakpoints
+- ⚡ **Performance** - Optimized CSS and JavaScript for faster page loads
+
+#### Fixed
+- 🔗 **Route Resolution** - Fixed undefined `admin.shop.wallets.manage` route references
+- 🛠️ **Parameter Types** - Corrected WalletService method parameter types (User object vs user ID)
+- 🗃️ **Database Queries** - Fixed wallet transaction queries using correct `wallet_id` column
+- 🔍 **Template References** - Resolved all Blade template syntax errors and missing sections
+- 📋 **Navigation Links** - All shop management pages now properly accessible via sidebar
+
+#### Developer Experience
+- 📚 **Code Consistency** - Uniform OneUI patterns across all shop system components  
+- 🧪 **Error Resolution** - Complete elimination of AdminLTE legacy code conflicts
+- 🔄 **Maintainability** - Improved code structure following OneUI conventions
+- 📝 **Documentation** - Updated component usage throughout shop system
+
 ## v1.0.4 - 2025-09-18
 
 ### Added

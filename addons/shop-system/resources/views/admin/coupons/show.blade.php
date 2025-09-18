@@ -39,184 +39,212 @@
 
 @section('content')
 <div class="row">
-    <div class="col-md-8">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">Coupon Information</h3>
+    <div class="col-lg-8">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-info-circle me-1"></i>Coupon Information
+                </h3>
             </div>
-            <div class="box-body">
+            <div class="block-content">
                 <div class="row">
                     <div class="col-md-6">
-                        <table class="table table-bordered">
-                            <tr>
-                                <th width="35%">Code</th>
-                                <td>
-                                    <code>{{ $coupon->code }}</code>
-                                    <button class="btn btn-xs btn-default ml-2" onclick="copyToClipboard('{{ $coupon->code }}')" title="Copy Code">
-                                        <i class="fa fa-copy"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Name</th>
-                                <td>{{ $coupon->name ?: 'No name' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Description</th>
-                                <td>{{ $coupon->description ?: 'No description' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Type</th>
-                                <td>
-                                    @if($coupon->type === 'percentage')
-                                        <span class="label label-info">Percentage</span>
-                                    @else
-                                        <span class="label label-primary">Fixed Amount</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Value</th>
-                                <td>
-                                    @if($coupon->type === 'percentage')
-                                        {{ $coupon->value }}%
-                                    @else
-                                        ${{ number_format($coupon->value, 2) }}
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Status</th>
-                                <td>
-                                    @php
-                                        $status = $coupon->getStatus();
-                                    @endphp
-                                    
-                                    @switch($status)
-                                        @case('active')
-                                            <span class="label label-success">Active</span>
-                                            @break
-                                        @case('expired')
-                                            <span class="label label-warning">Expired</span>
-                                            @break
-                                        @case('inactive')
-                                            <span class="label label-danger">Inactive</span>
-                                            @break
-                                        @case('used_up')
-                                            <span class="label label-default">Used Up</span>
-                                            @break
-                                        @default
-                                            <span class="label label-default">{{ ucfirst($status) }}</span>
-                                    @endswitch
-                                </td>
-                            </tr>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-vcenter">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="width: 35%">Code</td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <code class="bg-body-light px-2 py-1 rounded">{{ $coupon->code }}</code>
+                                                <button class="btn btn-sm btn-alt-primary ms-2" onclick="copyToClipboard('{{ $coupon->code }}')" title="Copy Code">
+                                                    <i class="fa fa-copy"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Name</td>
+                                        <td>{{ $coupon->name ?: 'No name' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Description</td>
+                                        <td>{{ $coupon->description ?: 'No description' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Type</td>
+                                        <td>
+                                            @if($coupon->type === 'percentage')
+                                                <span class="badge bg-info">Percentage</span>
+                                            @else
+                                                <span class="badge bg-primary">Fixed Amount</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Value</td>
+                                        <td class="fw-semibold">
+                                            @if($coupon->type === 'percentage')
+                                                {{ $coupon->value }}%
+                                            @else
+                                                ${{ number_format($coupon->value, 2) }}
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Status</td>
+                                        <td>
+                                            @php
+                                                $status = $coupon->getStatus();
+                                            @endphp
+                                            
+                                            @switch($status)
+                                                @case('active')
+                                                    <span class="badge bg-success">Active</span>
+                                                    @break
+                                                @case('expired')
+                                                    <span class="badge bg-warning">Expired</span>
+                                                    @break
+                                                @case('inactive')
+                                                    <span class="badge bg-danger">Inactive</span>
+                                                    @break
+                                                @case('used_up')
+                                                    <span class="badge bg-secondary">Used Up</span>
+                                                    @break
+                                                @default
+                                                    <span class="badge bg-secondary">{{ ucfirst($status) }}</span>
+                                            @endswitch
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="col-md-6">
-                        <table class="table table-bordered">
-                            <tr>
-                                <th width="35%">Usage Limit</th>
-                                <td>{{ $coupon->usage_limit ?? 'Unlimited' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Per User Limit</th>
-                                <td>{{ $coupon->usage_limit_per_user ?? 'Unlimited' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Times Used</th>
-                                <td>
-                                    {{ $coupon->used_count }}
-                                    @if($coupon->usage_limit)
-                                        / {{ $coupon->usage_limit }}
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Minimum Amount</th>
-                                <td>{{ $coupon->minimum_amount ? '$' . number_format($coupon->minimum_amount, 2) : 'No minimum' }}</td>
-                            </tr>
-                            <tr>
-                                <th>First Order Only</th>
-                                <td>
-                                    @if($coupon->first_order_only)
-                                        <span class="label label-info">Yes</span>
-                                    @else
-                                        <span class="label label-default">No</span>
-                                    @endif
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Valid From</th>
-                                <td>{{ $coupon->valid_from ? $coupon->valid_from->format('M d, Y g:i A') : 'No start date' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Valid Until</th>
-                                <td>{{ $coupon->valid_until ? $coupon->valid_until->format('M d, Y g:i A') : 'No expiration' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Created</th>
-                                <td>{{ $coupon->created_at->format('M d, Y g:i A') }}</td>
-                            </tr>
-                        </table>
+                        <div class="table-responsive">
+                            <table class="table table-borderless table-vcenter">
+                                <tbody>
+                                    <tr>
+                                        <td class="fw-semibold text-muted" style="width: 35%">Usage Limit</td>
+                                        <td>{{ $coupon->usage_limit ?? 'Unlimited' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Per User Limit</td>
+                                        <td>{{ $coupon->usage_limit_per_user ?? 'Unlimited' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Times Used</td>
+                                        <td class="fw-semibold">
+                                            {{ $coupon->used_count }}
+                                            @if($coupon->usage_limit)
+                                                / {{ $coupon->usage_limit }}
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Minimum Amount</td>
+                                        <td>{{ $coupon->minimum_amount ? '$' . number_format($coupon->minimum_amount, 2) : 'No minimum' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">First Order Only</td>
+                                        <td>
+                                            @if($coupon->first_order_only)
+                                                <span class="badge bg-info">Yes</span>
+                                            @else
+                                                <span class="badge bg-secondary">No</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Valid From</td>
+                                        <td>{{ $coupon->valid_from ? $coupon->valid_from->format('M d, Y g:i A') : 'No start date' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Valid Until</td>
+                                        <td>{{ $coupon->valid_until ? $coupon->valid_until->format('M d, Y g:i A') : 'No expiration' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="fw-semibold text-muted">Created</td>
+                                        <td>{{ $coupon->created_at->format('M d, Y g:i A') }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="box-footer">
+            <div class="block-content bg-body-light text-center">
                 <a href="{{ route('admin.shop.coupons.edit', $coupon) }}" class="btn btn-warning">
-                    <i class="fa fa-pencil"></i> Edit Coupon
+                    <i class="fa fa-pencil-alt me-1"></i> Edit Coupon
                 </a>
-                <a href="{{ route('admin.shop.coupons.duplicate', $coupon) }}" class="btn btn-info">
-                    <i class="fa fa-copy"></i> Duplicate
+                <a href="{{ route('admin.shop.coupons.duplicate', $coupon) }}" class="btn btn-info ms-2">
+                    <i class="fa fa-copy me-1"></i> Duplicate
                 </a>
-                <a href="{{ route('admin.shop.coupons.index') }}" class="btn btn-default">
-                    <i class="fa fa-arrow-left"></i> Back to List
+                <a href="{{ route('admin.shop.coupons.index') }}" class="btn btn-secondary ms-2">
+                    <i class="fa fa-arrow-left me-1"></i> Back to List
                 </a>
             </div>
         </div>
     </div>
     
-    <div class="col-md-4">
-        <div class="box box-info">
-            <div class="box-header with-border">
-                <h3 class="box-title">Usage Statistics</h3>
+    <div class="col-lg-4">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-chart-bar me-1"></i>Usage Statistics
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-aqua"><i class="fa fa-shopping-cart"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Uses</span>
-                        <span class="info-box-number">{{ $coupon->used_count }}</span>
+            <div class="block-content">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="fs-3 fw-semibold text-primary">{{ $coupon->used_count }}</div>
+                            <div class="fw-semibold fs-sm text-muted text-uppercase tracking-wider">Total Uses</div>
+                        </div>
+                    </div>
+                    
+                    @if($coupon->usage_limit)
+                    <div class="col-6">
+                        <div class="text-center">
+                            <div class="fs-3 fw-semibold text-success">{{ max(0, $coupon->usage_limit - $coupon->used_count) }}</div>
+                            <div class="fw-semibold fs-sm text-muted text-uppercase tracking-wider">Remaining</div>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    <div class="col-{{ $coupon->usage_limit ? '12' : '6' }}">
+                        <div class="text-center">
+                            <div class="fs-3 fw-semibold text-warning">{{ $coupon->usages->unique('user_id')->count() }}</div>
+                            <div class="fw-semibold fs-sm text-muted text-uppercase tracking-wider">Unique Users</div>
+                        </div>
                     </div>
                 </div>
                 
                 @if($coupon->usage_limit)
-                <div class="info-box">
-                    <span class="info-box-icon bg-green"><i class="fa fa-check"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Remaining Uses</span>
-                        <span class="info-box-number">{{ max(0, $coupon->usage_limit - $coupon->used_count) }}</span>
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fs-sm fw-medium">Usage Progress</span>
+                        <span class="fs-sm text-muted">{{ number_format(($coupon->used_count / $coupon->usage_limit) * 100, 1) }}%</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ ($coupon->used_count / $coupon->usage_limit) * 100 }}%"></div>
                     </div>
                 </div>
                 @endif
-                
-                <div class="info-box">
-                    <span class="info-box-icon bg-yellow"><i class="fa fa-users"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Unique Users</span>
-                        <span class="info-box-number">{{ $coupon->usages->unique('user_id')->count() }}</span>
-                    </div>
-                </div>
             </div>
         </div>
         
         @if($coupon->usages->count() > 0)
-        <div class="box box-default">
-            <div class="box-header with-border">
-                <h3 class="box-title">Recent Usage</h3>
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">
+                    <i class="fa fa-history me-1"></i>Recent Usage
+                </h3>
             </div>
-            <div class="box-body">
-                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                    <table class="table table-condensed">
+            <div class="block-content block-content-full">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-hover table-vcenter">
                         <thead>
                             <tr>
                                 <th>User</th>
@@ -228,20 +256,25 @@
                             @foreach($coupon->usages->take(10) as $usage)
                             <tr>
                                 <td>
-                                    @if($usage->user)
-                                        {{ $usage->user->email }}
-                                    @else
-                                        <em>Unknown User</em>
-                                    @endif
+                                    <div class="fw-semibold">
+                                        @if($usage->user)
+                                            {{ $usage->user->email }}
+                                        @else
+                                            <em class="text-muted">Unknown User</em>
+                                        @endif
+                                    </div>
                                 </td>
-                                <td>{{ $usage->created_at->format('M d, Y') }}</td>
+                                <td>
+                                    <div class="fs-sm">{{ $usage->created_at->format('M d, Y') }}</div>
+                                    <div class="fs-sm text-muted">{{ $usage->created_at->format('g:i A') }}</div>
+                                </td>
                                 <td>
                                     @if($usage->order)
-                                        <a href="{{ route('admin.shop.orders.show', $usage->order) }}" class="text-primary">
+                                        <a href="{{ route('admin.shop.orders.show', $usage->order) }}" class="link-fx">
                                             Order #{{ $usage->order->id }}
                                         </a>
                                     @else
-                                        <em>No order</em>
+                                        <em class="text-muted">No order</em>
                                     @endif
                                 </td>
                             </tr>
@@ -250,7 +283,7 @@
                     </table>
                 </div>
                 @if($coupon->usages->count() > 10)
-                <div class="text-center">
+                <div class="block-content bg-body-light text-center">
                     <small class="text-muted">Showing 10 of {{ $coupon->usages->count() }} uses</small>
                 </div>
                 @endif
@@ -259,14 +292,68 @@
         @endif
     </div>
 </div>
+@endsection
 
-<script>
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        toastr.success('Coupon code copied to clipboard!');
-    }, function(err) {
-        toastr.error('Failed to copy code');
-    });
-}
-</script>
+@section('footer-scripts')
+    @parent
+    <script>
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    // Check if OneUI notification system is available
+                    if (typeof One !== 'undefined' && One.helpers && One.helpers.jqGrowl) {
+                        One.helpers.jqGrowl('success', 'Coupon code copied to clipboard!');
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.success('Coupon code copied to clipboard!');
+                    } else {
+                        alert('Coupon code copied to clipboard!');
+                    }
+                }, function(err) {
+                    console.error('Failed to copy text: ', err);
+                    if (typeof One !== 'undefined' && One.helpers && One.helpers.jqGrowl) {
+                        One.helpers.jqGrowl('error', 'Failed to copy code');
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.error('Failed to copy code');
+                    } else {
+                        alert('Failed to copy code');
+                    }
+                });
+            } else {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                textArea.style.position = 'fixed';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                
+                try {
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        if (typeof One !== 'undefined' && One.helpers && One.helpers.jqGrowl) {
+                            One.helpers.jqGrowl('success', 'Coupon code copied to clipboard!');
+                        } else if (typeof toastr !== 'undefined') {
+                            toastr.success('Coupon code copied to clipboard!');
+                        } else {
+                            alert('Coupon code copied to clipboard!');
+                        }
+                    } else {
+                        throw new Error('Copy command failed');
+                    }
+                } catch (err) {
+                    console.error('Fallback copy failed: ', err);
+                    if (typeof One !== 'undefined' && One.helpers && One.helpers.jqGrowl) {
+                        One.helpers.jqGrowl('error', 'Failed to copy code');
+                    } else if (typeof toastr !== 'undefined') {
+                        toastr.error('Failed to copy code');
+                    } else {
+                        alert('Failed to copy code');
+                    }
+                }
+                
+                document.body.removeChild(textArea);
+            }
+        }
+    </script>
 @endsection

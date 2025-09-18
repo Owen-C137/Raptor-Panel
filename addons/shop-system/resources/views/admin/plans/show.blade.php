@@ -32,28 +32,28 @@
 @section('content')
 <div class="row">
     <div class="col-md-8">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Plan Information</h3>
-                <div class="box-tools pull-right">
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Plan Information</h3>
+                <div class="block-options">
                     <a href="{{ route('admin.shop.plans.edit', $plan->id) }}" class="btn btn-sm btn-primary">
-                        <i class="fa fa-edit"></i> Edit Plan
+                        <i class="fa fa-edit me-1"></i> Edit Plan
                     </a>
                     <button type="button" class="btn btn-sm btn-info" onclick="duplicatePlan()">
-                        <i class="fa fa-copy"></i> Duplicate
+                        <i class="fa fa-copy me-1"></i> Duplicate
                     </button>
                     <button type="button" class="btn btn-sm btn-{{ $plan->visible ? 'warning' : 'success' }}" 
                             onclick="toggleStatus()">
-                        <i class="fa fa-{{ $plan->visible ? 'eye-slash' : 'eye' }}"></i>
+                        <i class="fa fa-{{ $plan->visible ? 'eye-slash' : 'eye' }} me-1"></i>
                         {{ $plan->visible ? 'Hide' : 'Show' }}
                     </button>
                 </div>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 <div class="row">
                     <div class="col-md-6">
-                        <table class="table table-striped">
+                        <table class="table table-vcenter">
                             <tr>
                                 <th width="30%">Name</th>
                                 <td>{{ $plan->name }}</td>
@@ -65,7 +65,7 @@
                             <tr>
                                 <th>Status</th>
                                 <td>
-                                    <span class="label label-{{ $plan->visible ? 'success' : 'default' }}">
+                                    <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-{{ $plan->visible ? 'success' : 'secondary' }}-light text-{{ $plan->visible ? 'success' : 'secondary' }}">
                                         {{ $plan->visible ? 'Visible' : 'Hidden' }}
                                     </span>
                                 </td>
@@ -77,7 +77,7 @@
                         </table>
                     </div>
                     <div class="col-md-6">
-                        <table class="table table-striped">
+                        <table class="table table-vcenter">
                             <tr>
                                 <th width="30%">Created</th>
                                 <td>{{ $plan->created_at->format('M j, Y g:i A') }}</td>
@@ -104,8 +104,10 @@
                 <div class="row">
                     <div class="col-md-12">
                         <h4>Description</h4>
-                        <div class="well">
-                            {!! nl2br(e($plan->description)) !!}
+                        <div class="block block-rounded block-mode-loading-oneui bg-body-light">
+                            <div class="block-content">
+                                {!! nl2br(e($plan->description)) !!}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -113,15 +115,15 @@
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Pricing & Billing</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Pricing & Billing</h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 @if(!empty($plan->billing_cycles))
                 <div class="table-responsive">
-                    <table class="table table-striped">
+                    <table class="table table-hover table-vcenter">
                         <thead>
                             <tr>
                                 <th>Billing Cycle</th>
@@ -134,7 +136,7 @@
                             @foreach($plan->billing_cycles as $cycle)
                             <tr>
                                 <td>
-                                    <span class="label label-info">
+                                    <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-info-light text-info">
                                         {{ ucfirst(str_replace('_', ' ', $cycle['cycle'])) }}
                                     </span>
                                 </td>
@@ -171,24 +173,29 @@
                     </table>
                 </div>
                 @else
-                <div class="callout callout-warning">
-                    <h4><i class="fa fa-warning"></i> No Pricing Set</h4>
-                    <p>This plan has no billing cycles configured. Customers won't be able to purchase this plan.</p>
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading">No Pricing Set</h4>
+                        <p class="mb-0">This plan has no billing cycles configured. Customers won't be able to purchase this plan.</p>
+                    </div>
                 </div>
                 @endif
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Server Resources</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Server Resources</h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 @if(!empty($plan->server_limits))
                 <div class="row">
                     <div class="col-md-6">
-                        <table class="table table-striped">
+                        <table class="table table-vcenter">
                             <tr>
                                 <th width="40%">CPU</th>
                                 <td>
@@ -219,12 +226,12 @@
                         </table>
                     </div>
                     <div class="col-md-6">
-                        <table class="table table-striped">
+                        <table class="table table-vcenter">
                             <tr>
                                 <th width="40%">Swap</th>
                                 <td>
                                     @if(($plan->server_limits['swap'] ?? 0) == -1)
-                                        <span class="label label-success">Unlimited</span>
+                                        <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-success-light text-success">Unlimited</span>
                                     @else
                                         {{ number_format($plan->server_limits['swap'] ?? 0) }} MB
                                     @endif
@@ -237,7 +244,7 @@
                             <tr>
                                 <th>OOM Killer</th>
                                 <td>
-                                    <span class="label label-{{ ($plan->server_limits['oom_disabled'] ?? 0) ? 'success' : 'warning' }}">
+                                    <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-{{ ($plan->server_limits['oom_disabled'] ?? 0) ? 'success' : 'warning' }}-light text-{{ ($plan->server_limits['oom_disabled'] ?? 0) ? 'success' : 'warning' }}">
                                         {{ ($plan->server_limits['oom_disabled'] ?? 0) ? 'Disabled' : 'Enabled' }}
                                     </span>
                                 </td>
@@ -246,29 +253,34 @@
                     </div>
                 </div>
                 @else
-                <div class="callout callout-warning">
-                    <h4><i class="fa fa-warning"></i> No Resource Limits Set</h4>
-                    <p>This plan has no server resource limits configured.</p>
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading">No Resource Limits Set</h4>
+                        <p class="mb-0">This plan has no server resource limits configured.</p>
+                    </div>
                 </div>
                 @endif
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Feature Limits</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Feature Limits</h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 @if(!empty($plan->server_feature_limits))
                 <div class="row">
                     <div class="col-md-12">
-                        <table class="table table-striped">
+                        <table class="table table-vcenter">
                             <tr>
                                 <th width="30%">Databases</th>
                                 <td>
                                     @if(($plan->server_feature_limits['databases'] ?? 0) == 0)
-                                        <span class="label label-danger">Unlimited</span>
+                                        <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-danger-light text-danger">Unlimited</span>
                                     @else
                                         {{ $plan->server_feature_limits['databases'] }}
                                     @endif
@@ -278,7 +290,7 @@
                                 <th>Allocations</th>
                                 <td>
                                     @if(($plan->server_feature_limits['allocations'] ?? 0) == 0)
-                                        <span class="label label-danger">Unlimited</span>
+                                        <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-danger-light text-danger">Unlimited</span>
                                     @else
                                         {{ $plan->server_feature_limits['allocations'] }}
                                     @endif
@@ -288,7 +300,7 @@
                                 <th>Backups</th>
                                 <td>
                                     @if(($plan->server_feature_limits['backups'] ?? 0) == 0)
-                                        <span class="label label-danger">Unlimited</span>
+                                        <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-danger-light text-danger">Unlimited</span>
                                     @else
                                         {{ $plan->server_feature_limits['backups'] }}
                                     @endif
@@ -298,38 +310,43 @@
                     </div>
                 </div>
                 @else
-                <div class="callout callout-warning">
-                    <h4><i class="fa fa-warning"></i> No Feature Limits Set</h4>
-                    <p>This plan has no server feature limits configured.</p>
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading">No Feature Limits Set</h4>
+                        <p class="mb-0">This plan has no server feature limits configured.</p>
+                    </div>
                 </div>
                 @endif
             </div>
         </div>
         
         @if(!empty($plan->allowed_locations) || !empty($plan->allowed_nodes))
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Server Configuration</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Server Configuration</h3>
             </div>
             
-            <div class="box-body">
+            <div class="block-content">
                 @if(!empty($plan->allowed_locations))
-                <div class="form-group">
-                    <label>Allowed Locations</label>
+                <div class="mb-4">
+                    <label class="form-label">Allowed Locations</label>
                     <div>
                         @foreach($plan->allowedLocationModels as $location)
-                            <span class="label label-info">{{ $location->long }}</span>
+                            <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-info-light text-info me-1 mb-1">{{ $location->long }}</span>
                         @endforeach
                     </div>
                 </div>
                 @endif
                 
                 @if(!empty($plan->allowed_nodes))
-                <div class="form-group">
-                    <label>Allowed Nodes</label>
+                <div class="mb-4">
+                    <label class="form-label">Allowed Nodes</label>
                     <div>
                         @foreach($plan->allowedNodeModels as $node)
-                            <span class="label label-info">{{ $node->name }}</span>
+                            <span class="fs-xs fw-semibold d-inline-block py-1 px-3 rounded-pill bg-info-light text-info me-1 mb-1">{{ $node->name }}</span>
                         @endforeach
                     </div>
                 </div>
@@ -340,84 +357,104 @@
     </div>
     
     <div class="col-md-4">
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Quick Actions</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Quick Actions</h3>
             </div>
-            <div class="box-body">
-                <a href="{{ route('admin.shop.plans.edit', $plan->id) }}" class="btn btn-primary btn-block">
-                    <i class="fa fa-edit"></i> Edit Plan
+            <div class="block-content">
+                <a href="{{ route('admin.shop.plans.edit', $plan->id) }}" class="btn btn-primary w-100 mb-2">
+                    <i class="fa fa-edit me-1"></i> Edit Plan
                 </a>
-                <button type="button" class="btn btn-info btn-block" onclick="duplicatePlan()">
-                    <i class="fa fa-copy"></i> Duplicate Plan
+                <button type="button" class="btn btn-info w-100 mb-2" onclick="duplicatePlan()">
+                    <i class="fa fa-copy me-1"></i> Duplicate Plan
                 </button>
-                <button type="button" class="btn btn-{{ $plan->visible ? 'warning' : 'success' }} btn-block" 
+                <button type="button" class="btn btn-{{ $plan->visible ? 'warning' : 'success' }} w-100 mb-3" 
                         onclick="toggleStatus()">
-                    <i class="fa fa-{{ $plan->visible ? 'eye-slash' : 'eye' }}"></i>
+                    <i class="fa fa-{{ $plan->visible ? 'eye-slash' : 'eye' }} me-1"></i>
                     {{ $plan->visible ? 'Hide Plan' : 'Show Plan' }}
                 </button>
                 <hr>
-                <button type="button" class="btn btn-danger btn-block" onclick="deletePlan()">
-                    <i class="fa fa-trash"></i> Delete Plan
+                <button type="button" class="btn btn-danger w-100" onclick="deletePlan()">
+                    <i class="fa fa-trash me-1"></i> Delete Plan
                 </button>
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Plan Statistics</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Plan Statistics</h3>
             </div>
-            <div class="box-body">
-                <div class="info-box">
-                    <span class="info-box-icon bg-blue"><i class="fa fa-shopping-cart"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Total Orders</span>
-                        <span class="info-box-number">{{ $plan->orders()->count() }}</span>
+            <div class="block-content">
+                <div class="row items-push">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-shopping-cart fa-2x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $plan->orders()->count() }}</div>
+                                <div class="text-muted fs-sm">Total Orders</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-money fa-2x text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $currencySymbol }}{{ number_format($plan->orders()->sum('amount'), 2) }}</div>
+                                <div class="text-muted fs-sm">Revenue</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="info-box">
-                    <span class="info-box-icon bg-green"><i class="fa fa-money"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Revenue</span>
-                        <span class="info-box-number">
-                            {{ $currencySymbol }}{{ number_format($plan->orders()->sum('amount'), 2) }}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="info-box">
-                    <span class="info-box-icon bg-yellow"><i class="fa fa-server"></i></span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Active Servers</span>
-                        <span class="info-box-number">
-                            {{ $plan->orders()->where('status', 'active')->count() }}
-                        </span>
+                <div class="row items-push">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-server fa-2x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fs-3 fw-bold">{{ $plan->orders()->where('status', 'active')->count() }}</div>
+                                <div class="text-muted fs-sm">Active Servers</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
-        <div class="box">
-            <div class="box-header with-border">
-                <h3 class="box-title">Resource Summary</h3>
+        <div class="block block-rounded">
+            <div class="block-header">
+                <h3 class="block-title">Resource Summary</h3>
             </div>
-            <div class="box-body">
-                <div class="callout callout-info">
+            <div class="block-content">
+                <div class="alert alert-info d-flex align-items-start" role="alert">
                     @if(!empty($plan->server_limits))
-                    <h4><i class="fa fa-info-circle"></i> Resource Overview</h4>
-                    <ul>
-                        <li><strong>CPU:</strong> {{ $plan->server_limits['cpu'] ?? 0 }}% ({{ number_format(($plan->server_limits['cpu'] ?? 0) / 100, 1) }} cores)</li>
-                        <li><strong>RAM:</strong> {{ number_format(($plan->server_limits['memory'] ?? 0) / 953.674, 2) }} GB</li>
-                        <li><strong>Disk:</strong> {{ number_format(($plan->server_limits['disk'] ?? 0) / 1024, 2) }} GB</li>
-                        @if(!empty($plan->server_feature_limits))
-                        <li><strong>Databases:</strong> {{ $plan->server_feature_limits['databases'] ?? 'Unlimited' }}</li>
-                        <li><strong>Backups:</strong> {{ $plan->server_feature_limits['backups'] ?? 'Unlimited' }}</li>
-                        @endif
-                    </ul>
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-info-circle"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading">Resource Overview</h4>
+                        <ul class="mb-0">
+                            <li><strong>CPU:</strong> {{ $plan->server_limits['cpu'] ?? 0 }}% ({{ number_format(($plan->server_limits['cpu'] ?? 0) / 100, 1) }} cores)</li>
+                            <li><strong>RAM:</strong> {{ number_format(($plan->server_limits['memory'] ?? 0) / 953.674, 2) }} GB</li>
+                            <li><strong>Disk:</strong> {{ number_format(($plan->server_limits['disk'] ?? 0) / 1024, 2) }} GB</li>
+                            @if(!empty($plan->server_feature_limits))
+                            <li><strong>Databases:</strong> {{ $plan->server_feature_limits['databases'] ?? 'Unlimited' }}</li>
+                            <li><strong>Backups:</strong> {{ $plan->server_feature_limits['backups'] ?? 'Unlimited' }}</li>
+                            @endif
+                        </ul>
+                    </div>
                     @else
-                    <h4><i class="fa fa-warning"></i> No Resources</h4>
-                    <p>This plan has no resource limits configured.</p>
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading">No Resources</h4>
+                        <p class="mb-0">This plan has no resource limits configured.</p>
+                    </div>
                     @endif
                 </div>
             </div>
