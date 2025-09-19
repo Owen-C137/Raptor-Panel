@@ -141,6 +141,119 @@ class UpdateController extends Controller
     }
 
     /**
+     * Get changelog for current or specific version
+     */
+    public function getChangelog(Request $request): JsonResponse
+    {
+        try {
+            $version = $request->get('version');
+            $showAll = $request->get('all', false);
+            
+            if ($showAll) {
+                // Get full changelog content from CHANGELOG.md
+                $changelogContent = $this->changelogService->getChangelogContent();
+                if (!$changelogContent) {
+                    return response()->json([
+                        'error' => 'Changelog not available.',
+                    ], 404);
+                }
+                
+                // Parse all versions from changelog
+                $allVersions = $this->parseAllVersionsFromChangelog($changelogContent);
+                
+                return response()->json([
+                    'changelog_content' => $changelogContent,
+                    'versions' => $allVersions,
+                    'current_version' => $this->updateService->getCurrentVersion(),
+                ]);
+            } else {
+                // Get changelog for specific version or current version
+                if (!$version) {
+                    $version = $this->updateService->getCurrentVersion();
+                }
+                
+                $changelog = $this->changelogService->getChangelogForVersion($version);
+                
+                return response()->json([
+                    'version' => $version,
+                    'changelog' => $changelog,
+                    'current_version' => $this->updateService->getCurrentVersion(),
+                ]);
+            }
+
+        } catch (Exception $e) {
+            Log::error('Failed to get changelog', [
+                'version' => $version ?? 'unknown',
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to get changelog.',
+                'details' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Parse all versions from changelog content
+     */
+    private function parseAllVersionsFromChangelog(string $content): array
+    {
+        $versions = [];
+        $lines = explode("\n", $content);
+        $currentVersion = null;
+        $currentVersionData = [];
+        
+        foreach ($lines as $line) {
+            $line = trim($line);
+            
+            // Check for version headers (## v1.0.5 - 2025-09-19)
+            if (preg_match('/^##\s*v?(\d+\.\d+\.\d+(?:\.\d+)?)\s*-?\s*(.*)$/i', $line, $matches)) {
+                // Save previous version if exists
+                if ($currentVersion) {
+                    $versions[] = $currentVersionData;
+                }
+                
+                $currentVersion = $matches[1];
+                $dateAndTitle = trim($matches[2]);
+                
+                $currentVersionData = [
+                    'version' => $currentVersion,
+                    'raw_header' => $line,
+                    'content' => '',
+                ];
+                
+                // Extract date if present
+                if (preg_match('/(\d{4}-\d{2}-\d{2})/', $dateAndTitle, $dateMatches)) {
+                    $currentVersionData['date'] = $dateMatches[1];
+                    $currentVersionData['title'] = trim(str_replace($dateMatches[1], '', $dateAndTitle));
+                } else {
+                    $currentVersionData['title'] = $dateAndTitle;
+                }
+                
+                continue;
+            }
+            
+            // Stop when hitting another major section or end
+            if ($currentVersion && preg_match('/^#\s+/', $line) && !preg_match('/^##/', $line)) {
+                break;
+            }
+            
+            // Collect content for current version
+            if ($currentVersion) {
+                $currentVersionData['content'] .= $line . "\n";
+            }
+        }
+        
+        // Add the last version
+        if ($currentVersion) {
+            $versions[] = $currentVersionData;
+        }
+        
+        return $versions;
+    }
+
+    /**
      * Apply the update
      */
     public function applyUpdate(Request $request): JsonResponse

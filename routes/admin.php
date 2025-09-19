@@ -238,6 +238,7 @@ Route::group(['prefix' => 'nests'], function () {
 Route::group(['prefix' => 'updates'], function () {
     Route::get('/check', [Admin\UpdateController::class, 'checkForUpdates'])->name('admin.updates.check');
     Route::get('/details', [Admin\UpdateController::class, 'getUpdateDetails'])->name('admin.updates.details');
+    Route::get('/changelog', [Admin\UpdateController::class, 'getChangelog'])->name('admin.updates.changelog');
     Route::get('/status', [Admin\UpdateController::class, 'getSystemStatus'])->name('admin.updates.status');
     Route::get('/progress', [Admin\UpdateController::class, 'getUpdateProgress'])->name('admin.updates.progress');
     Route::get('/backups', [Admin\UpdateController::class, 'listBackups'])->name('admin.updates.backups');

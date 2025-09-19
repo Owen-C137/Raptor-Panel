@@ -90,6 +90,37 @@
     </div>
 </div>
 
+<!-- Changelog Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="block block-rounded block-themed" id="changelog-block">
+            <div class="block-header">
+                <h3 class="block-title">
+                    <i class="fas fa-clipboard-list me-2"></i>Current Version Changelog
+                </h3>
+                <div class="block-options">
+                    <button type="button" class="btn-block-option" id="show-all-changelogs" title="Show all changelogs">
+                        <i class="fas fa-list"></i>
+                    </button>
+                    <button type="button" class="btn-block-option" id="refresh-changelog" title="Refresh changelog">
+                        <i class="si si-refresh"></i>
+                    </button>
+                    <a href="https://github.com/Owen-C137/Raptor-Panel/blob/main/CHANGELOG.md" target="_blank" class="btn-block-option" title="View full changelog">
+                        <i class="fab fa-github"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="block-content" id="changelog-content">
+                <div class="d-flex justify-content-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading changelog...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Update Progress Modal -->
 <div class="modal fade" id="updateProgressModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg">
@@ -601,6 +632,329 @@ function initializeAdminPage() {
     }
 
     } // end initializeUpdateSystem function
+
+    // Initialize changelog system
+    initializeChangelogSystem();
+
+    function initializeChangelogSystem() {
+        const changelogContent = document.getElementById('changelog-content');
+        const refreshChangelogBtn = document.getElementById('refresh-changelog');
+        const showAllBtn = document.getElementById('show-all-changelogs');
+        const blockTitle = document.querySelector('#changelog-block .block-title');
+        
+        let showingAll = false;
+        let currentVersionData = null;
+        let allVersionsData = null;
+
+        // Load current version changelog on page load
+        loadCurrentVersionChangelog();
+
+        // Refresh button click handler
+        if (refreshChangelogBtn) {
+            refreshChangelogBtn.addEventListener('click', function() {
+                refreshChangelogBtn.querySelector('i').classList.add('fa-spin');
+                if (showingAll) {
+                    loadAllChangelogs();
+                } else {
+                    loadCurrentVersionChangelog();
+                }
+            });
+        }
+
+        // Show all changelogs button handler
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', function() {
+                if (showingAll) {
+                    // Switch back to current version only
+                    showingAll = false;
+                    blockTitle.innerHTML = '<i class="fas fa-clipboard-list me-2"></i>Current Version Changelog';
+                    showAllBtn.setAttribute('title', 'Show all changelogs');
+                    showAllBtn.querySelector('i').className = 'fas fa-list';
+                    displayCurrentVersionChangelog(currentVersionData);
+                } else {
+                    // Show all versions
+                    showingAll = true;
+                    blockTitle.innerHTML = '<i class="fas fa-clipboard-list me-2"></i>All Changelogs';
+                    showAllBtn.setAttribute('title', 'Show current version only');
+                    showAllBtn.querySelector('i').className = 'fas fa-eye';
+                    showAllBtn.querySelector('i').classList.add('fa-spin');
+                    loadAllChangelogs();
+                }
+            });
+        }
+
+        function loadCurrentVersionChangelog() {
+            // Fetch changelog for current version only
+            fetch('{{ route('admin.updates.changelog') }}')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showChangelogError(data.error);
+                        return;
+                    }
+                    currentVersionData = data;
+                    displayCurrentVersionChangelog(data);
+                    if (refreshChangelogBtn) {
+                        refreshChangelogBtn.querySelector('i').classList.remove('fa-spin');
+                    }
+                })
+                .catch(error => {
+                    console.error('Current version changelog fetch failed:', error);
+                    showChangelogError();
+                    if (refreshChangelogBtn) {
+                        refreshChangelogBtn.querySelector('i').classList.remove('fa-spin');
+                    }
+                });
+        }
+
+        function loadAllChangelogs() {
+            // Fetch all versions from changelog
+            fetch('{{ route('admin.updates.changelog') }}?all=true')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showChangelogError(data.error);
+                        return;
+                    }
+                    allVersionsData = data;
+                    displayAllVersionsChangelog(data.versions || [], data.current_version);
+                    if (refreshChangelogBtn) {
+                        refreshChangelogBtn.querySelector('i').classList.remove('fa-spin');
+                    }
+                    if (showAllBtn) {
+                        showAllBtn.querySelector('i').classList.remove('fa-spin');
+                    }
+                })
+                .catch(error => {
+                    console.error('All versions changelog fetch failed:', error);
+                    showChangelogError();
+                    if (refreshChangelogBtn) {
+                        refreshChangelogBtn.querySelector('i').classList.remove('fa-spin');
+                    }
+                    if (showAllBtn) {
+                        showAllBtn.querySelector('i').classList.remove('fa-spin');
+                    }
+                });
+        }
+
+        function displayCurrentVersionChangelog(data) {
+            if (!data || !data.changelog) {
+                showChangelogError('No changelog data found for current version.');
+                return;
+            }
+
+            const version = data.version;
+            const changelog = data.changelog;
+            const versionDate = changelog.date || 'No date';
+            const rawContent = changelog.raw || '';
+            
+            // Check if content is empty or just whitespace
+            const hasContent = rawContent && rawContent.trim().length > 0;
+            
+            let changelogHtml = `
+                <ul class="timeline timeline-alt">
+                    <li class="timeline-event">
+                        <div class="timeline-event-icon bg-success">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="timeline-event-block block">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">v${version} - Current Version</h3>
+                                <div class="block-options">
+                                    <div class="timeline-event-time block-options-item fs-sm fw-semibold">
+                                        ${versionDate}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="block-content">
+                                ${hasContent ? formatChangelogContent(rawContent) : '<div class="alert alert-warning d-flex align-items-center" role="alert"><div class="flex-grow-1"><i class="fas fa-exclamation-triangle me-2"></i>No changelog available for this version.</div></div>'}
+                                <div class="mt-3">
+                                    <a href="https://github.com/Owen-C137/Raptor-Panel" target="_blank" class="btn btn-sm btn-alt-secondary">
+                                        <i class="fab fa-github me-1"></i>View on GitHub
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            `;
+
+            changelogContent.innerHTML = changelogHtml;
+        }
+
+        function displayAllVersionsChangelog(versions, currentVersion) {
+            if (!versions || versions.length === 0) {
+                showChangelogError('No changelog versions found.');
+                return;
+            }
+
+            let changelogHtml = '<ul class="timeline timeline-alt">';
+            
+            versions.forEach((version, index) => {
+                const isCurrentVersion = version.version === currentVersion;
+                const versionDate = version.date || 'No date';
+                const versionTitle = version.title || '';
+                
+                // Determine icon color based on version type
+                let iconColor = 'bg-info';
+                if (isCurrentVersion) {
+                    iconColor = 'bg-success';
+                } else if (index === 0) {
+                    iconColor = 'bg-warning';
+                } else if (version.version.includes('beta') || version.version.includes('alpha')) {
+                    iconColor = 'bg-danger';
+                } else {
+                    iconColor = 'bg-smooth';
+                }
+                
+                changelogHtml += `
+                    <li class="timeline-event">
+                        <div class="timeline-event-icon ${iconColor}">
+                            <i class="fas fa-tag"></i>
+                        </div>
+                        <div class="timeline-event-block block">
+                            <div class="block-header block-header-default">
+                                <h3 class="block-title">
+                                    v${version.version}${versionTitle ? ' - ' + versionTitle : ''}
+                                    ${isCurrentVersion ? '<span class="badge bg-success ms-2">Current</span>' : ''}
+                                </h3>
+                                <div class="block-options">
+                                    <div class="timeline-event-time block-options-item fs-sm fw-semibold">
+                                        ${versionDate}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="block-content">
+                                ${formatChangelogContent(version.content)}
+                                <div class="mt-3">
+                                    <a href="https://github.com/Owen-C137/Raptor-Panel" target="_blank" class="btn btn-sm btn-alt-secondary">
+                                        <i class="fab fa-github me-1"></i>View on GitHub
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                `;
+            });
+            
+            changelogHtml += '</ul>';
+
+            changelogContent.innerHTML = changelogHtml;
+        }
+
+        function formatChangelogContent(content) {
+            if (!content || content.trim().length === 0) {
+                return '<div class="alert alert-warning d-flex align-items-center" role="alert"><div class="flex-grow-1"><i class="fas fa-exclamation-triangle me-2"></i>No changelog available for this version.</div></div>';
+            }
+            
+            // Parse the content to extract sections and items
+            const lines = content.split('\n').filter(line => line.trim().length > 0);
+            let formatted = '';
+            let currentSection = '';
+            let currentItems = [];
+            
+            for (let line of lines) {
+                line = line.trim();
+                
+                // Check for section headers (###, ##, #)
+                if (line.match(/^#{1,3}\s+(.+)/)) {
+                    // Save previous section if it exists
+                    if (currentSection && currentItems.length > 0) {
+                        formatted += formatSection(currentSection, currentItems);
+                        currentItems = [];
+                    }
+                    
+                    const headerMatch = line.match(/^#{1,3}\s+(.+)/);
+                    currentSection = headerMatch[1];
+                }
+                // Check for list items (-, *, •)
+                else if (line.match(/^[-*•]\s+(.+)/)) {
+                    const itemMatch = line.match(/^[-*•]\s+(.+)/);
+                    if (itemMatch) {
+                        // Clean up the item text
+                        let itemText = itemMatch[1]
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            .replace(/💰|🧭|🔧|📱|🎨/g, ''); // Remove emojis
+                        currentItems.push(itemText);
+                    }
+                }
+                // Handle version headers like "v1.1.0 - 2025-09-19"
+                else if (line.match(/^v?\d+\.\d+\.\d+.*-.*\d{4}-\d{2}-\d{2}/)) {
+                    // Skip version headers as they're already shown in the timeline
+                    continue;
+                }
+                // Handle other content
+                else if (line.length > 0) {
+                    if (!currentSection) {
+                        currentSection = 'Changes';
+                    }
+                    currentItems.push(line);
+                }
+            }
+            
+            // Add the last section
+            if (currentSection && currentItems.length > 0) {
+                formatted += formatSection(currentSection, currentItems);
+            }
+            
+            // If no sections were found, treat all content as a single section
+            if (!formatted && content.trim()) {
+                const items = content.split('\n')
+                    .filter(line => line.trim().length > 0)
+                    .map(line => line.replace(/^[-*•]\s*/, '').trim())
+                    .filter(line => line.length > 0);
+                
+                if (items.length > 0) {
+                    formatted = formatSection('Changes', items);
+                }
+            }
+            
+            return formatted || '<div class="alert alert-info d-flex align-items-center" role="alert"><div class="flex-grow-1"><i class="fas fa-info-circle me-2"></i>No detailed changelog information available.</div></div>';
+        }
+        
+        function formatSection(sectionName, items) {
+            if (!items || items.length === 0) return '';
+            
+            let html = `<div class="mb-3">`;
+            
+            // Add section header if it's not a generic "Changes" section
+            if (sectionName && sectionName !== 'Changes') {
+                html += `<h6 class="text-primary mb-2">${sectionName}</h6>`;
+            }
+            
+            // Use OneUI list group for items
+            html += `<ul class="list-group push">`;
+            
+            items.forEach(item => {
+                // Clean and format each item
+                const cleanItem = item
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/💰|🧭|🔧|📱|🎨/g, '') // Remove emojis
+                    .trim();
+                
+                if (cleanItem.length > 0) {
+                    html += `<li class="list-group-item">${cleanItem}</li>`;
+                }
+            });
+            
+            html += `</ul></div>`;
+            
+            return html;
+        }
+
+        function showChangelogError(message = 'Failed to load changelog. Please try again later.') {
+            changelogContent.innerHTML = `
+                <div class="text-center py-3">
+                    <div class="text-danger mb-2">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                    <p class="text-muted mb-0">${message}</p>
+                </div>
+            `;
+        }
+    }
 }
 
 // Initialize when DOM is ready and jQuery is available
