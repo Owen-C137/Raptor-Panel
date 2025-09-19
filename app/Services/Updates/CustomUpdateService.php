@@ -109,24 +109,121 @@ class CustomUpdateService
      */
     public function getChangedFiles(): array
     {
-        // TODO: Implement proper manifest-based or git-diff based file detection
-        // For now, return a minimal set of files that are likely to change
-        // This avoids the expensive filesystem scanning and API rate limiting
+        try {
+            // Try git-diff based detection first
+            return $this->getChangedFilesFromGit();
+        } catch (\Exception $e) {
+            \Log::warning('Git-based file detection failed, falling back to comprehensive file scan: ' . $e->getMessage());
+            
+            // Fallback to scanning common directories for changes
+            return $this->getChangedFilesByScan();
+        }
+    }
+
+    /**
+     * Get changed files using git diff between current version and latest.
+     */
+    protected function getChangedFilesFromGit(): array
+    {
+        $currentVersion = $this->getCurrentVersion();
+        $latestVersion = $this->getLatestVersion();
         
-        $essentialFiles = [
-            'config/app.php', // Version updates
-            'resources/views/admin/index.blade.php', // Admin interface updates
+        if ($currentVersion === $latestVersion) {
+            return [];
+        }
+
+        // Use GitHub API to get file changes between versions
+        $githubService = app(\App\Services\Updates\GitHubFileService::class);
+        
+        try {
+            // Get commits between versions
+            $response = $githubService->makeRequest(
+                "compare/v{$currentVersion}...v{$latestVersion}"
+            );
+            
+            $changedFiles = [];
+            
+            if (isset($response['files'])) {
+                foreach ($response['files'] as $file) {
+                    $filename = $file['filename'];
+                    
+                    // Skip files we don't want to update
+                    if ($this->shouldIncludeFile($filename)) {
+                        $changedFiles[] = $filename;
+                    }
+                }
+            }
+            
+            return $changedFiles;
+            
+        } catch (\Exception $e) {
+            \Log::error('GitHub API file comparison failed: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * Fallback: scan common directories for potential changes.
+     */
+    protected function getChangedFilesByScan(): array
+    {
+        // Common files that typically change during updates
+        return [
+            'config/app.php',
+            'resources/views/admin/index.blade.php', 
+            'CHANGELOG.md',
+            'app/Http/Controllers/Admin/UpdateController.php',
+            'routes/admin.php',
+            'app/Services/Updates/CustomUpdateService.php',
+            // Add other commonly updated files
+            'composer.json',
+            'package.json',
+            'routes/web.php',
+            'routes/api.php',
         ];
-        
-        $changedFiles = [];
-        
-        foreach ($essentialFiles as $file) {
-            if ($this->isFileChanged($file)) {
-                $changedFiles[] = $file;
+    }
+
+    /**
+     * Determine if a file should be included in updates.
+     */
+    protected function shouldIncludeFile(string $filename): bool
+    {
+        // Skip sensitive/environment files
+        $excludePatterns = [
+            '.env',
+            '.env.*',
+            'storage/',
+            'vendor/',
+            'node_modules/',
+            '.git/',
+            'bootstrap/cache/',
+            'storage/framework/',
+            'storage/logs/',
+            '.DS_Store',
+            'Thumbs.db',
+            '*.log'
+        ];
+
+        foreach ($excludePatterns as $pattern) {
+            if (fnmatch($pattern, $filename) || strpos($filename, $pattern) !== false) {
+                return false;
             }
         }
+
+        // Only include certain file types
+        $allowedExtensions = [
+            'php', 'blade.php', 'js', 'css', 'json', 'md', 'txt', 'xml', 'yml', 'yaml'
+        ];
+
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
+        $fullExtension = substr($filename, strrpos($filename, '.') + 1);
         
-        return $changedFiles;
+        // Check for blade.php files
+        if (str_ends_with($filename, '.blade.php')) {
+            return true;
+        }
+
+        return in_array($extension, $allowedExtensions) || in_array($fullExtension, $allowedExtensions);
     }
 
     /**
