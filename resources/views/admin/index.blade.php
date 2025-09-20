@@ -619,18 +619,33 @@ function initializeAdminPage() {
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-success alert-dismissible fade show';
                 
-                const failureInfo = data.failed_files_count > 0 
-                    ? `<br><small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>${data.failed_files_count} files failed to update</small>`
-                    : '';
+                // Build failure info with file list
+                let failureInfo = '';
+                if (data.failed_files_count > 0) {
+                    const failedFilesList = data.failed_files_list && data.failed_files_list.length > 0 
+                        ? `<div class="mt-2"><strong class="text-danger">Failed Files:</strong><ul class="mb-0 small text-danger">${data.failed_files_list.map(file => `<li><code class="text-danger">${file}</code></li>`).join('')}</ul></div>`
+                        : '';
+                    
+                    failureInfo = `<div class="text-warning mt-2"><i class="fas fa-exclamation-triangle me-1"></i><strong>${data.failed_files_count} files failed to update</strong>${failedFilesList}</div>`;
+                }
+
+                // Build success info with file list (optional, show if there are failed files for comparison)
+                let successInfo = `<i class="fas fa-file-check me-1"></i>${data.updated_files_count} files updated successfully`;
+                if (data.failed_files_count > 0 && data.updated_files_list && data.updated_files_list.length > 0) {
+                    const successFilesList = `<div class="mt-2"><strong class="text-success">Successfully Updated:</strong><ul class="mb-0 small text-success">${data.updated_files_list.map(file => `<li><code class="text-success">${file}</code></li>`).join('')}</ul></div>`;
+                    successInfo = `<div class="text-success"><i class="fas fa-file-check me-1"></i><strong>${data.updated_files_count} files updated successfully</strong>${successFilesList}</div>`;
+                }
                 
                 alert.innerHTML = `
                     <i class="fas fa-check-circle me-2"></i>
                     <strong>Update Successful!</strong> Raptor Panel has been updated from ${data.old_version} to ${data.updated_version}.
-                    <br><small class="mt-1 d-block">
-                        <i class="fas fa-file-check me-1"></i>${data.updated_files_count} files updated successfully
+                    <div class="mt-2 small">
+                        ${successInfo}
                         ${failureInfo}
-                        <br><i class="fas fa-clock me-1"></i>Completed at ${new Date(data.update_timestamp).toLocaleString()}
-                    </small>
+                        <div class="mt-2 text-muted">
+                            <i class="fas fa-clock me-1"></i>Completed at ${new Date(data.update_timestamp).toLocaleString()}
+                        </div>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 

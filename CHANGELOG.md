@@ -2,6 +2,20 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.4 - 2025-09-20
+
+### Update System Alert Enhancement 🔍
+
+#### Improved
+- 📋 **Detailed Update Reporting** - Update success alerts now show specific files that failed to update
+- 🎨 **Enhanced Alert Formatting** - Color-coded sections for successful and failed files with improved readability
+- 🚨 **Better Error Visibility** - Failed files are displayed in formatted lists within update alerts for easier troubleshooting
+
+#### Technical Details
+- Enhanced JavaScript update success handling to display failed_files_list from backend
+- Added proper Bootstrap 5 styling for success/failure sections
+- Improved user experience with clear visual indicators for update status
+
 ## v1.1.3 - 2025-09-20
 
 ### Update System Cache Enhancement 🚀
