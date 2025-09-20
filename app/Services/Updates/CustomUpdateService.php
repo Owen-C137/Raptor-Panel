@@ -271,7 +271,13 @@ class CustomUpdateService
             'storage/logs/',
             '.DS_Store',
             'Thumbs.db',
-            '*.log'
+            '*.log',
+            '*.md',          // Skip all markdown files (documentation)
+            'log.txt',       // Skip log files
+            'yarn.lock',     // Skip package lock files
+            'composer.lock', // Skip composer lock files
+            'package-lock.json',
+            '.gitignore'     // Skip git files
         ];
 
         foreach ($excludePatterns as $pattern) {

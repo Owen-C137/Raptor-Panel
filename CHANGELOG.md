@@ -2,6 +2,23 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.7 - 2025-09-20
+
+### Update System File Filtering Enhancement 🛡️
+
+#### Fixed
+- 🚫 **Enhanced File Filtering** - Added comprehensive exclusion patterns for update system
+- 📋 **Documentation Files** - Excluded all .md files from updates (PLAN files, README, etc.)
+- 📝 **Log Files** - Excluded log.txt and other log files from update operations  
+- 🔒 **Lock Files** - Excluded yarn.lock, composer.lock, package-lock.json from updates
+- 🔧 **Git Files** - Excluded .gitignore and other version control files
+
+#### Technical Details
+- Enhanced `shouldIncludeFile()` method with comprehensive exclusion patterns
+- Prevents documentation and development files from being included in updates
+- Only essential application files are now processed during updates
+- Cleaner update reports with only relevant files
+
 ## v1.1.6 - 2025-09-20
 
 ### Update System Intelligence Enhancement 🎯
