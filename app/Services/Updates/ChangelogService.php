@@ -81,8 +81,8 @@ class ChangelogService
             // Add to raw content
             $versionData['raw'] .= $line . "\n";
             
-            // Parse sections
-            if (preg_match('/^###\s*(.+)$/i', $line, $matches)) {
+            // Parse sections (both ### and #### formats)
+            if (preg_match('/^#{3,4}\s*(.+)$/i', $line, $matches)) {
                 $sectionName = strtolower(trim($matches[1]));
                 $currentSection = $this->mapSectionName($sectionName);
                 continue;
@@ -115,15 +115,17 @@ class ChangelogService
             'updated' => 'changed',
             'modified' => 'changed',
             'enhanced' => 'changed',
+            'improved' => 'changed',  // Added for our changelog format
             'fixed' => 'fixed',
             'bugfixes' => 'fixed',
             'bug fixes' => 'fixed',
             'removed' => 'removed',
             'deleted' => 'removed',
             'security' => 'security',
+            'technical details' => 'changed',  // Added for our format
         ];
 
-        return $mapping[$section] ?? null;
+        return $mapping[strtolower($section)] ?? null;
     }
 
     /**
