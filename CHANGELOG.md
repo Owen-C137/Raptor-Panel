@@ -2,6 +2,20 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.5 - 2025-09-20
+
+### Cache System Behavior Fix 🔧
+
+#### Fixed
+- 🚫 **Cache Clear Auto-Update** - Removed unwanted automatic update check trigger when using "Clear All Cache" button
+- 🎯 **Improved User Experience** - Cache clearing now only performs cache operations without unnecessary update checks
+- 📱 **Clean Separation** - Update checks and cache clearing are now properly independent operations
+
+#### Technical Details
+- Removed automatic `checkForUpdates(true)` call from clear cache button handler
+- Cache clearing now only shows success/failure status without side effects
+- Update system cache clearing (during actual updates) still works correctly
+
 ## v1.1.4 - 2025-09-20
 
 ### Update System Alert Enhancement 🔍

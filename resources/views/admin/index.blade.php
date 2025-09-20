@@ -249,10 +249,6 @@ function initializeAdminPage() {
                 .then(data => {
                     if (data.success) {
                         showStatusAlert(false, 'Cache cleared', data.message, 'success');
-                        // Auto refresh update check after cache clear
-                        setTimeout(() => {
-                            checkForUpdates(true);
-                        }, 500);
                     } else {
                         showStatusAlert(false, 'Cache clear failed', data.message, 'danger');
                     }
