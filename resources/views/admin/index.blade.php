@@ -40,6 +40,9 @@
                     <i class="fas fa-rocket me-2"></i>Raptor Panel Information
                 </h3>
                 <div class="block-options">
+                    <button type="button" class="btn-block-option" id="clear-cache" title="Clear All Cache">
+                        <i class="si si-trash"></i>
+                    </button>
                     <button type="button" class="btn-block-option" id="refresh-update-check" title="Check for updates">
                         <i class="si si-refresh"></i>
                     </button>
@@ -228,6 +231,42 @@ function initializeAdminPage() {
             });
         }
 
+        // Clear cache button handler
+        const clearCacheBtn = document.getElementById('clear-cache');
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', function() {
+                const icon = clearCacheBtn.querySelector('i');
+                icon.classList.add('fa-spin');
+                
+                fetch('{{ route('admin.updates.cache.clear') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showStatusAlert(false, 'Cache cleared', data.message, 'success');
+                        // Auto refresh update check after cache clear
+                        setTimeout(() => {
+                            checkForUpdates(true);
+                        }, 500);
+                    } else {
+                        showStatusAlert(false, 'Cache clear failed', data.message, 'danger');
+                    }
+                })
+                .catch(error => {
+                    console.error('Cache clear error:', error);
+                    showStatusAlert(false, 'Error', 'Failed to clear cache', 'danger');
+                })
+                .finally(() => {
+                    icon.classList.remove('fa-spin');
+                });
+            });
+        }
+
         function checkForUpdates(force = false) {
             const url = '{{ route('admin.updates.check') }}' + (force ? '?force=true' : '');
         
@@ -329,7 +368,7 @@ function initializeAdminPage() {
         `;
     }
 
-    function showStatusAlert(updateAvailable, currentVersion, latestVersion) {
+    function showStatusAlert(updateAvailable, currentVersion, latestVersion, customType = null) {
         // Remove any existing status alerts
         const existingAlert = document.querySelector('.status-alert');
         if (existingAlert) {
@@ -339,7 +378,15 @@ function initializeAdminPage() {
         const alert = document.createElement('div');
         alert.className = 'alert alert-dismissible fade show status-alert';
         
-        if (updateAvailable) {
+        // Handle custom alert types (for cache clear, etc.)
+        if (customType) {
+            alert.classList.add(`alert-${customType}`);
+            alert.innerHTML = `
+                <i class="fas fa-${customType === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                <strong>${currentVersion}!</strong> ${latestVersion}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+        } else if (updateAvailable) {
             alert.classList.add('alert-warning');
             alert.innerHTML = `
                 <i class="fas fa-exclamation-triangle me-2"></i>

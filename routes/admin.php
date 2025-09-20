@@ -247,6 +247,7 @@ Route::group(['prefix' => 'updates'], function () {
     Route::post('/cancel', [Admin\UpdateController::class, 'cancelUpdate'])->name('admin.updates.cancel');
     Route::post('/backups/restore', [Admin\UpdateController::class, 'restoreBackup'])->name('admin.updates.backups.restore');
     Route::post('/backups/cleanup', [Admin\UpdateController::class, 'cleanupBackups'])->name('admin.updates.backups.cleanup');
+    Route::post('/clear-cache', [Admin\UpdateController::class, 'clearCaches'])->name('admin.updates.cache.clear');
 
     Route::delete('/backups/{backup_id}', [Admin\UpdateController::class, 'deleteBackup'])->name('admin.updates.backups.delete');
 });

@@ -2,6 +2,35 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.3 - 2025-09-20
+
+### Update System Cache Enhancement 🚀
+
+#### Added
+- 🗑️ **Clear Cache Button** - Added dedicated cache clearing button to admin dashboard
+  - Manual cache clearing without needing terminal access
+  - One-click cache clearing with visual feedback and auto-refresh
+  - Comprehensive cache clearing (application, config, routes, views)
+- ⚡ **Enhanced Force Refresh** - Improved forced update checks with comprehensive cache clearing
+  - Automatic cache clearing when using refresh button with force parameter
+  - Better cache invalidation for accurate version detection
+  - Logging for cache clearing operations and error handling
+
+#### Enhanced
+- 🔄 **Update Check System** - Enhanced cache handling for more reliable update detection
+  - Force refresh now clears all relevant Laravel caches
+  - Better error handling for cache clearing failures
+  - Improved user experience with visual feedback during operations
+- 📱 **Admin Dashboard UX** - Better button organization and user feedback
+  - Clear visual indicators during cache clearing operations
+  - Auto-refresh update check after cache clearing
+  - Improved alert system for cache operations
+
+#### Technical Improvements
+- 🛠️ **New API Endpoint** - Added `/admin/updates/clear-cache` endpoint for cache management
+- 📝 **Enhanced Logging** - Added logging for cache clearing operations and failures
+- 🎯 **Better Error Handling** - Comprehensive error handling for cache operations
+
 ## v1.1.2 - 2025-09-20
 
 ### Shop System Alert Fix 🔧

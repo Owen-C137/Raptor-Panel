@@ -43,11 +43,19 @@ class UpdateController extends Controller
             if ($forceRefresh) {
                 Cache::forget($cacheKey);
                 try {
-                    // Clear config cache to ensure version changes are reflected
+                    // Clear all Laravel caches to ensure fresh data
+                    \Artisan::call('cache:clear');
                     \Artisan::call('config:clear');
+                    \Artisan::call('route:clear');
+                    \Artisan::call('view:clear');
+                    
+                    // Force regenerate config cache for version detection
                     \Artisan::call('config:cache');
+                    
+                    Log::info('Update check: All caches cleared for forced refresh');
                 } catch (\Exception $e) {
                     // Continue if cache clearing fails
+                    Log::warning('Update check: Cache clearing failed', ['error' => $e->getMessage()]);
                 }
                 $cachedResult = null;
             }
@@ -573,5 +581,29 @@ class UpdateController extends Controller
             return 'Addon System';
         }
         return 'Other';
+    }
+
+    /**
+     * Clear all application caches (endpoint for manual cache clearing)
+     */
+    public function clearCaches()
+    {
+        try {
+            \Artisan::call('cache:clear');
+            \Artisan::call('config:clear');
+            \Artisan::call('route:clear');
+            \Artisan::call('view:clear');
+            \Artisan::call('config:cache');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'All caches cleared successfully'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to clear caches: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
