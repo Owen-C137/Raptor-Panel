@@ -2,6 +2,32 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.8 - 2025-09-20
+
+### File Manager Folder Upload Support 📁
+
+#### Added
+- 📁 **Folder Upload Button** - New "Upload Folder" button for easy directory uploads
+- 🎯 **Smart File Filtering** - Automatically filters out directory entries while preserving actual files
+- 🚀 **Enhanced Upload Experience** - Separate buttons for individual files vs. folder contents
+- 💡 **Improved Error Messages** - Better user feedback when folder uploads contain only directories
+
+#### Changed  
+- 🔄 **Upload Button Text** - Main button now reads "Upload Files" for clarity
+- 🧹 **File Validation Logic** - Improved detection of actual files vs. directory entries
+- 🎨 **UI Enhancement** - Added folder upload option to file manager toolbar
+
+#### Fixed
+- ❌ **"Folder uploads are not supported"** - Resolved blocking error when selecting folders
+- 🗂️ **Directory Content Upload** - Files within folders can now be uploaded successfully
+- 📤 **Drag & Drop Improvements** - Better handling of folder contents in drag operations
+
+#### Technical Details
+- Added `webkitdirectory` attribute support for folder selection
+- Enhanced file validation to distinguish between directories and files
+- Maintained compatibility with existing Wings daemon upload endpoints
+- Files are uploaded individually (flattened structure) as per backend capabilities
+
 ## v1.1.7 - 2025-09-20
 
 ### Update System File Filtering Enhancement 🛡️

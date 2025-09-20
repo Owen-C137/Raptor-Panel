@@ -64,11 +64,22 @@ export default ({ className }: WithClassname) => {
     const onFileSubmission = (files: FileList) => {
         clearAndAddHttpError();
         const list = Array.from(files);
-        if (list.some((file) => !file.size || (!file.type && file.size === 4096))) {
-            return addError('Folder uploads are not supported at this time.', 'Error');
+        // Filter out directory entries (empty files with 4096 bytes and no type)
+        // but allow actual files with content
+        const validFiles = list.filter((file) => {
+            // Allow files with actual content (size > 0 and has a type, or size > 4096)
+            return file.size > 0 && (file.type || file.size !== 4096);
+        });
+        
+        if (validFiles.length === 0) {
+            return addError('No valid files found to upload. Please select individual files or files from within folders.', 'Error');
         }
 
-        const uploads = list.map((file) => {
+        if (validFiles.length !== list.length) {
+            addError('Some folder entries were skipped. Only individual files can be uploaded.', 'Warning');
+        }
+
+        const uploads = validFiles.map((file) => {
             const controller = new AbortController();
             pushFileUpload({
                 name: file.name,
@@ -147,7 +158,97 @@ export default ({ className }: WithClassname) => {
                 multiple
             />
             <Button className={className} onClick={() => fileUploadInput.current && fileUploadInput.current.click()}>
-                Upload
+                Upload Files
+            </Button>
+        </>
+    );
+};
+
+export const UploadFolderButton = ({ className }: { className?: string }) => {
+    const fileUploadInput = useRef<HTMLInputElement>(null);
+    
+    const { mutate } = useFileManagerSwr();
+    const { addError, clearAndAddHttpError } = useFlashKey('files');
+
+    const uuid = ServerContext.useStoreState((state) => state.server.data!.uuid);
+    const directory = ServerContext.useStoreState((state) => state.files.directory);
+    const { removeFileUpload, pushFileUpload, setUploadProgress, clearFileUploads } = ServerContext.useStoreActions(
+        (actions) => actions.files
+    );
+
+    const onUploadProgress = (data: ProgressEvent, name: string) => {
+        setUploadProgress({ name, loaded: data.loaded });
+    };
+
+    const onFileSubmission = (files: FileList) => {
+        clearAndAddHttpError();
+        const list = Array.from(files);
+        // Filter out directory entries (empty files with 4096 bytes and no type)
+        // but allow actual files with content
+        const validFiles = list.filter((file) => {
+            // Allow files with actual content (size > 0 and has a type, or size > 4096)
+            return file.size > 0 && (file.type || file.size !== 4096);
+        });
+        
+        if (validFiles.length === 0) {
+            return addError('No valid files found in the selected folder.', 'Error');
+        }
+
+        const uploads = validFiles.map((file) => {
+            const controller = new AbortController();
+            pushFileUpload({
+                name: file.name,
+                data: { abort: controller, loaded: 0, total: file.size },
+            });
+
+            return () =>
+                getFileUploadUrl(uuid).then((url) =>
+                    axios
+                        .post(
+                            url,
+                            { files: file },
+                            {
+                                signal: controller.signal,
+                                headers: { 'Content-Type': 'multipart/form-data' },
+                                params: { directory },
+                                onUploadProgress: (data) => onUploadProgress(data, file.name),
+                            }
+                        )
+                        .then(() => setTimeout(() => removeFileUpload(file.name), 500))
+                );
+        });
+
+        Promise.all(uploads.map((fn) => fn()))
+            .then(() => mutate())
+            .catch((error) => {
+                clearFileUploads();
+                clearAndAddHttpError(error);
+            });
+    };
+
+    return (
+        <>
+            <input
+                type={'file'}
+                ref={fileUploadInput}
+                css={tw`hidden`}
+                // @ts-ignore - webkitdirectory is not in the official types but is widely supported
+                webkitdirectory=""
+                onChange={(e) => {
+                    if (!e.currentTarget.files) return;
+
+                    onFileSubmission(e.currentTarget.files);
+                    if (fileUploadInput.current) {
+                        fileUploadInput.current.files = null;
+                    }
+                }}
+                multiple
+            />
+            <Button 
+                className={className} 
+                onClick={() => fileUploadInput.current && fileUploadInput.current.click()}
+            >
+                Upload Folder
             </Button>
         </>
     );
