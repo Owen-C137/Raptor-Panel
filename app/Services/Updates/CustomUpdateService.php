@@ -163,24 +163,94 @@ class CustomUpdateService
     }
 
     /**
-     * Fallback: scan common directories for potential changes.
+     * Fallback: use git diff to detect actual changes between current and latest version.
      */
     protected function getChangedFilesByScan(): array
     {
-        // Common files that typically change during updates
-        return [
-            'config/app.php',
-            'resources/views/admin/index.blade.php', 
-            'CHANGELOG.md',
-            'app/Http/Controllers/Admin/UpdateController.php',
-            'routes/admin.php',
-            'app/Services/Updates/CustomUpdateService.php',
-            // Add other commonly updated files
-            'composer.json',
-            'package.json',
-            'routes/web.php',
-            'routes/api.php',
-        ];
+        try {
+            $currentVersion = $this->getCurrentVersion();
+            $latestVersion = $this->getLatestVersion();
+            
+            if ($currentVersion === $latestVersion) {
+                return [];
+            }
+            
+            // Try to find commit hashes for these versions by commit message
+            $currentCommit = $this->findCommitByVersion($currentVersion);
+            $latestCommit = $this->findCommitByVersion($latestVersion);
+            
+            if ($currentCommit && $latestCommit && $currentCommit !== $latestCommit) {
+                // Use git diff to get actual changed files
+                $command = "git diff --name-only {$currentCommit}..{$latestCommit}";
+                exec($command, $output, $returnCode);
+                
+                if ($returnCode === 0) {
+                    $changedFiles = array_filter($output, function($filename) {
+                        return $this->shouldIncludeFile($filename);
+                    });
+                    
+                    \Log::info("Found " . count($changedFiles) . " changed files between v{$currentVersion} and v{$latestVersion}", $changedFiles);
+                    return array_values($changedFiles);
+                }
+            }
+            
+            \Log::warning("Could not determine actual file changes between versions, trying recent changes fallback");
+            
+            // If we can't find specific commits, try HEAD vs previous commits
+            return $this->getRecentChangedFiles();
+            
+        } catch (\Exception $e) {
+            \Log::error('Git diff scan failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Get files changed in recent commits as fallback.
+     */
+    protected function getRecentChangedFiles(): array
+    {
+        try {
+            // Get files changed in the last 5 commits
+            $command = "git diff --name-only HEAD~5..HEAD";
+            exec($command, $output, $returnCode);
+            
+            if ($returnCode === 0) {
+                $changedFiles = array_filter($output, function($filename) {
+                    return $this->shouldIncludeFile($filename);
+                });
+                
+                \Log::info("Using recent changes fallback, found " . count($changedFiles) . " files", $changedFiles);
+                return array_values($changedFiles);
+            }
+            
+            \Log::warning("Git diff fallback also failed, no files to update");
+            return [];
+        } catch (\Exception $e) {
+            \Log::error('Recent changes fallback failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+    
+    /**
+     * Find commit hash by looking for version in commit messages.
+     */
+    protected function findCommitByVersion(string $version): ?string
+    {
+        try {
+            // Look for commits that mention the version
+            $command = "git log --oneline --grep='v{$version}' -n 1 --format='%H'";
+            exec($command, $output, $returnCode);
+            
+            if ($returnCode === 0 && !empty($output[0])) {
+                return trim($output[0]);
+            }
+            
+            return null;
+        } catch (\Exception $e) {
+            \Log::warning("Could not find commit for version {$version}: " . $e->getMessage());
+            return null;
+        }
     }
 
     /**

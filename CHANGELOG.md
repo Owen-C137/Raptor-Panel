@@ -2,6 +2,23 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.6 - 2025-09-20
+
+### Update System Intelligence Enhancement 🎯
+
+#### Fixed
+- 🔍 **Dynamic File Detection** - Removed hardcoded file lists from update system
+- 📊 **Precise Updates** - System now only updates files that actually changed between versions
+- 🚀 **Improved Performance** - Reduced unnecessary file transfers and processing
+- 🔬 **Git-Based Detection** - Uses actual git diff between version commits for accurate file detection
+
+#### Technical Improvements
+- Eliminated static file arrays in `getChangedFilesByScan()` method
+- Implemented dynamic commit lookup by version number
+- Added intelligent fallback to recent changes if specific commits not found
+- Enhanced logging for better update operation visibility
+- Graceful degradation: returns empty array if all detection methods fail
+
 ## v1.1.5 - 2025-09-20
 
 ### Cache System Behavior Fix 🔧
