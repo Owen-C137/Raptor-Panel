@@ -559,11 +559,11 @@
         
         function showGeneralAlert(type, message) {
             const alertHtml = `
-                <div class="alert alert-${type} alert-dismissible fade in" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                    <strong>${type === 'success' ? 'Success!' : 'Error!'}</strong> ${message}
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <p class="mb-0">
+                        <strong>${type === 'success' ? 'Success!' : 'Error!'}</strong> ${message}
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             `;
             
@@ -574,7 +574,7 @@
                 setTimeout(() => {
                     const alert = generalAlertContainer.querySelector('.alert');
                     if (alert) {
-                        alert.classList.remove('in');
+                        alert.classList.remove('show');
                         setTimeout(() => alert.remove(), 150);
                     }
                 }, 5000);

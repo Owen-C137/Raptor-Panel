@@ -2,6 +2,19 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.1.2 - 2025-09-20
+
+### Shop System Alert Fix 🔧
+
+#### Fixed
+- 🚨 **Shop Settings Alert Display** - Fixed alert notifications not showing properly when saving settings
+  - Updated `showGeneralAlert()` function to use modern Bootstrap 5 alert components
+  - Replaced deprecated `data-dismiss="alert"` with `data-bs-dismiss="alert"`
+  - Fixed button close styling from `<span>&times;</span>` to proper `btn-close` class
+  - Improved alert fade transitions using `fade show` instead of `fade in`
+- 📱 **Enhanced Alert Styling** - Better alert message structure with proper paragraph formatting
+- ⚡ **Improved User Experience** - Success and error messages now display correctly in admin shop settings
+
 ## v1.1.1 - 2025-09-20
 
 ### Test Update - Admin Dashboard Timeline Enhancement 🎨
