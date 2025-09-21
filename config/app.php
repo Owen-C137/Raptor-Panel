@@ -11,7 +11,9 @@ return [
     | Update this version number when releasing new features.
     */
 
-    'version' => '1.1.8',
+    'version' => '1.2.0',
+
+    /*
 
     /*
     |--------------------------------------------------------------------------
@@ -45,6 +47,14 @@ return [
         'auto_backup' => true,
         'require_confirmation' => true,
         'show_changelog' => true,
+        'max_file_scans' => 1000, // Maximum files to scan during directory scan strategy
+        'use_improved_detection' => true, // Enable improved update detection
+        'preferred_strategies' => [
+            'github_releases',
+            'git_tree_comparison',
+            'manifest_comparison',
+            'directory_scan',
+        ],
         'excluded_paths' => [
             'storage/',
             '.env*',

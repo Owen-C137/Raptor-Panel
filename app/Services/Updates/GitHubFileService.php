@@ -216,4 +216,26 @@ class GitHubFileService
             return ['error' => $e->getMessage()];
         }
     }
+
+    /**
+     * Make a request to the GitHub API
+     */
+    public function makeRequest(string $endpoint): mixed
+    {
+        try {
+            $url = config('app.update_source.api_base') . '/' . ltrim($endpoint, '/');
+            $response = $this->client->get($url);
+            
+            if ($response->getStatusCode() === 200) {
+                return json_decode($response->getBody()->getContents(), true);
+            }
+            
+            Log::warning("GitHub API request failed for {$endpoint}, HTTP status: " . $response->getStatusCode());
+            return null;
+            
+        } catch (Exception $e) {
+            Log::error("GitHub API request failed for {$endpoint}: " . $e->getMessage());
+            throw $e;
+        }
+    }
 }
