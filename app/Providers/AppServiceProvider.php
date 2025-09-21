@@ -65,6 +65,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton('extensions.themes', function () {
             return new Theme();
         });
+
+        // Register our new GitHub Release Update Service
+        $this->app->singleton(\Pterodactyl\Services\Updates\GitHubReleaseUpdateService::class);
+        $this->app->singleton(\Pterodactyl\Services\Updates\CustomUpdateService::class);
     }
 
     /**

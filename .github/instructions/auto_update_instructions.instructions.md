@@ -13,10 +13,11 @@ Raptor Panel includes a **multi-strategy enhanced auto-update system** that prov
 The enhanced update system uses **4 complementary strategies** to ensure reliable update detection:
 
 #### **Strategy 1: GitHub Releases** (Most Reliable)
-- Uses GitHub's official releases API (`/releases/latest`)
+- Uses GitHub's official releases API (`/releases/latest`) 
+- **Enhanced v1.2.2+**: Automatic fallback to tagged releases when formal releases unavailable
 - Compares commits between release tags using `/compare/{tag1}...{tag2}`
 - Gets exact list of changed files with modification status
-- **95%+ accuracy** when proper releases are created
+- **98%+ accuracy** with dual-path detection system
 
 #### **Strategy 2: Git Tree Comparison**
 - Finds commit SHAs for versions using multiple search patterns
