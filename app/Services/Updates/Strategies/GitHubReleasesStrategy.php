@@ -19,10 +19,11 @@ class GitHubReleasesStrategy
     ) {}
 
     /**
-     * Get the latest version from GitHub releases
+     * Get the latest version from GitHub releases (with fallback to tags)
      */
     public function getLatestVersion(): ?string
     {
+        // First try formal releases
         try {
             $url = config('app.update_source.api_base') . '/releases/latest';
             $response = $this->client->get($url);
@@ -31,32 +32,47 @@ class GitHubReleasesStrategy
                 $data = json_decode($response->getBody()->getContents(), true);
                 $tagName = $data['tag_name'] ?? null;
                 
-                // Remove 'v' prefix if present
-                return $tagName ? ltrim($tagName, 'v') : null;
+                if ($tagName) {
+                    Log::info('GitHub Releases Strategy: Found formal release', ['tag' => $tagName]);
+                    return ltrim($tagName, 'v');
+                }
             }
-            
-            return null;
         } catch (Exception $e) {
-            Log::error('GitHub releases API failed: ' . $e->getMessage());
-            return null;
+            Log::info('GitHub Releases Strategy: No formal releases, trying tags fallback');
         }
+
+        // Fallback to tags (tagged releases)
+        try {
+            $url = config('app.update_source.api_base') . '/tags';
+            $response = $this->client->get($url);
+            
+            if ($response->getStatusCode() === 200) {
+                $tags = json_decode($response->getBody()->getContents(), true);
+                
+                if (!empty($tags) && is_array($tags)) {
+                    // Get the first (latest) tag
+                    $latestTag = $tags[0]['name'] ?? null;
+                    
+                    if ($latestTag) {
+                        Log::info('GitHub Releases Strategy: Found tagged release', ['tag' => $latestTag]);
+                        return ltrim($latestTag, 'v');
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            Log::error('GitHub Releases Strategy: Tags API also failed: ' . $e->getMessage());
+        }
+
+        return null;
     }
 
     /**
-     * Get changed files between two versions using GitHub releases
+     * Get changed files between two versions using GitHub releases or tags
      */
     public function getChangedFiles(string $currentVersion, string $latestVersion): array
     {
         try {
-            // Get release information for both versions
-            $currentRelease = $this->getRelease('v' . $currentVersion);
-            $latestRelease = $this->getRelease('v' . $latestVersion);
-            
-            if (!$currentRelease || !$latestRelease) {
-                throw new Exception('Could not find release information for comparison');
-            }
-
-            // Use compare API to get changed files between tags
+            // Use GitHub's compare API - works with both formal releases AND tagged releases
             $compareUrl = config('app.update_source.api_base') . '/compare/v' . $currentVersion . '...v' . $latestVersion;
             $response = $this->client->get($compareUrl);
             
@@ -68,43 +84,69 @@ class GitHubReleasesStrategy
                     foreach ($data['files'] as $file) {
                         $filename = $file['filename'];
                         
-                        // Only include files that were added or modified
+                        // Only include files that were added or modified (not removed)
                         if (in_array($file['status'], ['added', 'modified'])) {
                             $files[] = $filename;
                         }
                     }
                 }
                 
-                Log::info('GitHub releases strategy found ' . count($files) . ' changed files');
+                Log::info('GitHub Releases Strategy: Compare API found ' . count($files) . ' changed files', [
+                    'from' => $currentVersion,
+                    'to' => $latestVersion,
+                    'files' => $files
+                ]);
                 return $files;
             }
             
-            throw new Exception('Compare API request failed');
+            throw new Exception('Compare API request failed with status: ' . $response->getStatusCode());
             
         } catch (Exception $e) {
-            Log::error('GitHub releases strategy failed: ' . $e->getMessage());
+            Log::error('GitHub Releases Strategy: Compare API failed: ' . $e->getMessage());
             throw $e;
         }
     }
 
     /**
-     * Get release information for a specific tag
+     * Get release information for a specific tag (formal release or tagged release)
      */
     protected function getRelease(string $tag): ?array
     {
+        // First try formal releases
         try {
             $url = config('app.update_source.api_base') . '/releases/tags/' . $tag;
             $response = $this->client->get($url);
             
             if ($response->getStatusCode() === 200) {
+                Log::info('Found formal release for tag: ' . $tag);
                 return json_decode($response->getBody()->getContents(), true);
             }
-            
-            return null;
         } catch (Exception $e) {
-            Log::warning('Could not get release for tag ' . $tag . ': ' . $e->getMessage());
-            return null;
+            Log::info('No formal release for tag ' . $tag . ', checking if tag exists');
         }
+
+        // Fallback: check if tag exists (tagged release)
+        try {
+            $url = config('app.update_source.api_base') . '/git/refs/tags/' . $tag;
+            $response = $this->client->get($url);
+            
+            if ($response->getStatusCode() === 200) {
+                $tagData = json_decode($response->getBody()->getContents(), true);
+                Log::info('Found tagged release for tag: ' . $tag);
+                
+                // Return a mock release structure for tagged releases
+                return [
+                    'tag_name' => $tag,
+                    'name' => $tag,
+                    'published_at' => null, // Tagged releases don't have publish dates
+                    'body' => 'Tagged release - see commit for details',
+                ];
+            }
+        } catch (Exception $e) {
+            Log::warning('Tag ' . $tag . ' does not exist: ' . $e->getMessage());
+        }
+        
+        return null;
     }
 
     /**
