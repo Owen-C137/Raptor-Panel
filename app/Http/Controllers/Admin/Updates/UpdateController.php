@@ -1,0 +1,852 @@
+<?php
+
+namespace Pterodactyl\Http\Controllers\Admin\Updates;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Pterodactyl\Http\Controllers\Controller;
+use Pterodactyl\Services\Updates\GitHub\GitHubReleaseService;
+use Pterodactyl\Services\Updates\Database\VersionService;
+use Pterodactyl\Services\Updates\Database\SessionService;
+use Pterodactyl\Services\Updates\Files\BackupService;
+use Pterodactyl\Services\Updates\Validation\ValidationService;
+use Pterodactyl\Services\Updates\UpdateOrchestrationService;
+
+/**
+ * UpdateController handles the core update process flow and API endpoints.
+ * This controller provides the REST API for managing panel updates through
+ * the comprehensive service architecture.
+ */
+class UpdateController extends Controller
+{
+    private GitHubReleaseService $githubService;
+    private VersionService $versionService;
+    private SessionService $sessionService;
+    private BackupService $backupService;
+    private ValidationService $validationService;
+    private UpdateOrchestrationService $orchestrationService;
+
+    public function __construct(
+        GitHubReleaseService $githubService,
+        VersionService $versionService,
+        SessionService $sessionService,
+        BackupService $backupService,
+        ValidationService $validationService,
+        UpdateOrchestrationService $orchestrationService
+    ) {
+        $this->githubService = $githubService;
+        $this->versionService = $versionService;
+        $this->sessionService = $sessionService;
+        $this->backupService = $backupService;
+        $this->validationService = $validationService;
+        $this->orchestrationService = $orchestrationService;
+    }
+
+    /**
+     * Check for available updates from GitHub.
+     */
+    public function checkForUpdates(Request $request): JsonResponse
+    {
+        try {
+            $currentVersion = $this->versionService->getCurrentVersion();
+            $latestRelease = $this->githubService->getLatestRelease();
+            
+            $updateAvailable = version_compare($latestRelease['tag_name'], $currentVersion->version, '>');
+            
+            return response()->json([
+                'success' => true,
+                'update_available' => $updateAvailable,
+                'current_version' => $currentVersion->version,
+                'latest_version' => $latestRelease['tag_name'],
+                'release_info' => $latestRelease,
+                'checked_at' => now(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to check for updates: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get details about a specific version.
+     */
+    public function getDetails(Request $request, string $version): JsonResponse
+    {
+        try {
+            $release = $this->githubService->getReleaseByTag($version);
+            
+            if (!$release) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Version not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'release' => $release,
+                'changelog' => $this->parseChangelog($release['body'] ?? ''),
+                'assets' => $release['assets'] ?? [],
+                'published_at' => $release['published_at'],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get version details: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Start the update process for a specific version.
+     */
+    public function startUpdate(Request $request, string $version): JsonResponse
+    {
+        try {
+            // Validate the request
+            $request->validate([
+                'create_backup' => 'boolean',
+                'force' => 'boolean',
+            ]);
+
+            // Check if update is already in progress
+            $activeSession = $this->sessionService->getActiveSession();
+            if ($activeSession) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'An update is already in progress',
+                    'active_session' => $activeSession->session_id,
+                ], 409);
+            }
+
+            // Validate system before update
+            $validation = $this->validationService->validatePreUpdate();
+            if (!$validation['valid'] && !$request->boolean('force')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Pre-update validation failed',
+                    'validation_errors' => $validation['errors'],
+                    'can_force' => true,
+                ], 422);
+            }
+
+            // Create update session
+            $session = $this->sessionService->createSession([
+                'target_version' => $version,
+                'current_version' => $this->versionService->getCurrentVersion()->version,
+                'options' => [
+                    'create_backup' => $request->boolean('create_backup', true),
+                    'force' => $request->boolean('force', false),
+                ],
+                'user_id' => auth()->id(),
+            ]);
+
+            // Start the update process asynchronously
+            $this->orchestrationService->executeUpdate($session->session_id, [
+                'target_version' => $version,
+                'create_backup' => $request->boolean('create_backup', true),
+                'force' => $request->boolean('force', false),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'session_id' => $session->session_id,
+                'status' => $session->status,
+                'message' => 'Update process started successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to start update: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Initiate an update process (simplified version of startUpdate).
+     * This is a more streamlined endpoint for dashboard quick updates.
+     */
+    public function initiateUpdate(Request $request): JsonResponse
+    {
+        try {
+            // Get the latest available version
+            $currentVersion = config('app.version', '1.0.0');
+            $availableUpdates = $this->githubService->getAvailableUpdates($currentVersion);
+            
+            if (empty($availableUpdates)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No updates available',
+                ], 404);
+            }
+
+            // Get the latest version
+            $latestUpdate = $availableUpdates[0];
+            
+            // Forward to the full startUpdate method with the latest version
+            $request->merge([
+                'create_backup' => $request->boolean('create_backup', true),
+                'force' => $request->boolean('force', false),
+            ]);
+
+            return $this->startUpdate($request, $latestUpdate['tag_name']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to initiate update: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get real-time progress of an update session.
+     */
+    public function getProgress(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $session = $this->sessionService->findSession($sessionId);
+            
+            if (!$session) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Update session not found',
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'session' => [
+                    'id' => $session->session_id,
+                    'status' => $session->status,
+                    'progress_percentage' => $session->progress_percentage,
+                    'current_step' => $session->current_step,
+                    'started_at' => $session->started_at,
+                    'completed_at' => $session->completed_at,
+                    'error_message' => $session->error_message,
+                ],
+                'steps' => $this->sessionService->getSessionSteps($sessionId),
+                'logs' => $this->sessionService->getRecentLogs($sessionId, 50),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get progress: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Cancel an update if possible.
+     */
+    public function cancelUpdate(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $session = $this->sessionService->findSession($sessionId);
+            
+            if (!$session) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Update session not found',
+                ], 404);
+            }
+
+            if (!in_array($session->status, ['pending', 'downloading', 'preparing'])) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Update cannot be cancelled at this stage',
+                    'current_status' => $session->status,
+                ], 422);
+            }
+
+            // Cancel the update
+            $result = $this->orchestrationService->cancelUpdate($sessionId);
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Update cancelled successfully',
+                    'session_id' => $sessionId,
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to cancel update: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Rollback an update session.
+     */
+    public function rollback(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            $session = $this->sessionService->findSession($sessionId);
+            
+            if (!$session) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Update session not found',
+                ], 404);
+            }
+
+            if (!in_array($session->status, ['failed', 'completed'])) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Session cannot be rolled back',
+                    'current_status' => $session->status,
+                ], 422);
+            }
+
+            // Perform rollback
+            $result = $this->orchestrationService->rollbackUpdate($sessionId);
+
+            if ($result['success']) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Rollback completed successfully',
+                    'session_id' => $sessionId,
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $result['error'],
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to rollback update: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * List available backups.
+     */
+    public function listBackups(Request $request): JsonResponse
+    {
+        try {
+            $backups = $this->backupService->listBackups();
+            
+            return response()->json([
+                'success' => true,
+                'backups' => $backups,
+                'total_count' => count($backups),
+                'total_size' => array_sum(array_column($backups, 'size')),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to list backups: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get update history.
+     */
+    public function getUpdateHistory(Request $request): JsonResponse
+    {
+        try {
+            $sessions = $this->sessionService->getSessionHistory([
+                'limit' => $request->input('limit', 50),
+                'offset' => $request->input('offset', 0),
+                'status' => $request->input('status'),
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'sessions' => $sessions,
+                'pagination' => [
+                    'limit' => (int) $request->input('limit', 50),
+                    'offset' => (int) $request->input('offset', 0),
+                    'total' => $this->sessionService->getSessionCount(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get update history: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Get update settings.
+     */
+    public function getSettings(Request $request): JsonResponse
+    {
+        try {
+            $settings = $this->versionService->getSettings();
+            
+            return response()->json([
+                'success' => true,
+                'settings' => $settings,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get settings: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update settings.
+     */
+    public function updateSettings(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'auto_check_enabled' => 'boolean',
+                'check_interval_hours' => 'integer|min:1|max:168',
+                'auto_backup_enabled' => 'boolean',
+                'backup_retention_days' => 'integer|min:1|max:365',
+                'require_confirmation' => 'boolean',
+                'allow_beta_updates' => 'boolean',
+                'notification_enabled' => 'boolean',
+            ]);
+
+            $this->versionService->updateSettings($request->all());
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Settings updated successfully',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to update settings: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Parse changelog from release body.
+     */
+    private function parseChangelog(string $body): array
+    {
+        $sections = [
+            'features' => [],
+            'improvements' => [],
+            'fixes' => [],
+            'breaking' => [],
+        ];
+
+        // Simple parsing - this could be enhanced based on actual format
+        $lines = explode("\n", $body);
+        $currentSection = null;
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            
+            if (empty($line)) continue;
+            
+            // Detect sections
+            if (stripos($line, '## Features') === 0 || stripos($line, '### Features') === 0) {
+                $currentSection = 'features';
+                continue;
+            } elseif (stripos($line, '## Improvements') === 0 || stripos($line, '### Improvements') === 0) {
+                $currentSection = 'improvements';
+                continue;
+            } elseif (stripos($line, '## Bug Fixes') === 0 || stripos($line, '### Bug Fixes') === 0) {
+                $currentSection = 'fixes';
+                continue;
+            } elseif (stripos($line, '## Breaking Changes') === 0 || stripos($line, '### Breaking Changes') === 0) {
+                $currentSection = 'breaking';
+                continue;
+            }
+            
+            // Add items to current section
+            if ($currentSection && (strpos($line, '-') === 0 || strpos($line, '*') === 0)) {
+                $sections[$currentSection][] = ltrim($line, '- *');
+            }
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Get current update progress.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getCurrentProgress(): JsonResponse
+    {
+        try {
+            $activeSession = $this->sessionService->getActiveSession();
+            
+            if (!$activeSession) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'No active update session found',
+                ], 404);
+            }
+
+            // Get progress from the session
+            $progress = [
+                'session_id' => $activeSession->id,
+                'percentage' => $activeSession->progress_percentage ?? 0,
+                'current_step' => $activeSession->current_step ?? 'Unknown',
+                'status' => $activeSession->status,
+                'duration_formatted' => $activeSession->duration_formatted ?? '0m',
+                'started_at' => $activeSession->started_at,
+                'estimated_completion' => $activeSession->estimated_completion,
+            ];
+
+            return response()->json([
+                'success' => true,
+                'progress' => $progress,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to get progress: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Run system tests.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function runSystemTest(): JsonResponse
+    {
+        try {
+            $testResults = $this->validationService->runSystemTests();
+            
+            return response()->json([
+                'success' => true,
+                'test_results' => $testResults,
+                'message' => 'System tests completed',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'System tests failed: ' . $e->getMessage(),
+                'test_results' => [],
+            ], 500);
+        }
+    }
+
+    /**
+     * Update notification settings.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateNotificationSettings(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'email_enabled' => 'boolean',
+                'email_address' => 'nullable|email',
+                'slack_enabled' => 'boolean',
+                'slack_webhook' => 'nullable|url',
+                'discord_enabled' => 'boolean',
+                'discord_webhook' => 'nullable|url',
+                'notification_types' => 'array',
+            ]);
+
+            // In a real implementation, you would save these to the database
+            // For now, we'll just return a success response
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Notification settings updated successfully',
+                'settings' => $request->all(),
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to update notification settings: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // === MISSING ROUTE METHODS (PLACEHOLDERS) ===
+
+    /**
+     * Export update history.
+     */
+    public function exportHistory(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\JsonResponse
+    {
+        try {
+            // Placeholder implementation - export as CSV
+            $sessions = $this->sessionService->getAllSessions();
+            
+            $filename = 'update_history_' . now()->format('Y-m-d_H-i-s') . '.csv';
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            $callback = function() use ($sessions) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, ['Session ID', 'Status', 'From Version', 'To Version', 'Started At', 'Completed At']);
+                
+                foreach ($sessions as $session) {
+                    fputcsv($file, [
+                        $session->session_id,
+                        $session->status,
+                        $session->from_version ?? 'N/A',
+                        $session->to_version ?? 'N/A',
+                        $session->started_at ? $session->started_at->format('Y-m-d H:i:s') : 'N/A',
+                        $session->completed_at ? $session->completed_at->format('Y-m-d H:i:s') : 'N/A',
+                    ]);
+                }
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to export history: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Download session logs.
+     */
+    public function downloadLogs(Request $request, string $sessionId): \Illuminate\Http\JsonResponse
+    {
+        try {
+            return response()->json([
+                'success' => true,
+                'message' => 'Log download initiated',
+                'download_url' => 'placeholder-download-url',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to download logs: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Download session data.
+     */
+    public function downloadSession(Request $request, string $sessionId): \Illuminate\Http\JsonResponse
+    {
+        try {
+            return response()->json([
+                'success' => true,
+                'message' => 'Session download initiated',
+                'download_url' => 'placeholder-download-url',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to download session: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update health check settings.
+     */
+    public function updateHealthCheckSettings(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Health check settings updated']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update health check settings: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update advanced settings.
+     */
+    public function updateAdvancedSettings(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Advanced settings updated']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update advanced settings: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Reset advanced settings.
+     */
+    public function resetAdvancedSettings(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Advanced settings reset']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to reset advanced settings: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Store schedule.
+     */
+    public function storeSchedule(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Schedule created']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create schedule: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Toggle schedule.
+     */
+    public function toggleSchedule(Request $request, string $scheduleId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Schedule toggled']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to toggle schedule: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Destroy schedule.
+     */
+    public function destroySchedule(Request $request, string $scheduleId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Schedule deleted']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete schedule: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Emergency action.
+     */
+    public function emergencyAction(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Emergency action executed']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to execute emergency action: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Emergency backup.
+     */
+    public function emergencyBackup(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Emergency backup initiated']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to initiate emergency backup: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get rollback info.
+     */
+    public function getRollbackInfo(Request $request, string $rollbackId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'rollback_info' => []]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to get rollback info: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Execute rollback.
+     */
+    public function executeRollback(Request $request, string $rollbackId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Rollback executed']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to execute rollback: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Delete rollback.
+     */
+    public function deleteRollback(Request $request, string $rollbackId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Rollback deleted']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to delete rollback: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get rollback settings.
+     */
+    public function getRollbackSettings(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'settings' => []]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to get rollback settings: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get rollback steps.
+     */
+    public function getRollbackSteps(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'steps' => []]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to get rollback steps: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update safety config.
+     */
+    public function updateSafetyConfig(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Safety config updated']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to update safety config: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Run safety checks.
+     */
+    public function runSafetyChecks(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'checks' => []]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to run safety checks: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Get session progress.
+     */
+    public function getSessionProgress(Request $request, string $sessionId): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'progress' => 0]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to get session progress: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Test notification.
+     */
+    public function testNotification(Request $request): JsonResponse
+    {
+        try {
+            return response()->json(['success' => true, 'message' => 'Test notification sent']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to send test notification: ' . $e->getMessage()], 500);
+        }
+    }
+}

@@ -6,6 +6,9 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\Factory as ViewFactory;
 use Pterodactyl\Http\Controllers\Controller;
+use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Node;
+use Pterodactyl\Models\User;
 
 class BaseController extends Controller
 {
@@ -24,7 +27,19 @@ class BaseController extends Controller
         // Auto-clear version-related caches for immediate visibility of changes
         $this->clearVersionCaches();
         
-        return $this->view->make('admin.index');
+        // Get statistics for dashboard
+        $servers = Server::count();
+        $suspensions = Server::where('status', 'suspended')->count();
+        $nodes = Node::count();
+        $users = User::count();
+        
+        return $this->view->make('admin.index', [
+            'servers' => $servers,
+            'suspensions' => $suspensions,
+            'nodes' => $nodes,
+            'users' => $users,
+            'appVersion' => config('app.version', '1.0.0'), // Get version from config
+        ]);
     }
     
     /**

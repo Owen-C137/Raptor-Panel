@@ -22,8 +22,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        View::share('appVersion', $this->versionData()['version'] ?? 'undefined');
-        View::share('appIsGit', $this->versionData()['is_git'] ?? false);
+        // Simple version sharing - will be enhanced with new update system
+        View::share('appVersion', config('app.version', '1.0.0'));
+        View::share('appIsGit', false);
 
         Paginator::useBootstrap();
 
@@ -66,49 +67,6 @@ class AppServiceProvider extends ServiceProvider
             return new Theme();
         });
 
-        // Register our new GitHub Release Update Service
-        $this->app->singleton(\Pterodactyl\Services\Updates\GitHubReleaseUpdateService::class);
-        $this->app->singleton(\Pterodactyl\Services\Updates\CustomUpdateService::class);
-        $this->app->singleton(\Pterodactyl\Services\Updates\ChangelogService::class);
-        $this->app->singleton(\Pterodactyl\Services\Updates\GitHubFileService::class);
-    }
-
-    /**
-     * Return version information for the footer.
-     */
-    protected function versionData(): array
-    {
-        return Cache::remember('git-version', 5, function () {
-            // Always prioritize the configured version for releases
-            $configVersion = config('app.version');
-            
-            if ($configVersion && $configVersion !== '1.0.0') {
-                return [
-                    'version' => $configVersion,
-                    'is_git' => false,
-                ];
-            }
-
-            // Fallback to Git commit hash only if no proper version is configured
-            if (file_exists(base_path('.git/HEAD'))) {
-                $head = explode(' ', file_get_contents(base_path('.git/HEAD')));
-
-                if (array_key_exists(1, $head)) {
-                    $path = base_path('.git/' . trim($head[1]));
-                }
-            }
-
-            if (isset($path) && file_exists($path)) {
-                return [
-                    'version' => substr(file_get_contents($path), 0, 8),
-                    'is_git' => true,
-                ];
-            }
-
-            return [
-                'version' => $configVersion ?: 'undefined',
-                'is_git' => false,
-            ];
-        });
+        // Update system services will be registered here when rebuilt
     }
 }

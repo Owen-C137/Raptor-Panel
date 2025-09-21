@@ -229,25 +229,29 @@ Route::group(['prefix' => 'nests'], function () {
 
 /*
 |--------------------------------------------------------------------------
-| Update Controller Routes
+| Update System Routes
 |--------------------------------------------------------------------------
 |
 | Endpoint: /admin/updates
 |
 */
 Route::group(['prefix' => 'updates'], function () {
+    // Main update page
+    Route::get('/', [Admin\UpdateController::class, 'index'])->name('admin.updates.index');
+    
+    // API endpoints for update operations
     Route::get('/check', [Admin\UpdateController::class, 'checkForUpdates'])->name('admin.updates.check');
-    Route::get('/details', [Admin\UpdateController::class, 'getUpdateDetails'])->name('admin.updates.details');
-    Route::get('/changelog', [Admin\UpdateController::class, 'getChangelog'])->name('admin.updates.changelog');
-    Route::get('/status', [Admin\UpdateController::class, 'getSystemStatus'])->name('admin.updates.status');
-    Route::get('/progress', [Admin\UpdateController::class, 'getUpdateProgress'])->name('admin.updates.progress');
+    Route::get('/details/{version}', [Admin\UpdateController::class, 'getUpdateDetails'])->name('admin.updates.details');
+    Route::post('/start/{version}', [Admin\UpdateController::class, 'startUpdate'])->name('admin.updates.start');
+    Route::get('/progress/{sessionId}', [Admin\UpdateController::class, 'getProgress'])->name('admin.updates.progress');
+    Route::post('/cancel/{sessionId}', [Admin\UpdateController::class, 'cancelUpdate'])->name('admin.updates.cancel');
+    Route::post('/rollback/{sessionId}', [Admin\UpdateController::class, 'rollbackUpdate'])->name('admin.updates.rollback');
+    
+    // Management endpoints
     Route::get('/backups', [Admin\UpdateController::class, 'listBackups'])->name('admin.updates.backups');
-
-    Route::post('/apply', [Admin\UpdateController::class, 'applyUpdate'])->name('admin.updates.apply');
-    Route::post('/cancel', [Admin\UpdateController::class, 'cancelUpdate'])->name('admin.updates.cancel');
-    Route::post('/backups/restore', [Admin\UpdateController::class, 'restoreBackup'])->name('admin.updates.backups.restore');
-    Route::post('/backups/cleanup', [Admin\UpdateController::class, 'cleanupBackups'])->name('admin.updates.backups.cleanup');
-    Route::post('/clear-cache', [Admin\UpdateController::class, 'clearCaches'])->name('admin.updates.cache.clear');
-
-    Route::delete('/backups/{backup_id}', [Admin\UpdateController::class, 'deleteBackup'])->name('admin.updates.backups.delete');
+    Route::get('/history', [Admin\UpdateController::class, 'getUpdateHistory'])->name('admin.updates.history');
+    
+    // Settings endpoints
+    Route::get('/settings', [Admin\UpdateController::class, 'getSettings'])->name('admin.updates.settings');
+    Route::post('/settings', [Admin\UpdateController::class, 'updateSettings'])->name('admin.updates.settings.update');
 });

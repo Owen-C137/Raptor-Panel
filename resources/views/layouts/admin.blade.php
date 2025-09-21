@@ -211,6 +211,44 @@
                                     <span class="nav-main-link-name">Settings</span>
                                 </a>
                             </li>
+                            <li class="nav-main-item {{ ! starts_with(Route::currentRouteName(), 'admin.updates') ?: 'open' }}">
+                                <a class="nav-main-link nav-main-link-submenu {{ ! starts_with(Route::currentRouteName(), 'admin.updates') ?: 'active' }}" data-toggle="submenu" aria-haspopup="true" aria-expanded="false" href="#">
+                                    <i class="nav-main-link-icon fas fa-download"></i>
+                                    <span class="nav-main-link-name">Update System</span>
+                                </a>
+                                <ul class="nav-main-submenu">
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.dashboard' ?: 'active' }}" href="{{ route('admin.updates.dashboard') }}">
+                                            <span class="nav-main-link-name">Dashboard</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.manage' ?: 'active' }}" href="{{ route('admin.updates.manage') }}">
+                                            <span class="nav-main-link-name">Manage Updates</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.history' ?: 'active' }}" href="{{ route('admin.updates.history') }}">
+                                            <span class="nav-main-link-name">Update History</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.health' ?: 'active' }}" href="{{ route('admin.updates.health') }}">
+                                            <span class="nav-main-link-name">System Health</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.safety' ?: 'active' }}" href="{{ route('admin.updates.safety') }}">
+                                            <span class="nav-main-link-name">Safety Controls</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-main-item">
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.configuration' ?: 'active' }}" href="{{ route('admin.updates.configuration') }}">
+                                            <span class="nav-main-link-name">Configuration</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
                             <li class="nav-main-item {{ ! starts_with(Route::currentRouteName(), 'admin.api') ?: 'open' }}">
                                 <a class="nav-main-link {{ ! starts_with(Route::currentRouteName(), 'admin.api') ?: 'active' }}" href="{{ route('admin.api.index')}}">
                                     <i class="nav-main-link-icon fa fa-gamepad"></i>
