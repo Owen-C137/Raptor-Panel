@@ -49,10 +49,23 @@ class UpdateController extends Controller
                     \Artisan::call('route:clear');
                     \Artisan::call('view:clear');
                     
+                    // Clear OPcache if available (PHP opcache)
+                    if (function_exists('opcache_reset')) {
+                        opcache_reset();
+                    }
+                    
+                    // Also clear any update-related caches
+                    Cache::forget('raptor:improved_update_data');
+                    Cache::forget('raptor:update_manifest');
+                    Cache::forget(CustomUpdateService::VERSION_CACHE_KEY);
+                    
+                    // Small delay to ensure caches are fully cleared
+                    usleep(100000); // 100ms delay
+                    
                     // Force regenerate config cache for version detection
                     \Artisan::call('config:cache');
                     
-                    Log::info('Update check: All caches cleared for forced refresh');
+                    Log::info('Update check: All caches cleared for forced refresh (including OPcache)');
                 } catch (\Exception $e) {
                     // Continue if cache clearing fails
                     Log::warning('Update check: Cache clearing failed', ['error' => $e->getMessage()]);
@@ -64,9 +77,9 @@ class UpdateController extends Controller
                 return response()->json($cachedResult);
             }
 
-            $currentVersion = $this->updateService->getCurrentVersion();
+            $currentVersion = $this->updateService->getCurrentVersion($forceRefresh);
             $latestVersion = $this->updateService->getLatestVersion();
-            $updateAvailable = $this->updateService->isUpdateAvailable();
+            $updateAvailable = $this->updateService->isUpdateAvailable($forceRefresh);
             
             $result = [
                 'update_available' => $updateAvailable,

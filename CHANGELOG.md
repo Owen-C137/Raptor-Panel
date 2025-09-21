@@ -2,6 +2,27 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.2.1 - 2025-09-21
+
+### Enhanced Cache Management 🔄
+
+#### Added
+- ⚡ **Intelligent Cache Clearing** - Update check refresh button now properly clears all caches
+- 🧠 **OPcache Support** - Automatic clearing of PHP opcache when force refreshing updates
+- 📱 **Direct File Reading** - Version detection can bypass cache for immediate accuracy
+- ⏱️ **Cache Timing** - Added intelligent delay to ensure caches are fully cleared before regeneration
+
+#### Fixed
+- 🔄 **Refresh Button Reliability** - Update refresh button now immediately shows version changes
+- 💾 **Cache Persistence Issues** - Resolved cases where old versions would persist after config changes
+- 🔧 **Version Detection** - Enhanced version reading to bypass stale cached configuration
+
+#### Technical Improvements
+- Enhanced `getCurrentVersion()` method with cache bypass option
+- Improved `checkForUpdates()` with comprehensive cache clearing
+- Added clearing of update-specific caches (`raptor:improved_update_data`, etc.)
+- Enhanced error handling for cache operations
+
 ## v1.2.0 - 2025-09-21
 
 ### Enhanced Auto-Update System 🚀

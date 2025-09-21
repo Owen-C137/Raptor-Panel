@@ -29,8 +29,24 @@ class CustomUpdateService
     /**
      * Get the current local version.
      */
-    public function getCurrentVersion(): string
+    public function getCurrentVersion(bool $bypassCache = false): string
     {
+        if ($bypassCache) {
+            // Read directly from config file to bypass cache
+            try {
+                $configPath = config_path('app.php');
+                if (file_exists($configPath)) {
+                    $content = file_get_contents($configPath);
+                    if (preg_match("/'version'\s*=>\s*'([^']+)'/", $content, $matches)) {
+                        return $matches[1];
+                    }
+                }
+            } catch (Exception $e) {
+                Log::warning('Failed to read version directly from config file: ' . $e->getMessage());
+                // Fallback to cached config
+            }
+        }
+        
         return config('app.version');
     }
 
@@ -61,9 +77,9 @@ class CustomUpdateService
     /**
      * Check if an update is available.
      */
-    public function isUpdateAvailable(): bool
+    public function isUpdateAvailable(bool $bypassCache = false): bool
     {
-        $currentVersion = config('app.version');
+        $currentVersion = $this->getCurrentVersion($bypassCache);
         $latestVersion = $this->getLatestVersion();
         
         if ($latestVersion === 'error' || $currentVersion === 'canary') {
