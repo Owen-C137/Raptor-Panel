@@ -38,16 +38,16 @@
 @section('content')
 @yield('updates::nav')
 <div class="row" id="update-management">
-    <!-- Current Version & Available Updates -->
+    <!-- Current Version & Latest Available Update -->
     <div class="col-md-8">
         <div class="block block-rounded block-themed">
             <div class="block-header bg-primary">
                 <h3 class="block-title text-white">
-                    <i class="fa fa-arrow-up me-1"></i> Available Updates
+                    <i class="fa fa-arrow-up me-1"></i> Latest Available Update
                 </h3>
                 <div class="block-options">
                     <button class="btn btn-sm btn-outline-light" id="refresh-updates-btn">
-                        <i class="fa fa-refresh me-1"></i> Refresh
+                        <i class="fa fa-refresh me-1"></i> Check Updates
                     </button>
                 </div>
             </div>
@@ -143,7 +143,7 @@
                             </div>
                             <div class="flex-grow-1 ms-3">
                                 <h4 class="alert-heading mb-2">System Up to Date</h4>
-                            <p class="mb-0">No updates are currently available. Your system is running the latest version.</p>
+                            <p class="mb-0">Your system is running the latest version. Only the newest available release is shown when updates are available.</p>
                             </div>
                         </div>
                     @endif

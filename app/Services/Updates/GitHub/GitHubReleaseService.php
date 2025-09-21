@@ -369,6 +369,7 @@ class GitHubReleaseService extends BaseUpdateService
 
     /**
      * Get available updates for a specific current version.
+     * Returns only the latest available release to prevent confusion.
      */
     public function getAvailableUpdates(string $currentVersion): array
     {
@@ -377,37 +378,29 @@ class GitHubReleaseService extends BaseUpdateService
                 'current_version' => $currentVersion
             ]);
 
-            $releases = $this->getAllReleases();
+            // Get the latest release only
+            $latestRelease = $this->getLatestRelease();
             $availableUpdates = [];
 
-            foreach ($releases as $release) {
-                // Skip drafts
-                if ($release['draft']) {
-                    continue;
-                }
-
-                // Compare versions
-                if (version_compare($release['version'], $currentVersion, '>')) {
+            if ($latestRelease && !$latestRelease['draft']) {
+                // Compare versions - only include if newer than current
+                if (version_compare($latestRelease['version'], $currentVersion, '>')) {
                     // Add update type based on semantic versioning
-                    $release['type'] = $this->determineUpdateType($currentVersion, $release['version']);
-                    $release['release_date'] = $this->formatReleaseDate($release['published_at']);
+                    $latestRelease['type'] = $this->determineUpdateType($currentVersion, $latestRelease['version']);
+                    $latestRelease['release_date'] = $this->formatReleaseDate($latestRelease['published_at']);
                     
                     // Add migration and requirements info
-                    $release['has_migrations'] = $this->checkRequiresMigration($release);
-                    $release['file_changes'] = $this->estimateFileChanges($release);
-                    $release['estimated_duration'] = $this->estimateUpdateDuration($release);
+                    $latestRelease['has_migrations'] = $this->checkRequiresMigration($latestRelease);
+                    $latestRelease['file_changes'] = $this->estimateFileChanges($latestRelease);
+                    $latestRelease['estimated_duration'] = $this->estimateUpdateDuration($latestRelease);
                     
-                    $availableUpdates[] = $release;
+                    $availableUpdates[] = $latestRelease;
                 }
             }
 
-            // Sort by version (newest first)
-            usort($availableUpdates, function ($a, $b) {
-                return version_compare($b['version'], $a['version']);
-            });
-
             $this->logInfo('Found available updates', [
-                'count' => count($availableUpdates)
+                'count' => count($availableUpdates),
+                'latest_version' => $latestRelease['version'] ?? 'none'
             ]);
 
             return $availableUpdates;

@@ -60,6 +60,30 @@ git push origin main
 ```
 
 ### 3. Create GitHub Release
+
+#### Primary Method: Create Git Tag (Recommended)
+This is the simplest and most reliable way to create releases:
+
+```bash
+# Create annotated git tag with release notes
+git tag -a v1.3.3 -m "Release v1.3.3: Brief Description
+
+Detailed release notes and changelog content here
+- Feature 1: Description
+- Feature 2: Description  
+- Bug fixes and improvements"
+
+# Push the tag to GitHub
+git push origin v1.3.3
+```
+
+Once the tag is pushed, you can create the full GitHub release from the tag on GitHub:
+1. Go to: https://github.com/Owen-C137/Raptor-Panel/releases
+2. Find your tag and click "Create release from tag"
+3. Add additional release notes if needed
+4. Click "Publish release"
+
+#### Alternative: Manual Creation
 1. Go to GitHub repository: https://github.com/Owen-C137/Raptor-Panel
 2. Click "Releases" tab
 3. Click "Create a new release"
@@ -67,6 +91,23 @@ git push origin main
 5. Set release title: `v1.3.3 - Brief Description`
 6. Copy changelog content to release description
 7. Click "Publish release"
+
+#### Advanced: GitHub API
+```bash
+# Create GitHub release using API (requires valid token)
+curl -X POST \
+  -H "Authorization: token YOUR_GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github.v3+json" \
+  https://api.github.com/repos/Owen-C137/Raptor-Panel/releases \
+  -d '{
+    "tag_name": "v1.3.3",
+    "target_commitish": "main",
+    "name": "v1.3.3 - Brief Description",
+    "body": "Changelog content here",
+    "draft": false,
+    "prerelease": false
+  }'
+```
 
 **⚠️ CRITICAL: The GitHub release tag MUST exactly match the version in config/app.php**
 
@@ -222,7 +263,9 @@ The system automatically excludes these patterns during updates:
 - [ ] Update version in `config/app.php`
 - [ ] Update `CHANGELOG.md` with release notes
 - [ ] Commit and push changes
-- [ ] Create GitHub release with matching tag
+- [ ] Create git tag: `git tag -a vX.X.X -m "Release message"`
+- [ ] Push tag: `git push origin vX.X.X`
+- [ ] Create GitHub release from tag (optional for additional notes)
 - [ ] Test update process in production
 - [ ] Monitor for issues post-update
 
