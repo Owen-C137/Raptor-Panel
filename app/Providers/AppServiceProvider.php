@@ -69,6 +69,8 @@ class AppServiceProvider extends ServiceProvider
         // Register our new GitHub Release Update Service
         $this->app->singleton(\Pterodactyl\Services\Updates\GitHubReleaseUpdateService::class);
         $this->app->singleton(\Pterodactyl\Services\Updates\CustomUpdateService::class);
+        $this->app->singleton(\Pterodactyl\Services\Updates\ChangelogService::class);
+        $this->app->singleton(\Pterodactyl\Services\Updates\GitHubFileService::class);
     }
 
     /**
@@ -77,6 +79,17 @@ class AppServiceProvider extends ServiceProvider
     protected function versionData(): array
     {
         return Cache::remember('git-version', 5, function () {
+            // Always prioritize the configured version for releases
+            $configVersion = config('app.version');
+            
+            if ($configVersion && $configVersion !== '1.0.0') {
+                return [
+                    'version' => $configVersion,
+                    'is_git' => false,
+                ];
+            }
+
+            // Fallback to Git commit hash only if no proper version is configured
             if (file_exists(base_path('.git/HEAD'))) {
                 $head = explode(' ', file_get_contents(base_path('.git/HEAD')));
 
@@ -93,7 +106,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return [
-                'version' => config('app.version'),
+                'version' => $configVersion ?: 'undefined',
                 'is_git' => false,
             ];
         });
