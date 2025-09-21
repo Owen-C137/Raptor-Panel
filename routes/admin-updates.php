@@ -45,6 +45,7 @@ Route::group([
         Route::get('/config-status', [UpdateDashboardController::class, 'configStatus'])->name('admin.updates.api.config-status');
         Route::get('/backups', [UpdateDashboardController::class, 'backups'])->name('admin.updates.api.backups');
         Route::get('/available-updates', [UpdateDashboardController::class, 'getAvailableUpdates'])->name('admin.updates.api.available-updates');
+        Route::post('/clear-cache', [UpdateDashboardController::class, 'clearCache'])->name('admin.updates.api.clear-cache');
         
         // Update Management API Routes
         Route::get('/check', [UpdateController::class, 'checkForUpdates'])->name('admin.updates.api.check');

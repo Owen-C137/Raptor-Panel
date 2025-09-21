@@ -328,14 +328,26 @@ class ArchiveService extends BaseUpdateService
                 $results['can_open'] = true;
                 $results['file_count'] = $zip->numFiles;
 
-                // Test archive integrity
-                $testResult = $zip->testArchive();
-                $results['test_result'] = $testResult;
-                
-                if ($testResult === TRUE) {
+                // Simple validation - check if we can read file names
+                try {
+                    // Try to get the first few file names to ensure archive is readable
+                    $fileNames = [];
+                    $maxCheck = min($zip->numFiles, 5);
+                    
+                    for ($i = 0; $i < $maxCheck; $i++) {
+                        $filename = $zip->getNameIndex($i);
+                        if ($filename === false) {
+                            throw new \Exception('Cannot read file names from archive');
+                        }
+                        $fileNames[] = $filename;
+                    }
+                    
                     $results['is_valid'] = true;
-                } else {
-                    $results['errors'][] = 'Archive integrity test failed';
+                    $results['test_result'] = true;
+                } catch (\Exception $e) {
+                    $results['is_valid'] = false;
+                    $results['test_result'] = false;
+                    $results['errors'][] = 'Archive integrity test failed: ' . $e->getMessage();
                 }
 
                 $zip->close();

@@ -1,4 +1,4 @@
-<?php
+knbb<?php
 
 namespace Pterodactyl\Services\Updates;
 
@@ -236,8 +236,8 @@ class UpdateOrchestrationService extends BaseUpdateService
         
         // Compare directories to find file changes
         $fileChanges = $this->githubFileService->compareDirectories(
-            base_path("app"), // Only compare app directory for now
-            $updateDirectory . "/app"
+            base_path(), // Current application directory
+            $updateDirectory
         );
         
         $totalFiles = count($fileChanges['added']) + count($fileChanges['modified']) + count($fileChanges['deleted']);

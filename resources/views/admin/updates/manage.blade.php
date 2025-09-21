@@ -541,6 +541,10 @@
     @parent
     <script>
         $(document).ready(function() {
+            // Auto-check for updates when page loads
+            console.log('Page loaded - automatically checking for updates...');
+            refreshAvailableUpdates();
+            
             // Event handlers using event delegation to handle dynamically loaded content
             $('#refresh-updates-btn').click(function() {
                 refreshAvailableUpdates();
@@ -606,22 +610,58 @@
         function refreshAvailableUpdates() {
             $('#refresh-updates-btn').prop('disabled', true).html('<i class="fa fa-spin fa-refresh"></i> Refreshing...');
             
+            // First clear the GitHub release cache, then check for updates
             $.ajax({
-                url: '{{ route("admin.updates.api.available-updates") }}',
-                type: 'GET',
-                success: function(response) {
-                    if (response.success && response.available_updates) {
-                        updateAvailableUpdatesUI(response.available_updates);
-                        showToast('Updates refreshed successfully', 'success');
-                    } else {
-                        showAlert('error', response.error || 'No updates available');
-                    }
+                url: '{{ route("admin.updates.api.clear-cache") }}',
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(cacheResponse) {
+                    console.log('Cache cleared, now checking for updates...');
+                    
+                    // Now check for available updates
+                    $.ajax({
+                        url: '{{ route("admin.updates.api.available-updates") }}',
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.success && response.available_updates) {
+                                updateAvailableUpdatesUI(response.available_updates);
+                                showToast('Updates refreshed successfully', 'success');
+                            } else {
+                                showAlert('error', response.error || 'No updates available');
+                            }
+                        },
+                        error: function() {
+                            showAlert('error', 'Failed to refresh updates');
+                        },
+                        complete: function() {
+                            $('#refresh-updates-btn').prop('disabled', false).html('<i class="fa fa-refresh me-1"></i> Check Updates');
+                        }
+                    });
                 },
                 error: function() {
-                    showAlert('error', 'Failed to refresh updates');
-                },
-                complete: function() {
-                    $('#refresh-updates-btn').prop('disabled', false).html('<i class="fa fa-refresh"></i> Refresh');
+                    console.log('Cache clear failed, proceeding with update check anyway...');
+                    
+                    // If cache clear fails, still try to check for updates
+                    $.ajax({
+                        url: '{{ route("admin.updates.api.available-updates") }}',
+                        type: 'GET',
+                        success: function(response) {
+                            if (response.success && response.available_updates) {
+                                updateAvailableUpdatesUI(response.available_updates);
+                                showToast('Updates refreshed successfully', 'success');
+                            } else {
+                                showAlert('error', response.error || 'No updates available');
+                            }
+                        },
+                        error: function() {
+                            showAlert('error', 'Failed to refresh updates');
+                        },
+                        complete: function() {
+                            $('#refresh-updates-btn').prop('disabled', false).html('<i class="fa fa-refresh me-1"></i> Check Updates');
+                        }
+                    });
                 }
             });
         }

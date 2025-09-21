@@ -1419,4 +1419,47 @@ class UpdateDashboardController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Clear GitHub release cache.
+     */
+    public function clearCache(): JsonResponse
+    {
+        try {
+            // Clear GitHub release cache
+            \Cache::forget('github_latest_release_stable');
+            \Cache::forget('github_all_releases');
+            \Cache::forget('github_releases_comparison');
+            
+            // Clear any other update-related caches
+            $cacheKeys = [
+                'github_latest_release_stable',
+                'github_all_releases', 
+                'github_releases_comparison',
+                'update_check_timestamp',
+                'available_updates_cache',
+            ];
+            
+            foreach ($cacheKeys as $key) {
+                \Cache::forget($key);
+            }
+
+            Log::info('Update system cache cleared successfully');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cache cleared successfully',
+            ]);
+        } catch (Exception $e) {
+            Log::error('Failed to clear update cache', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

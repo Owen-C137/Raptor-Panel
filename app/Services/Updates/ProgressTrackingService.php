@@ -58,8 +58,8 @@ class ProgressTrackingService extends BaseUpdateService
             $this->storeProgressData($sessionId, $progressData);
             
             // Update session
-            $this->sessionService->updateSession($sessionId, [
-                'progress_percentage' => 0,
+            $this->sessionService->updateSessionProgress($sessionId, [
+                'percentage' => 0,
                 'current_step' => $allSteps[0] ?? 'Initializing',
             ]);
             
@@ -139,8 +139,8 @@ class ProgressTrackingService extends BaseUpdateService
             $this->storeProgressData($sessionId, $progressData);
             
             // Update session record
-            $this->sessionService->updateSession($sessionId, [
-                'progress_percentage' => $progressData['progress_percentage'],
+            $this->sessionService->updateSessionProgress($sessionId, [
+                'percentage' => $progressData['progress_percentage'],
                 'current_step' => $progressData['current_step'],
             ]);
             
@@ -211,8 +211,8 @@ class ProgressTrackingService extends BaseUpdateService
             $this->storeProgressData($sessionId, $progressData);
             
             // Update session record
-            $this->sessionService->updateSession($sessionId, [
-                'progress_percentage' => 100,
+            $this->sessionService->updateSessionProgress($sessionId, [
+                'percentage' => 100,
                 'current_step' => $progressData['current_step'],
             ]);
             

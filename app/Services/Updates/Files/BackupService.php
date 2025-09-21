@@ -5,7 +5,7 @@ namespace Pterodactyl\Services\Updates\Files;
 use Carbon\Carbon;
 use Pterodactyl\Exceptions\Updates\BackupException;
 use Pterodactyl\Exceptions\Updates\FileOperationException;
-use Pterodactyl\Models\UpdateBackup;
+use Pterodactyl\Models\Updates\UpdateBackup;
 use Pterodactyl\Services\Updates\BaseUpdateService;
 use ZipArchive;
 

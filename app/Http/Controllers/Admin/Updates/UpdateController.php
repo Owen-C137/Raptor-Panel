@@ -122,25 +122,25 @@ class UpdateController extends Controller
             }
 
             // Validate system before update
-            $validation = $this->validationService->validatePreUpdate();
-            if (!$validation['valid'] && !$request->boolean('force')) {
+            $validation = $this->validationService->validatePreUpdate($version);
+            if (!$validation['can_proceed'] && !$request->boolean('force')) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Pre-update validation failed',
-                    'validation_errors' => $validation['errors'],
+                    'validation_errors' => $validation['categories'] ?? [],
                     'can_force' => true,
                 ], 422);
             }
 
             // Create update session
             $session = $this->sessionService->createSession([
-                'target_version' => $version,
-                'current_version' => $this->versionService->getCurrentVersion()->version,
+                'from_version' => $this->versionService->getCurrentVersion()->version,
+                'to_version' => $version,
                 'options' => [
                     'create_backup' => $request->boolean('create_backup', true),
                     'force' => $request->boolean('force', false),
                 ],
-                'user_id' => auth()->id(),
+                'initiated_by' => auth()->id(),
             ]);
 
             // Start the update process asynchronously
@@ -206,7 +206,7 @@ class UpdateController extends Controller
     public function getProgress(Request $request, string $sessionId): JsonResponse
     {
         try {
-            $session = $this->sessionService->findSession($sessionId);
+            $session = $this->sessionService->getSession($sessionId);
             
             if (!$session) {
                 return response()->json([
@@ -243,7 +243,7 @@ class UpdateController extends Controller
     public function cancelUpdate(Request $request, string $sessionId): JsonResponse
     {
         try {
-            $session = $this->sessionService->findSession($sessionId);
+            $session = $this->sessionService->getSession($sessionId);
             
             if (!$session) {
                 return response()->json([
@@ -289,7 +289,7 @@ class UpdateController extends Controller
     public function rollback(Request $request, string $sessionId): JsonResponse
     {
         try {
-            $session = $this->sessionService->findSession($sessionId);
+            $session = $this->sessionService->getSession($sessionId);
             
             if (!$session) {
                 return response()->json([
