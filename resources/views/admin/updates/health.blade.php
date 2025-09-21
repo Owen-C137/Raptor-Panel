@@ -978,3 +978,5 @@
         }
     </style>
 @endsection
+
+@include('partials.admin.updates.toast-notifications')

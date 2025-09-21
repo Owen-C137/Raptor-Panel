@@ -20,6 +20,7 @@ use Pterodactyl\Services\Updates\Files\FileUpdateService;
 use Pterodactyl\Services\Updates\GitHub\GitHubFileService;
 use Pterodactyl\Services\Updates\GitHub\GitHubReleaseService;
 use Pterodactyl\Services\Updates\Progress\ProgressTracker;
+use Pterodactyl\Services\Updates\SystemHealthService;
 use Pterodactyl\Services\Updates\UpdateOrchestrator;
 use Pterodactyl\Services\Updates\UpdateServiceInterface;
 use Pterodactyl\Services\Updates\Validation\ValidationService;
@@ -143,6 +144,11 @@ class UpdateServiceProvider extends ServiceProvider
         // Register Health Service
         $this->app->singleton(\Pterodactyl\Services\Updates\HealthService::class, function ($app) {
             return new \Pterodactyl\Services\Updates\HealthService();
+        });
+
+        // Register System Health Service for real-time monitoring
+        $this->app->singleton(SystemHealthService::class, function ($app) {
+            return new SystemHealthService();
         });
 
         // Register Main Orchestrator with Enhanced Migration Service

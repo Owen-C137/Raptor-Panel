@@ -42,7 +42,7 @@
                 <div class="fs-2 fw-bold text-body-color-dark" id="status-icon">
                     @if(isset($currentStatus['status']))
                         @if($currentStatus['status'] === 'idle')
-                            <i class="fa fa-check text-success"></i>
+                            <i class="fa fa-check-circle text-success"></i>
                         @elseif($currentStatus['status'] === 'pending' || $currentStatus['status'] === 'running')
                             <i class="fa fa-circle-notch fa-spin text-primary"></i>
                         @else
@@ -53,8 +53,20 @@
                     @endif
                 </div>
                 <div class="fs-sm fw-semibold text-uppercase text-muted pt-1">System Status</div>
-                <div class="fs-3 fw-bold text-dark" id="system-status">
-                    {{ ucfirst($currentStatus['status'] ?? 'Unknown') }}
+                <div class="fs-3 fw-bold" id="system-status">
+                    @if(isset($currentStatus['status']))
+                        @if($currentStatus['status'] === 'idle')
+                            <span class="text-success">Up To Date</span>
+                        @elseif($currentStatus['status'] === 'pending')
+                            <span class="text-primary">Update Pending</span>
+                        @elseif($currentStatus['status'] === 'running')
+                            <span class="text-primary">Updating...</span>
+                        @else
+                            <span class="text-warning">{{ ucfirst($currentStatus['status']) }}</span>
+                        @endif
+                    @else
+                        <span class="text-muted">Unknown</span>
+                    @endif
                 </div>
             </div>
         </div>
@@ -219,27 +231,85 @@
                     </button>
                 </div>
             </div>
-            <div class="block-content">
-                <div class="row">
-                    @if(isset($systemHealth['checks']))
-                        @foreach($systemHealth['checks'] as $check => $status)
-                        <div class="col-sm-6 mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-2">
-                                    <i class="fa fa-{{ $status['status'] === 'healthy' ? 'check text-success' : ($status['status'] === 'warning' ? 'exclamation-triangle text-warning' : 'times text-danger') }}"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold">{{ ucfirst(str_replace('_', ' ', $check)) }}</div>
-                                    <div class="fs-sm text-muted">{{ $status['message'] ?? 'OK' }}</div>
+            <div class="block-content" id="system-health-container">
+                <div class="row" id="health-checks">
+                    @if(isset($healthOverview) && !empty($healthOverview))
+                        @php $checks = $healthOverview['checks'] ?? []; @endphp
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fa fa-hdd-o fa-2x mb-2 text-primary"></i>
+                                    <h5 class="card-title">Disk Space</h5>
+                                    @if(isset($checks['disk_space']))
+                                        <p class="card-text"><strong>{{ $checks['disk_space']['details']['usage_percent'] }}%</strong> used</p>
+                                        <small class="text-muted">{{ $checks['disk_space']['details']['free_space'] }} free of {{ $checks['disk_space']['details']['total_space'] }}</small>
+                                    @else
+                                        <p class="card-text text-muted">Loading...</p>
+                                    @endif
                                 </div>
                             </div>
                         </div>
-                        @endforeach
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fa fa-microchip fa-2x mb-2 text-success"></i>
+                                    <h5 class="card-title">Memory Usage</h5>
+                                    @if(isset($checks['memory_usage']))
+                                        <p class="card-text"><strong>{{ $checks['memory_usage']['details']['usage_percent'] }}%</strong> used</p>
+                                        <small class="text-muted">{{ $checks['memory_usage']['details']['current_usage'] }} / {{ $checks['memory_usage']['details']['total_memory'] ?? $checks['memory_usage']['details']['memory_limit'] }}</small>
+                                    @else
+                                        <p class="card-text text-muted">Loading...</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    @if(isset($checks['database_connection']) && $checks['database_connection']['status'] === 'healthy')
+                                        <i class="fa fa-database fa-2x mb-2 text-success"></i>
+                                        <h5 class="card-title">Database</h5>
+                                        <p class="card-text"><span class="text-success"><strong>Connected</strong></span></p>
+                                        <small class="text-muted">{{ $checks['database_connection']['details']['driver'] ?? 'Unknown' }}
+                                            @if(isset($checks['database_connection']['details']['connection_time']))
+                                                ({{ $checks['database_connection']['details']['connection_time'] }})
+                                            @endif
+                                        </small>
+                                    @else
+                                        <i class="fa fa-database fa-2x mb-2 text-danger"></i>
+                                        <h5 class="card-title">Database</h5>
+                                        <p class="card-text"><span class="text-danger"><strong>Disconnected</strong></span></p>
+                                        <small class="text-muted">{{ $checks['database_connection']['details']['driver'] ?? 'Unknown' }}</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    @if(isset($checks['file_permissions']) && $checks['file_permissions']['status'] === 'healthy')
+                                        <i class="fa fa-shield fa-2x mb-2 text-success"></i>
+                                        <h5 class="card-title">File Permissions</h5>
+                                        <p class="card-text"><span class="text-success"><strong>OK</strong></span></p>
+                                        <small class="text-muted">All permissions correct</small>
+                                    @else
+                                        <i class="fa fa-shield fa-2x mb-2 text-warning"></i>
+                                        <h5 class="card-title">File Permissions</h5>
+                                        <p class="card-text"><span class="text-warning"><strong>Issues Found</strong></span></p>
+                                        <small class="text-muted">Permission issues detected</small>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
                     @else
                         <div class="col-sm-12">
                             <div class="text-center text-muted p-3">
-                                <i class="fa fa-info-circle fa-2x mb-2"></i>
-                                <p>Health check data not available</p>
+                                <i class="fa fa-spinner fa-spin fa-2x mb-2"></i>
+                                <p>Loading system health data...</p>
                             </div>
                         </div>
                     @endif
@@ -455,9 +525,15 @@
     @parent
     <script>
         $(document).ready(function() {
+            // Load initial system health data only if not already loaded
+            @if(!isset($healthOverview) || empty($healthOverview))
+            loadSystemHealth();
+            @endif
+            
             // Auto-refresh dashboard every 30 seconds
             setInterval(function() {
                 refreshDashboard();
+                loadSystemHealth();
             }, 30000);
 
             // Real-time update progress monitoring
@@ -529,7 +605,7 @@
 
         function updateProgress() {
             $.ajax({
-                url: '{{ route("admin.updates.progress") }}',
+                url: '{{ route("admin.updates.current-progress") }}',
                 type: 'GET',
                 success: function(response) {
                     if (response.success) {
@@ -698,17 +774,114 @@
             $('#update-duration').text(progress.duration_formatted);
         }
 
+        function loadSystemHealth() {
+            console.log('Loading system health data...');
+            $.ajax({
+                url: '{{ route("admin.updates.api.system-health-overview") }}',
+                type: 'GET',
+                success: function(response) {
+                    console.log('Health data response:', response);
+                    if (response.success && response.health) {
+                        updateSystemHealthDisplay(response.health);
+                    } else {
+                        console.error('Invalid response format:', response);
+                        $('#health-checks').html('<div class="col-12 text-center text-danger"><p>Failed to load health data</p></div>');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Health data request failed:', status, error, xhr.responseText);
+                    $('#health-checks').html('<div class="col-12 text-center text-danger"><p>Error loading health data: ' + error + '</p></div>');
+                }
+            });
+        }
+
+        function updateSystemHealthDisplay(health) {
+            // Extract checks from health data
+            const checks = health.checks || health;
+            
+            // Create the health cards HTML structure
+            let healthCardsHtml = `
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fa fa-hdd-o fa-2x mb-2 text-primary"></i>
+                            <h5 class="card-title">Disk Space</h5>
+                            <p class="card-text"><strong>${checks.disk_space.details.usage_percent}%</strong> used</p>
+                            <small class="text-muted">${checks.disk_space.details.free_space} free of ${checks.disk_space.details.total_space}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fa fa-microchip fa-2x mb-2 text-success"></i>
+                            <h5 class="card-title">Memory Usage</h5>
+                            <p class="card-text"><strong>${checks.memory_usage.details.usage_percent}%</strong> used</p>
+                            <small class="text-muted">${checks.memory_usage.details.current_usage} / ${checks.memory_usage.details.total_memory || checks.memory_usage.details.memory_limit}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">`;
+            
+            if (checks.database_connection.status === 'healthy') {
+                healthCardsHtml += `
+                            <i class="fa fa-database fa-2x mb-2 text-success"></i>
+                            <h5 class="card-title">Database</h5>
+                            <p class="card-text"><span class="text-success"><strong>Connected</strong></span></p>
+                            <small class="text-muted">${checks.database_connection.details.driver}`;
+                if (checks.database_connection.details.connection_time) {
+                    healthCardsHtml += ` (${checks.database_connection.details.connection_time})`;
+                }
+                healthCardsHtml += `</small>`;
+            } else {
+                healthCardsHtml += `
+                            <i class="fa fa-database fa-2x mb-2 text-danger"></i>
+                            <h5 class="card-title">Database</h5>
+                            <p class="card-text"><span class="text-danger"><strong>Disconnected</strong></span></p>
+                            <small class="text-muted">${checks.database_connection.details.driver}</small>`;
+            }
+            
+            healthCardsHtml += `
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body text-center">`;
+            
+            if (checks.file_permissions.status === 'healthy') {
+                healthCardsHtml += `
+                            <i class="fa fa-shield fa-2x mb-2 text-success"></i>
+                            <h5 class="card-title">File Permissions</h5>
+                            <p class="card-text"><span class="text-success"><strong>OK</strong></span></p>
+                            <small class="text-muted">All permissions correct</small>`;
+            } else {
+                healthCardsHtml += `
+                            <i class="fa fa-shield fa-2x mb-2 text-warning"></i>
+                            <h5 class="card-title">File Permissions</h5>
+                            <p class="card-text"><span class="text-warning"><strong>Issues Found</strong></span></p>
+                            <small class="text-muted">Permission issues detected</small>`;
+            }
+            
+            healthCardsHtml += `
+                        </div>
+                    </div>
+                </div>`;
+            
+            // Replace the entire health-checks content
+            $('#health-checks').html(healthCardsHtml);
+        }
+
         function showAlert(type, message) {
-            var alertClass = 'alert-' + (type === 'error' ? 'danger' : type);
-            var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible">' +
-                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
-                message + '</div>';
-            
-            $('#update-dashboard').prepend(alertHtml);
-            
-            setTimeout(function() {
-                $('.alert').fadeOut();
-            }, 5000);
+            // Use the new toast notification system
+            if (window.showToast) {
+                window.showToast(message, type);
+            } else {
+                // Fallback to console if toast system isn't loaded yet
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
         }
 
         function editSchedule(scheduleId) {
@@ -761,3 +934,5 @@
         }
     </style>
 @endsection
+
+@include('partials.admin.updates.toast-notifications')

@@ -40,71 +40,96 @@
 <div class="row" id="update-management">
     <!-- Current Version & Available Updates -->
     <div class="col-md-8">
-        <div class="box box-primary">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-arrow-up"></i> Available Updates
+        <div class="block block-rounded block-themed">
+            <div class="block-header bg-primary">
+                <h3 class="block-title text-white">
+                    <i class="fa fa-arrow-up me-1"></i> Available Updates
                 </h3>
-                <div class="box-tools pull-right">
-                    <button class="btn btn-primary btn-sm" id="refresh-updates-btn">
-                        <i class="fa fa-refresh"></i> Refresh
+                <div class="block-options">
+                    <button class="btn btn-sm btn-outline-light" id="refresh-updates-btn">
+                        <i class="fa fa-refresh me-1"></i> Refresh
                     </button>
                 </div>
             </div>
-            <div class="box-body">
-                <div class="alert alert-info">
-                    <h4><i class="fa fa-info-circle"></i> Current Version</h4>
-                    <p>
-                        <strong>Version:</strong> {{ $currentVersion ?? 'Unknown' }}
-                        <br>
-                        <strong>Last Updated:</strong> {{ $configuration['last_updated'] ?? 'Never' }}
-                    </p>
+            <div class="block-content">
+                <div class="alert alert-info d-flex align-items-center current-version-alert">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-info-circle fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h4 class="alert-heading mb-2">Current Version</h4>
+                        <p class="mb-0">
+                            <strong>Version:</strong> {{ $configuration['current_version'] ?? 'Unknown' }}
+                            <br>
+                            <strong>Last Updated:</strong> {{ $configuration['last_updated'] ?? 'Never' }}
+                        </p>
+                    </div>
                 </div>
 
                 <div id="available-updates">
                     @if(count($availableUpdates) > 0)
                         @foreach($availableUpdates as $update)
-                        <div class="callout callout-{{ $update['type'] === 'major' ? 'warning' : ($update['type'] === 'minor' ? 'info' : 'success') }}">
-                            <h4>
-                                <i class="fa fa-tag"></i>
-                                Version {{ $update['version'] }}
-                                <small class="label label-{{ $update['type'] === 'major' ? 'warning' : ($update['type'] === 'minor' ? 'info' : 'success') }}">
-                                    {{ ucfirst($update['type']) }} Update
-                                </small>
-                            </h4>
-                            <p><strong>Released:</strong> {{ $update['release_date'] ?? 'Unknown' }}</p>
-                            <p><strong>Description:</strong> {{ $update['description'] ?? 'No description available' }}</p>
-                            
-                            @if(isset($update['changelog']) && count($update['changelog']) > 0)
-                            <div class="update-changelog">
-                                <strong>Changes:</strong>
-                                <ul>
-                                    @foreach($update['changelog'] as $change)
-                                    <li>{{ $change }}</li>
-                                    @endforeach
-                                </ul>
+                        @php 
+                            $updateType = $update['type'] ?? 'patch';
+                            $typeClass = match($updateType) {
+                                'major' => 'warning',
+                                'minor' => 'info', 
+                                'patch' => 'success',
+                                default => 'success'
+                            };
+                            $badgeClass = match($updateType) {
+                                'major' => 'bg-warning',
+                                'minor' => 'bg-info',
+                                'patch' => 'bg-success', 
+                                default => 'bg-success'
+                            };
+                        @endphp
+                        <div class="alert alert-{{ $typeClass }} border-{{ $typeClass }}">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="alert-heading d-flex align-items-center">
+                                        <i class="fa fa-tag me-2"></i>
+                                        Version {{ $update['version'] }}
+                                        <span class="badge {{ $badgeClass }} ms-2">
+                                            {{ ucfirst($updateType) }} Update
+                                        </span>
+                                    </h4>
+                                    <p class="mb-1"><strong>Released:</strong> {{ $update['release_date'] ?? 'Unknown' }}</p>
+                                    @if(!empty($update['body']))
+                                        <p class="mb-1"><strong>Description:</strong> {{ Str::limit(strip_tags($update['body']), 150) }}</p>
+                                    @endif
+                                </div>
                             </div>
-                            @endif
 
+                            
                             <div class="row">
                                 <div class="col-sm-6">
-                                    <strong>Requirements:</strong>
+                                    <h6 class="fw-semibold mb-2">Requirements:</h6>
                                     <ul class="list-unstyled">
-                                        <li><i class="fa fa-database"></i> Database migrations: {{ $update['has_migrations'] ? 'Yes' : 'No' }}</li>
-                                        <li><i class="fa fa-file"></i> File changes: {{ $update['file_changes'] ?? 0 }} files</li>
-                                        <li><i class="fa fa-clock-o"></i> Est. duration: {{ $update['estimated_duration'] ?? 'Unknown' }}</li>
+                                        <li class="mb-1">
+                                            <i class="fa fa-database text-primary me-2"></i> 
+                                            Database migrations: <span class="fw-medium">{{ ($update['has_migrations'] ?? false) ? 'Yes' : 'No' }}</span>
+                                        </li>
+                                        <li class="mb-1">
+                                            <i class="fa fa-file text-info me-2"></i> 
+                                            File changes: <span class="fw-medium">{{ $update['file_changes'] ?? 0 }} files</span>
+                                        </li>
+                                        <li class="mb-1">
+                                            <i class="fa fa-clock-o text-warning me-2"></i> 
+                                            Est. duration: <span class="fw-medium">{{ $update['estimated_duration'] ?? 'Unknown' }}</span>
+                                        </li>
                                     </ul>
                                 </div>
-                                <div class="col-sm-6">
-                                    <div class="btn-group pull-right" role="group">
+                                <div class="col-sm-6 d-flex align-items-end justify-content-end">
+                                    <div class="btn-group" role="group">
                                         <button class="btn btn-success update-now-btn" data-version="{{ $update['version'] }}">
-                                            <i class="fa fa-play"></i> Update Now
+                                            <i class="fa fa-play me-1"></i> Update Now
                                         </button>
                                         <button class="btn btn-info schedule-update-btn" data-version="{{ $update['version'] }}">
-                                            <i class="fa fa-calendar"></i> Schedule
+                                            <i class="fa fa-calendar me-1"></i> Schedule
                                         </button>
-                                        <button class="btn btn-default preview-update-btn" data-version="{{ $update['version'] }}">
-                                            <i class="fa fa-eye"></i> Preview
+                                        <button class="btn btn-outline-secondary preview-update-btn" data-version="{{ $update['version'] }}">
+                                            <i class="fa fa-eye me-1"></i> Preview
                                         </button>
                                     </div>
                                 </div>
@@ -112,9 +137,14 @@
                         </div>
                         @endforeach
                     @else
-                        <div class="alert alert-success">
-                            <h4><i class="fa fa-check"></i> System Up to Date</h4>
-                            <p>No updates are currently available. Your system is running the latest version.</p>
+                        <div class="alert alert-success d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-check-circle fa-2x"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h4 class="alert-heading mb-2">System Up to Date</h4>
+                            <p class="mb-0">No updates are currently available. Your system is running the latest version.</p>
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -124,92 +154,124 @@
 
     <!-- Update Options & Quick Actions -->
     <div class="col-md-4">
-        <div class="box box-info">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-cogs"></i> Update Options
+        <div class="block block-rounded block-themed">
+            <div class="block-header bg-info">
+                <h3 class="block-title text-white">
+                    <i class="fa fa-cogs me-1"></i> Update Options
                 </h3>
             </div>
-            <div class="box-body">
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="force-update"> Force Update
-                    </label>
-                    <p class="help-block">Skip version compatibility checks</p>
+            <div class="block-content">
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="force-update">
+                        <label class="form-check-label fw-medium" for="force-update">
+                            Force Update
+                        </label>
+                    </div>
+                    <small class="text-muted">Skip version compatibility checks</small>
                 </div>
                 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="skip-backup"> Skip Backup
-                    </label>
-                    <p class="help-block">Skip creating system backup (faster but risky)</p>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="skip-backup">
+                        <label class="form-check-label fw-medium" for="skip-backup">
+                            Skip Backup
+                        </label>
+                    </div>
+                    <small class="text-muted">Skip creating system backup (faster but risky)</small>
                 </div>
                 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="skip-maintenance"> Skip Maintenance Mode
-                    </label>
-                    <p class="help-block">Don't enable maintenance mode during update</p>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="skip-maintenance">
+                        <label class="form-check-label fw-medium" for="skip-maintenance">
+                            Skip Maintenance Mode
+                        </label>
+                    </div>
+                    <small class="text-muted">Don't enable maintenance mode during update</small>
                 </div>
                 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="dry-run"> Dry Run
-                    </label>
-                    <p class="help-block">Test update without applying changes</p>
+                <div class="mb-4">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="dry-run">
+                        <label class="form-check-label fw-medium" for="dry-run">
+                            Dry Run
+                        </label>
+                    </div>
+                    <small class="text-muted">Test update without applying changes</small>
                 </div>
 
                 <hr>
 
-                <div class="btn-group-vertical btn-block" role="group">
+                <div class="d-grid gap-2" role="group">
                     <button class="btn btn-warning" id="test-update-system">
-                        <i class="fa fa-stethoscope"></i> Test Update System
+                        <i class="fa fa-stethoscope me-2"></i> Test Update System
                     </button>
                     <button class="btn btn-info" id="check-system-health">
-                        <i class="fa fa-heartbeat"></i> Check System Health
+                        <i class="fa fa-heartbeat me-2"></i> Check System Health
                     </button>
-                    <button class="btn btn-default" id="view-update-logs">
-                        <i class="fa fa-file-text"></i> View Update Logs
+                    <button class="btn btn-outline-secondary" id="view-update-logs">
+                        <i class="fa fa-file-text me-2"></i> View Update Logs
                     </button>
                 </div>
             </div>
         </div>
 
         <!-- System Status -->
-        <div class="box box-success">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-info-circle"></i> System Status
+        <div class="block block-rounded block-themed">
+            <div class="block-header bg-success">
+                <h3 class="block-title text-white">
+                    <i class="fa fa-info-circle me-1"></i> System Status
                 </h3>
             </div>
-            <div class="box-body">
-                <div class="info-box bg-light-blue">
-                    <span class="info-box-icon">
-                        <i class="fa fa-server"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Update System</span>
-                        <span class="info-box-number" id="update-system-status">{{ $configuration['enabled'] ? 'Enabled' : 'Disabled' }}</span>
+            <div class="block-content">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-body-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-server fa-2x text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fw-semibold">Update System</div>
+                                <div class="fs-sm" id="update-system-status">
+                                    <span class="badge bg-{{ $configuration['enabled'] ? 'success' : 'danger' }}">
+                                        {{ $configuration['enabled'] ? 'Enabled' : 'Disabled' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="info-box bg-green">
-                    <span class="info-box-icon">
-                        <i class="fa fa-shield"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Auto-Update</span>
-                        <span class="info-box-number" id="auto-update-status">{{ $configuration['auto_update_enabled'] ? 'Enabled' : 'Disabled' }}</span>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-body-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-shield fa-2x text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fw-semibold">Auto-Update</div>
+                                <div class="fs-sm" id="auto-update-status">
+                                    <span class="badge bg-{{ $configuration['auto_update_enabled'] ? 'success' : 'secondary' }}">
+                                        {{ $configuration['auto_update_enabled'] ? 'Enabled' : 'Disabled' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="info-box bg-yellow">
-                    <span class="info-box-icon">
-                        <i class="fa fa-wrench"></i>
-                    </span>
-                    <div class="info-box-content">
-                        <span class="info-box-text">Maintenance</span>
-                        <span class="info-box-number" id="maintenance-status">{{ $configuration['maintenance_mode'] ? 'Active' : 'Inactive' }}</span>
+                    <div class="col-12">
+                        <div class="d-flex align-items-center p-3 bg-body-light rounded">
+                            <div class="flex-shrink-0">
+                                <i class="fa fa-wrench fa-2x text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fw-semibold">Maintenance</div>
+                                <div class="fs-sm" id="maintenance-status">
+                                    <span class="badge bg-{{ $configuration['maintenance_mode'] ? 'warning' : 'secondary' }}">
+                                        {{ $configuration['maintenance_mode'] ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -220,21 +282,21 @@
 <!-- Scheduled Updates -->
 <div class="row">
     <div class="col-md-12">
-        <div class="box box-warning">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-calendar"></i> Scheduled Updates
+        <div class="block block-rounded block-themed">
+            <div class="block-header bg-warning">
+                <h3 class="block-title text-white">
+                    <i class="fa fa-calendar me-1"></i> Scheduled Updates
                 </h3>
-                <div class="box-tools pull-right">
-                    <button class="btn btn-warning btn-sm" id="add-schedule-btn">
-                        <i class="fa fa-plus"></i> Add Schedule
+                <div class="block-options">
+                    <button class="btn btn-sm btn-outline-light" id="add-schedule-btn">
+                        <i class="fa fa-plus me-1"></i> Add Schedule
                     </button>
                 </div>
             </div>
-            <div class="box-body">
+            <div class="block-content">
                 @if(count($scheduledUpdates) > 0)
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Version</th>
@@ -242,7 +304,7 @@
                                     <th>Created By</th>
                                     <th>Status</th>
                                     <th>Options</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -252,32 +314,36 @@
                                     <td>{{ $schedule->scheduled_at->format('M d, Y H:i') }}</td>
                                     <td>{{ $schedule->creator->name ?? 'System' }}</td>
                                     <td>
-                                        <span class="label label-{{ $schedule->status === 'active' ? 'success' : ($schedule->status === 'completed' ? 'info' : 'default') }}">
+                                        <span class="badge bg-{{ $schedule->status === 'active' ? 'success' : ($schedule->status === 'completed' ? 'info' : 'secondary') }}">
                                             {{ ucfirst($schedule->status) }}
                                         </span>
                                     </td>
                                     <td>
                                         @if($schedule->options)
                                             @if($schedule->options['force'] ?? false)
-                                                <span class="label label-warning">Force</span>
+                                                <span class="badge bg-warning me-1">Force</span>
                                             @endif
                                             @if($schedule->options['skip_backup'] ?? false)
-                                                <span class="label label-danger">No Backup</span>
+                                                <span class="badge bg-danger me-1">No Backup</span>
                                             @endif
                                             @if($schedule->options['skip_maintenance'] ?? false)
-                                                <span class="label label-info">No Maintenance</span>
+                                                <span class="badge bg-info me-1">No Maintenance</span>
                                             @endif
+                                        @else
+                                            <span class="text-muted">Default</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="btn-group btn-group-xs">
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
                                             @if($schedule->status === 'active')
-                                            <button class="btn btn-info edit-schedule-btn" data-id="{{ $schedule->id }}">
+                                            <button class="btn btn-outline-primary edit-schedule-btn" data-id="{{ $schedule->id }}" title="Edit">
                                                 <i class="fa fa-edit"></i>
                                             </button>
-                                            <button class="btn btn-danger cancel-schedule-btn" data-id="{{ $schedule->id }}">
+                                            <button class="btn btn-outline-danger cancel-schedule-btn" data-id="{{ $schedule->id }}" title="Cancel">
                                                 <i class="fa fa-times"></i>
                                             </button>
+                                            @else
+                                            <span class="text-muted">-</span>
                                             @endif
                                         </div>
                                     </td>
@@ -287,7 +353,10 @@
                         </table>
                     </div>
                 @else
-                    <p class="text-muted">No scheduled updates</p>
+                    <div class="text-center p-4 text-muted">
+                        <i class="fa fa-calendar fa-2x mb-2"></i>
+                        <p class="mb-0">No scheduled updates</p>
+                    </div>
                 @endif
             </div>
         </div>
@@ -297,21 +366,21 @@
 <!-- Recent Update History -->
 <div class="row">
     <div class="col-md-12">
-        <div class="box box-default">
-            <div class="box-header with-border">
-                <h3 class="box-title">
-                    <i class="fa fa-history"></i> Recent Update History
+        <div class="block block-rounded block-themed">
+            <div class="block-header bg-body-light">
+                <h3 class="block-title">
+                    <i class="fa fa-history me-1"></i> Recent Update History
                 </h3>
-                <div class="box-tools pull-right">
-                    <a href="{{ route('admin.updates.history') }}" class="btn btn-default btn-sm">
-                        <i class="fa fa-external-link"></i> View All History
+                <div class="block-options">
+                    <a href="{{ route('admin.updates.history') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fa fa-external-link me-1"></i> View All History
                     </a>
                 </div>
             </div>
-            <div class="box-body">
+            <div class="block-content">
                 @if(count($updateHistory) > 0)
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped table-hover">
                             <thead>
                                 <tr>
                                     <th>Date</th>
@@ -319,35 +388,35 @@
                                     <th>Duration</th>
                                     <th>Status</th>
                                     <th>Initiated By</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($updateHistory as $session)
                                 <tr>
-                                    <td>{{ $session->created_at->format('M d, Y H:i') }}</td>
+                                    <td class="fw-medium">{{ $session->created_at->format('M d, Y H:i') }}</td>
                                     <td>
-                                        <strong>{{ $session->from_version }}</strong> → 
-                                        <strong>{{ $session->target_version }}</strong>
+                                        <code class="text-muted">{{ $session->from_version }}</code> → 
+                                        <code class="text-success">{{ $session->target_version }}</code>
                                     </td>
                                     <td>{{ $session->duration_formatted ?? 'N/A' }}</td>
                                     <td>
-                                        <span class="label label-{{ $session->status === 'completed' ? 'success' : ($session->status === 'failed' ? 'danger' : 'primary') }}">
+                                        <span class="badge bg-{{ $session->status === 'completed' ? 'success' : ($session->status === 'failed' ? 'danger' : 'primary') }}">
                                             {{ ucfirst($session->status) }}
                                         </span>
                                         @if($session->rolled_back)
-                                            <span class="label label-warning">Rolled Back</span>
+                                            <span class="badge bg-warning ms-1">Rolled Back</span>
                                         @endif
                                     </td>
                                     <td>{{ $session->initiator->name ?? 'System' }}</td>
-                                    <td>
-                                        <div class="btn-group btn-group-xs">
-                                            <a href="{{ route('admin.updates.session-details', $session->id) }}" class="btn btn-info">
-                                                <i class="fa fa-eye"></i> Details
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ route('admin.updates.session-details', $session->id) }}" class="btn btn-outline-info" title="View Details">
+                                                <i class="fa fa-eye"></i>
                                             </a>
                                             @if($session->status === 'completed' && !$session->rolled_back)
-                                            <button class="btn btn-warning rollback-btn" data-id="{{ $session->id }}">
-                                                <i class="fa fa-undo"></i> Rollback
+                                            <button class="btn btn-outline-warning rollback-btn" data-id="{{ $session->id }}" title="Rollback">
+                                                <i class="fa fa-undo"></i>
                                             </button>
                                             @endif
                                         </div>
@@ -358,7 +427,10 @@
                         </table>
                     </div>
                 @else
-                    <p class="text-muted">No update history available</p>
+                    <div class="text-center p-4 text-muted">
+                        <i class="fa fa-history fa-2x mb-2"></i>
+                        <p class="mb-0">No update history available</p>
+                    </div>
                 @endif
             </div>
         </div>
@@ -370,13 +442,18 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Confirm Update</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning">
-                    <h4><i class="fa fa-exclamation-triangle"></i> Important</h4>
-                    <p>This will update your system to version <strong id="update-target-version"></strong>. Please ensure you have a backup before proceeding.</p>
+                <div class="alert alert-warning d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fa fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="alert-heading">Important</h5>
+                        <p class="mb-0">This will update your system to version <strong id="update-target-version"></strong>. Please ensure you have a backup before proceeding.</p>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -464,24 +541,26 @@
     @parent
     <script>
         $(document).ready(function() {
-            // Event handlers
+            // Event handlers using event delegation to handle dynamically loaded content
             $('#refresh-updates-btn').click(function() {
                 refreshAvailableUpdates();
             });
 
-            $('.update-now-btn').click(function() {
+            // Use event delegation for dynamically loaded buttons
+            $(document).on('click', '.update-now-btn', function() {
                 var version = $(this).data('version');
+                console.log('Update Now clicked for version:', version); // Debug log
                 showUpdateModal(version);
             });
 
-            $('.schedule-update-btn').click(function() {
+            $(document).on('click', '.schedule-update-btn', function() {
                 var version = $(this).data('version');
                 showScheduleModal(version);
             });
 
-            $('.preview-update-btn').click(function() {
+            $(document).on('click', '.preview-update-btn', function() {
                 var version = $(this).data('version');
-                previewUpdate(version);
+                showPreviewModal(version);
             });
 
             $('#confirm-update-btn').click(function() {
@@ -528,16 +607,14 @@
             $('#refresh-updates-btn').prop('disabled', true).html('<i class="fa fa-spin fa-refresh"></i> Refreshing...');
             
             $.ajax({
-                url: '{{ route("admin.updates.check") }}',
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}'
-                },
+                url: '{{ route("admin.updates.api.available-updates") }}',
+                type: 'GET',
                 success: function(response) {
-                    if (response.success) {
-                        location.reload();
+                    if (response.success && response.available_updates) {
+                        updateAvailableUpdatesUI(response.available_updates);
+                        showToast('Updates refreshed successfully', 'success');
                     } else {
-                        showAlert('error', response.error);
+                        showAlert('error', response.error || 'No updates available');
                     }
                 },
                 error: function() {
@@ -549,8 +626,103 @@
             });
         }
 
+        function updateAvailableUpdatesUI(availableUpdates) {
+            const container = $('#available-updates');
+            
+            if (availableUpdates.length === 0) {
+                container.html(`
+                    <div class="alert alert-success d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fa fa-check-circle fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h4 class="alert-heading mb-2">System Up to Date</h4>
+                            <p class="mb-0">No updates are currently available. Your system is running the latest version.</p>
+                        </div>
+                    </div>
+                `);
+                return;
+            }
+
+            let html = '';
+            availableUpdates.forEach(function(update) {
+                const updateType = update.type || 'patch';
+                let typeClass = 'success';
+                let badgeClass = 'bg-success';
+                
+                if (updateType === 'major') {
+                    typeClass = 'warning';
+                    badgeClass = 'bg-warning';
+                } else if (updateType === 'minor') {
+                    typeClass = 'info';
+                    badgeClass = 'bg-info';
+                }
+
+                const releaseDate = update.release_date || 'Unknown';
+                const description = update.body ? (update.body.length > 150 ? update.body.substring(0, 150) + '...' : update.body) : '';
+                const hasMigrations = update.has_migrations ? 'Yes' : 'No';
+                const fileChanges = update.file_changes || 0;
+                const estimatedDuration = update.estimated_duration || 'Unknown';
+
+                html += `
+                    <div class="alert alert-${typeClass} border-${typeClass}">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h4 class="alert-heading d-flex align-items-center">
+                                    <i class="fa fa-tag me-2"></i>
+                                    Version ${update.version}
+                                    <span class="badge ${badgeClass} ms-2">
+                                        ${updateType.charAt(0).toUpperCase() + updateType.slice(1)} Update
+                                    </span>
+                                </h4>
+                                <p class="mb-1"><strong>Released:</strong> ${releaseDate}</p>
+                                ${description ? `<p class="mb-1"><strong>Description:</strong> ${description}</p>` : ''}
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <h6 class="fw-semibold mb-2">Requirements:</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-1">
+                                        <i class="fa fa-database text-primary me-2"></i> 
+                                        Database migrations: <span class="fw-medium">${hasMigrations}</span>
+                                    </li>
+                                    <li class="mb-1">
+                                        <i class="fa fa-file text-info me-2"></i> 
+                                        File changes: <span class="fw-medium">${fileChanges} files</span>
+                                    </li>
+                                    <li class="mb-1">
+                                        <i class="fa fa-clock-o text-warning me-2"></i> 
+                                        Est. duration: <span class="fw-medium">${estimatedDuration}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-sm-6 d-flex align-items-end justify-content-end">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-success update-now-btn" data-version="${update.version}">
+                                        <i class="fa fa-play me-1"></i> Update Now
+                                    </button>
+                                    <button class="btn btn-info schedule-update-btn" data-version="${update.version}">
+                                        <i class="fa fa-calendar me-1"></i> Schedule
+                                    </button>
+                                    <button class="btn btn-outline-secondary preview-update-btn" data-version="${update.version}">
+                                        <i class="fa fa-eye me-1"></i> Preview
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.html(html);
+        }
+
         function showUpdateModal(version) {
+            console.log('showUpdateModal called with version:', version); // Debug log
             $('#update-target-version').text(version);
+            console.log('Modal text set to:', $('#update-target-version').text()); // Debug log
             $('#update-now-modal').modal('show');
         }
 
@@ -720,16 +892,14 @@
         }
 
         function showAlert(type, message) {
-            var alertClass = 'alert-' + (type === 'error' ? 'danger' : type);
-            var alertHtml = '<div class="alert ' + alertClass + ' alert-dismissible">' +
-                '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>' +
-                message + '</div>';
+            // Map old types to toast types
+            if (type === 'error') type = 'error';
+            else if (type === 'success') type = 'success';
+            else if (type === 'warning') type = 'warning';
+            else type = 'info';
             
-            $('#update-management').prepend(alertHtml);
-            
-            setTimeout(function() {
-                $('.alert').fadeOut();
-            }, 5000);
+            // Use the new toast notification system
+            showToast(message, type);
         }
     </script>
 @endsection
@@ -771,3 +941,5 @@
         }
     </style>
 @endsection
+
+@include('partials.admin.updates.toast-notifications')

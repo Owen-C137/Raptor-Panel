@@ -432,7 +432,7 @@ class UpdateController extends Controller
                 'success' => true,
                 'tests' => $testResults['tests'],
                 'overall_status' => $testResults['overall_status'],
-                'message' => $testResults['message'],
+                'message' => $testResults['message'] ?? 'System tests completed successfully',
                 'tested_at' => now()->toISOString(),
             ]);
             

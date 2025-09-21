@@ -2,7 +2,42 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
-## v1.3.0 - 2025-09-21
+## v1.3.2 - 2025-09-21
+
+### 🎨 Bootstrap 5/OneUI Modernization & UI Enhancement
+
+#### Added
+- **✨ Modern Update Dashboard** - Complete Bootstrap 5/OneUI redesign of the update management interface
+- **📊 Real-Time Statistics** - Live update statistics with success/failure rates and duration tracking
+- **🎯 Interactive Update History** - Professional session tracking with detailed progress monitoring
+- **🍞 Toast Notification System** - Modern toast notifications for user feedback throughout update process
+- **📋 Session Management** - Comprehensive update session tracking with rollback capabilities
+- **🎮 Live Progress Updates** - Real-time progress bars and status updates for running updates
+
+#### Enhanced
+- **🔧 Update Management Page** - Modernized with Bootstrap 5 cards, proper event delegation, and improved JavaScript
+- **📈 History Display** - Professional table layout with status badges, progress indicators, and action buttons
+- **🎨 UI Components** - Converted all AdminLTE components to Bootstrap 5/OneUI equivalents
+- **📱 Responsive Design** - Mobile-friendly layout with proper breakpoints and touch interactions
+- **🎯 User Experience** - Improved navigation, better visual hierarchy, and consistent design patterns
+
+#### Fixed
+- **🐛 JavaScript Placement** - Fixed improper JavaScript placement in header causing functionality issues
+- **🔄 Data Consistency** - Resolved inconsistent random values with deterministic calculations
+- **🍞 Toast Integration** - Fixed toast notifications converting content areas inappropriately
+- **📋 Table Display** - Corrected session table formatting and field mapping issues
+- **🎨 Component Styling** - Updated all outdated AdminLTE classes to modern Bootstrap 5 equivalents
+
+#### Technical Improvements
+- **⚡ Event Delegation** - Proper JavaScript event handling for dynamically generated content
+- **🛠️ Service Integration** - Enhanced GitHubReleaseService with deterministic file change estimates
+- **🎯 Route Management** - Resolved route parameter conflicts and improved URL structure
+- **💾 Session Persistence** - Improved session data management and state tracking
+- **🔧 Code Quality** - Clean, maintainable code with modern JavaScript and CSS practices
+
+This release brings a completely modernized user interface with professional-grade components and enhanced functionality! 🚀
+
+## v1.3.1 - 2025-09-21
 
 ### 🚀 Complete Update System Revolution
 

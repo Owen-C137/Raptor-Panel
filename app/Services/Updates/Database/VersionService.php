@@ -4,8 +4,8 @@ namespace Pterodactyl\Services\Updates\Database;
 
 use Carbon\Carbon;
 use Pterodactyl\Exceptions\Updates\DatabaseOperationException;
-use Pterodactyl\Models\PanelVersion;
-use Pterodactyl\Models\UpdateSession;
+use Pterodactyl\Models\Updates\PanelVersion;
+use Pterodactyl\Models\Updates\UpdateSession;
 use Pterodactyl\Services\Updates\BaseUpdateService;
 
 /**
@@ -367,28 +367,46 @@ class VersionService extends BaseUpdateService
     }
 
     /**
-     * Get the last update date from the most recent version.
+     * Get the last update date from the most recent completed update session.
      */
     public function getLastUpdateDate(): ?\Carbon\Carbon
     {
         try {
             $this->logInfo('Retrieving last update date');
 
-            $lastVersion = PanelVersion::orderBy('installed_at', 'desc')->first();
+            // Check for the most recent completed update session
+            $lastSession = UpdateSession::where('status', 'completed')
+                ->whereNotNull('completed_at')
+                ->orderBy('completed_at', 'desc')
+                ->first();
 
-            if (!$lastVersion || !$lastVersion->installed_at) {
-                $this->logDebug('No version records found or no install date');
-                return null;
+            if ($lastSession && $lastSession->completed_at) {
+                $lastUpdate = \Carbon\Carbon::parse($lastSession->completed_at);
+                
+                $this->logDebug('Last update date from session', [
+                    'date' => $lastUpdate->toISOString(),
+                    'session_id' => $lastSession->session_id,
+                    'to_version' => $lastSession->to_version
+                ]);
+
+                return $lastUpdate;
             }
 
-            $lastUpdate = \Carbon\Carbon::parse($lastVersion->installed_at);
-            
-            $this->logDebug('Last update date retrieved', [
-                'date' => $lastUpdate->toISOString(),
-                'version' => $lastVersion->version
-            ]);
+            // Fallback: Use panel version created_at if no sessions exist
+            $currentVersion = PanelVersion::where('is_current', true)->first();
+            if ($currentVersion && $currentVersion->created_at) {
+                $fallbackDate = \Carbon\Carbon::parse($currentVersion->created_at);
+                
+                $this->logDebug('Last update date from version record (fallback)', [
+                    'date' => $fallbackDate->toISOString(),
+                    'version' => $currentVersion->version
+                ]);
 
-            return $lastUpdate;
+                return $fallbackDate;
+            }
+
+            $this->logDebug('No update sessions or version records found');
+            return null;
 
         } catch (\Exception $e) {
             $this->handleException($e, 'Failed to get last update date');

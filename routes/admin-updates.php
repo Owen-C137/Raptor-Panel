@@ -39,10 +39,12 @@ Route::group([
         Route::get('/overview', [UpdateDashboardController::class, 'overview'])->name('admin.updates.api.overview');
         Route::get('/status', [UpdateDashboardController::class, 'status'])->name('admin.updates.api.status');
         Route::get('/health', [UpdateDashboardController::class, 'health'])->name('admin.updates.api.health');
+        Route::get('/system-health-overview', [UpdateDashboardController::class, 'systemHealthOverview'])->name('admin.updates.api.system-health-overview');
         Route::get('/statistics', [UpdateDashboardController::class, 'statistics'])->name('admin.updates.api.statistics');
         Route::get('/activity', [UpdateDashboardController::class, 'activity'])->name('admin.updates.api.activity');
         Route::get('/config-status', [UpdateDashboardController::class, 'configStatus'])->name('admin.updates.api.config-status');
         Route::get('/backups', [UpdateDashboardController::class, 'backups'])->name('admin.updates.api.backups');
+        Route::get('/available-updates', [UpdateDashboardController::class, 'getAvailableUpdates'])->name('admin.updates.api.available-updates');
         
         // Update Management API Routes
         Route::get('/check', [UpdateController::class, 'checkForUpdates'])->name('admin.updates.api.check');
@@ -71,7 +73,7 @@ Route::group([
     // Direct API Routes (used by dashboard JavaScript - without api/ prefix)
     Route::get('/status', [UpdateDashboardController::class, 'status'])->name('admin.updates.status');
     Route::get('/health-data', [UpdateDashboardController::class, 'health'])->name('admin.updates.health-data');
-    Route::get('/progress', [UpdateController::class, 'getCurrentProgress'])->name('admin.updates.progress');
+    Route::get('/current-progress', [UpdateController::class, 'getCurrentProgress'])->name('admin.updates.current-progress');
     Route::post('/initiate', [UpdateController::class, 'initiateUpdate'])->name('admin.updates.initiate');
     Route::post('/rollback/{sessionId}', [UpdateController::class, 'rollbackUpdate'])->name('admin.updates.rollback');
     Route::post('/stop', [UpdateController::class, 'emergencyStop'])->name('admin.updates.stop');
