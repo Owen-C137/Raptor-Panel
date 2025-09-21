@@ -39,6 +39,9 @@ class UpdateOrchestrationService extends BaseUpdateService
     private GitHubReleaseService $githubReleaseService;
     private EnhancedMigrationService $migrationService;
     private ValidationService $validationService;
+    
+    // Store extraction result for use in later phases
+    private array $extractionResult = [];
 
     public function __construct(
         SessionService $sessionService,
@@ -185,6 +188,25 @@ class UpdateOrchestrationService extends BaseUpdateService
                 $downloadResult['path'],
                 $this->getUpdateTempDirectory($sessionId)
             );
+            
+            // Find the actual content directory (GitHub repos extract to subdirectory)
+            $tempDir = $this->getUpdateTempDirectory($sessionId);
+            $contents = scandir($tempDir);
+            $contentDir = null;
+            
+            foreach ($contents as $item) {
+                if ($item !== "." && $item !== ".." && is_dir($tempDir . DIRECTORY_SEPARATOR . $item)) {
+                    $contentDir = $tempDir . DIRECTORY_SEPARATOR . $item;
+                    break;
+                }
+            }
+            
+            if (!$contentDir) {
+                throw new UpdateException("No content directory found in extracted archive", "extraction_phase");
+            }
+            
+            $extractResult["content_dir"] = $contentDir;
+            $this->extractionResult = $extractResult;
         } catch (\Exception $e) {
             throw new UpdateException("Failed to extract archive: " . $e->getMessage(), 'extraction_phase', 0, $e);
         }
@@ -232,12 +254,11 @@ class UpdateOrchestrationService extends BaseUpdateService
             'percentage' => 40,
         ]);
 
-        $updateDirectory = $this->getUpdateTempDirectory($sessionId);
         
         // Compare directories to find file changes
         $fileChanges = $this->githubFileService->compareDirectories(
             base_path("app"), // Only compare app directory for now
-            $updateDirectory . "/app"
+            $this->extractionResult["content_dir"] . "/app"
         );
         
         $totalFiles = count($fileChanges['added']) + count($fileChanges['modified']) + count($fileChanges['deleted']);
@@ -253,8 +274,8 @@ class UpdateOrchestrationService extends BaseUpdateService
         // Add new files
         foreach ($fileChanges['added'] as $change) {
             $updateFileChanges[] = [
-                'type' => 'add',
-                'path' => $change['path'],
+                'type' => 'added',
+                'path' => 'app/' . $change['path'],
                 'source' => $change['full_path']
             ];
         }
@@ -262,8 +283,8 @@ class UpdateOrchestrationService extends BaseUpdateService
         // Add modified files
         foreach ($fileChanges['modified'] as $change) {
             $updateFileChanges[] = [
-                'type' => 'modify',
-                'path' => $change['path'],
+                'type' => 'modified',
+                'path' => 'app/' . $change['path'],
                 'source' => $change['full_path']
             ];
         }
@@ -271,7 +292,7 @@ class UpdateOrchestrationService extends BaseUpdateService
         // Add deleted files
         foreach ($fileChanges['deleted'] as $change) {
             $updateFileChanges[] = [
-                'type' => 'delete',
+                'type' => 'deleted',
                 'path' => $change['path']
             ];
         }

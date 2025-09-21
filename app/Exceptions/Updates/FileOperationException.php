@@ -2,24 +2,29 @@
 
 namespace Pterodactyl\Exceptions\Updates;
 
+use Exception;
 use Throwable;
 
-/**
- * File Operation Exception
- */
-class FileOperationException extends UpdateException
+class FileOperationException extends Exception
 {
-    protected string $filePath;
-
-    public function __construct(string $message = '', string $filePath = '', int $code = 0, Throwable $previous = null)
+    protected $context;
+    
+    public function __construct(string $message, $context = null, $codeOrPrevious = 0, ?Throwable $previous = null)
     {
-        $this->filePath = $filePath;
-        $context = $filePath ? "File Operation ({$filePath})" : 'File Operation';
-        parent::__construct($message, $context, $code, $previous);
+        $this->context = $context;
+        
+        // Handle flexible constructor parameters
+        if ($codeOrPrevious instanceof Throwable) {
+            // Called as (message, context, previous)
+            parent::__construct($message, 0, $codeOrPrevious);
+        } else {
+            // Called as (message, context, code, previous)
+            parent::__construct($message, (int)$codeOrPrevious, $previous);
+        }
     }
-
-    public function getFilePath(): string
+    
+    public function getContext()
     {
-        return $this->filePath;
+        return $this->context;
     }
 }

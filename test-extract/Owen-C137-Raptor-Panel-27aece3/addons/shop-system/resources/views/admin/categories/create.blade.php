@@ -1,0 +1,251 @@
+@extends('layouts.admin')
+
+@section('title')
+    Create Category
+@endsection
+
+@section('content-header')
+<div class="bg-body-light">
+  <div class="content content-full">
+    <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-center py-2">
+      <div class="flex-grow-1">
+        <h1 class="h3 fw-bold mb-1">
+          Create Category Add a new product category
+        </h1>
+        <h2 class="fs-base lh-base fw-medium text-muted mb-0">
+          Add a new product category
+        </h2>
+      </div>
+      <nav class="flex-shrink-0 mt-3 mt-sm-0 ms-sm-3" aria-label="breadcrumb">
+        <ol class="breadcrumb breadcrumb-alt">
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.index') }}">Admin</a></li>
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.shop.dashboard') }}">Shop</a></li>
+          <li class="breadcrumb-item"><a class="link-fx" href="{{ route('admin.shop.categories.index') }}">Categories</a></li>
+          <li class="breadcrumb-item" aria-current="page">Create</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+</div>
+@endsection
+
+@section('content')
+<div class="row">
+    <div class="col-md-8">
+        <form method="POST" action="{{ route('admin.shop.categories.store') }}">
+            @csrf
+            
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Category Information</h3>
+                </div>
+                
+                <div class="block-content">
+                    <div class="mb-4">
+                        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" id="name" class="form-control" 
+                               value="{{ old('name') }}" required>
+                        @error('name')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="slug" class="form-label">Slug</label>
+                        <input type="text" name="slug" id="slug" class="form-control" 
+                               value="{{ old('slug') }}" placeholder="Auto-generated from name">
+                        <small class="form-text text-muted">
+                            URL-friendly version of the name. Leave blank to auto-generate.
+                        </small>
+                        @error('slug')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea name="description" id="description" class="form-control" rows="4">{{ old('description') }}</textarea>
+                        @error('description')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="parent_id" class="form-label">Parent Category</label>
+                        <select name="parent_id" id="parent_id" class="form-select">
+                            <option value="">None (Top Level)</option>
+                            @foreach($parentCategories as $parentCategory)
+                                <option value="{{ $parentCategory->id }}" 
+                                        {{ old('parent_id') == $parentCategory->id ? 'selected' : '' }}>
+                                    {{ $parentCategory->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('parent_id')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">Display Options</h3>
+                </div>
+                
+                <div class="block-content">
+                    <div class="mb-4">
+                        <label for="sort_order" class="form-label">Sort Order</label>
+                        <input type="number" name="sort_order" id="sort_order" class="form-control" 
+                               value="{{ old('sort_order', 0) }}" min="0">
+                        <small class="form-text text-muted">
+                            Categories with lower numbers appear first.
+                        </small>
+                        @error('sort_order')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="active" class="form-label">Category Status</label>
+                        <div class="form-check">
+                            <input type="checkbox" name="active" id="active" value="1" class="form-check-input"
+                                   {{ old('active', true) ? 'checked' : '' }}>
+                            <label for="active" class="form-check-label fw-medium">Active</label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Inactive categories are hidden from customers.
+                        </small>
+                        @error('active')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            
+            <div class="block block-rounded">
+                <div class="block-header block-header-default">
+                    <h3 class="block-title">SEO Options</h3>
+                </div>
+                
+                <div class="block-content">
+                    <div class="mb-4">
+                        <label for="meta_title" class="form-label">Meta Title</label>
+                        <input type="text" name="meta_title" id="meta_title" class="form-control" 
+                               value="{{ old('meta_title') }}" maxlength="60">
+                        <small class="form-text text-muted">
+                            SEO title for search engines (recommended: under 60 characters).
+                        </small>
+                        @error('meta_title')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="meta_description" class="form-label">Meta Description</label>
+                        <textarea name="meta_description" id="meta_description" class="form-control" 
+                                  rows="3" maxlength="160">{{ old('meta_description') }}</textarea>
+                        <small class="form-text text-muted">
+                            SEO description for search engines (recommended: under 160 characters).
+                        </small>
+                        @error('meta_description')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="meta_keywords" class="form-label">Meta Keywords</label>
+                        <input type="text" name="meta_keywords" id="meta_keywords" class="form-control" 
+                               value="{{ old('meta_keywords') }}" placeholder="keyword1, keyword2, keyword3">
+                        <small class="form-text text-muted">
+                            Comma-separated keywords for SEO.
+                        </small>
+                        @error('meta_keywords')
+                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+            
+            <div class="block block-rounded">
+                <div class="block-content">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa fa-save"></i> Create Category
+                    </button>
+                    <a href="{{ route('admin.shop.categories.index') }}" class="btn btn-alt-secondary">
+                        <i class="fa fa-arrow-left"></i> Cancel
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="block block-rounded">
+            <div class="block-header block-header-default">
+                <h3 class="block-title">Category Guidelines</h3>
+            </div>
+            
+            <div class="block-content">
+                <div class="alert alert-info">
+                    <h4><i class="fa fa-info-circle"></i> Tip!</h4>
+                    <p class="mb-0">Use clear, descriptive names for your categories to help customers find products easily.</p>
+                </div>
+                
+                <h5>Best Practices:</h5>
+                <ul>
+                    <li>Keep names short and descriptive</li>
+                    <li>Use proper capitalization</li>
+                    <li>Avoid special characters in slugs</li>
+                    <li>Set appropriate sort orders</li>
+                    <li>Write helpful descriptions</li>
+                </ul>
+                
+                <h5>Hierarchy:</h5>
+                <p>Categories can be nested under parent categories to create a hierarchy. This helps organize products logically.</p>
+                
+                <h5>SEO:</h5>
+                <p>Fill out meta fields to improve search engine visibility and click-through rates.</p>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('footer-scripts')
+    @parent
+    <script>
+        $(document).ready(function() {
+            // Auto-generate slug from name
+            $('#name').on('input', function() {
+                var name = $(this).val();
+                var slug = name.toLowerCase()
+                    .replace(/[^\w\s-]/g, '') // Remove special characters
+                    .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+                    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+                
+                if ($('#slug').val() === '' || $('#slug').data('auto-generated')) {
+                    $('#slug').val(slug).data('auto-generated', true);
+                }
+            });
+            
+            // Mark slug as manually edited if user types in it
+            $('#slug').on('input', function() {
+                $(this).data('auto-generated', false);
+            });
+            
+            // Character counters
+            $('#meta_title').on('input', function() {
+                var length = $(this).val().length;
+                var color = length > 60 ? 'text-danger' : (length > 50 ? 'text-warning' : 'text-muted');
+                $(this).next('.form-text').removeClass('text-muted text-warning text-danger').addClass(color);
+            });
+            
+            $('#meta_description').on('input', function() {
+                var length = $(this).val().length;
+                var color = length > 160 ? 'text-danger' : (length > 140 ? 'text-warning' : 'text-muted');
+                $(this).next('.form-text').removeClass('text-muted text-warning text-danger').addClass(color);
+            });
+        });
+    </script>
+@endsection

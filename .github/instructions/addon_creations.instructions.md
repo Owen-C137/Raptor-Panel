@@ -1,5 +1,28 @@
 # 🛠️ **PTERODACTYL ADDON DEVELOPMENT GUIDELINES**
 
+Main rules to follow:
+- ALWAYS keep everything in `addons/{addon-name}/` directory
+- NEVER create files in main `app/`, `config/`, `resources/` directories
+- ALWAYS use proper PSR-4 namespace: `PterodactylAddons\{AddonName}`
+- NEVER use `Pterodactyl` namespace for addon code
+- ALWAYS create `install` and `uninstall` commands for every addon
+- ALWAYS make uninstall commands clean up ALL traces
+- ALWAYS provide clear installation instructions
+- ALWAYS use descriptive command output with progress indicators
+- ALWAYS include helpful error messages and troubleshooting
+- ALWAYS validate prerequisites before installation
+- ALWAYS update plan files after implementing features
+- ALWAYS mark completed items as ✅ in roadmap files
+- ALWAYS add newly discovered requirements to plans
+- ALWAYS keep implementation status accurate and current
+- NEVER leave plan files outdated or incorrect
+
+- NEVER Assume anything about the users environment, Always validate everything and provide clear error messages if something is missing or wrong.
+- NEVER Modify any core Pterodactyl files directly, Only change `config/app.php` to register your service provider.
+- If your unsure about anything ASK ME FIRST.
+- ALWAYS document your code and provide clear comments.
+
+
 IMPORTANT: we have set up a repo you can use this to push changes when i ask to:
 
 ## **📦 VERSION CONTROL & CHANGELOG WORKFLOW**
