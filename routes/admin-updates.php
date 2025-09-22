@@ -23,6 +23,7 @@ Route::group([
     // Main Navigation Routes (UI Views)
     Route::get('/', [UpdateDashboardController::class, 'index'])->name('admin.updates.dashboard');
     Route::get('/manage', [UpdateDashboardController::class, 'manage'])->name('admin.updates.manage');
+    Route::get('/confirm/{version}', [UpdateDashboardController::class, 'showConfirmUpdate'])->name('admin.updates.confirm');
     Route::get('/history', [UpdateDashboardController::class, 'history'])->name('admin.updates.history');
     Route::get('/health', [UpdateDashboardController::class, 'healthView'])->name('admin.updates.health');
     Route::get('/safety', [UpdateDashboardController::class, 'safety'])->name('admin.updates.safety');
@@ -76,6 +77,7 @@ Route::group([
     Route::get('/health-data', [UpdateDashboardController::class, 'health'])->name('admin.updates.health-data');
     Route::get('/current-progress', [UpdateController::class, 'getCurrentProgress'])->name('admin.updates.current-progress');
     Route::post('/initiate', [UpdateController::class, 'initiateUpdate'])->name('admin.updates.initiate');
+    Route::get('/progress-page/{sessionId}', [UpdateController::class, 'showProgressPage'])->name('admin.updates.progress-page');
     Route::post('/rollback/{sessionId}', [UpdateController::class, 'rollbackUpdate'])->name('admin.updates.rollback');
     Route::post('/stop', [UpdateController::class, 'emergencyStop'])->name('admin.updates.stop');
     Route::post('/health-check', [UpdateDashboardController::class, 'runHealthCheck'])->name('admin.updates.health-check');
@@ -98,9 +100,7 @@ Route::group([
     Route::get('/health/details/{checkId}', [UpdateDashboardController::class, 'healthDetails'])->name('admin.updates.health.details');
     Route::get('/health/export', [UpdateDashboardController::class, 'exportHealth'])->name('admin.updates.health.export');
 
-    // Configuration Update Routes
-    Route::post('/configuration/update', [UpdateController::class, 'updateConfiguration'])->name('admin.updates.configuration.update');
-    Route::post('/notifications/update', [UpdateController::class, 'updateNotificationSettings'])->name('admin.updates.notifications.update');
+    // Configuration Update Routes (non-duplicated ones only)
     Route::post('/health-checks/update', [UpdateController::class, 'updateHealthCheckSettings'])->name('admin.updates.health-checks.update');
     Route::post('/advanced/update', [UpdateController::class, 'updateAdvancedSettings'])->name('admin.updates.advanced.update');
     Route::post('/advanced/reset', [UpdateController::class, 'resetAdvancedSettings'])->name('admin.updates.advanced.reset');

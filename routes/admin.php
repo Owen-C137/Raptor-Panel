@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Pterodactyl\Http\Controllers\Admin;
+use Pterodactyl\Http\Controllers\Admin\Updates;
 use Pterodactyl\Http\Middleware\Admin\Servers\ServerInstalled;
 
 Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
@@ -229,12 +230,16 @@ Route::group(['prefix' => 'nests'], function () {
 
 /*
 |--------------------------------------------------------------------------
-| Update System Routes
+| Update System Routes (LEGACY - DISABLED)
 |--------------------------------------------------------------------------
 |
 | Endpoint: /admin/updates
 |
+| These routes have been moved to admin-updates.php for the new comprehensive
+| update system. Keeping these commented out to prevent conflicts.
+|
 */
+/*
 Route::group(['prefix' => 'updates'], function () {
     // Main update page
     Route::get('/', [Admin\UpdateController::class, 'index'])->name('admin.updates.index');
@@ -243,7 +248,8 @@ Route::group(['prefix' => 'updates'], function () {
     Route::get('/check', [Admin\UpdateController::class, 'checkForUpdates'])->name('admin.updates.check');
     Route::get('/details/{version}', [Admin\UpdateController::class, 'getUpdateDetails'])->name('admin.updates.details');
     Route::post('/start/{version}', [Admin\UpdateController::class, 'startUpdate'])->name('admin.updates.start');
-    Route::get('/progress/{sessionId}', [Admin\UpdateController::class, 'getProgress'])->name('admin.updates.progress');
+    Route::get("/progress-page/{sessionId}", [Updates\UpdateController::class, "showProgressPage"])->name("admin.updates.progress-page");
+    Route::get('/progress/{sessionId}', [Updates\UpdateController::class, 'getProgress'])->name('admin.updates.progress');
     Route::post('/cancel/{sessionId}', [Admin\UpdateController::class, 'cancelUpdate'])->name('admin.updates.cancel');
     Route::post('/rollback/{sessionId}', [Admin\UpdateController::class, 'rollbackUpdate'])->name('admin.updates.rollback');
     
@@ -255,3 +261,4 @@ Route::group(['prefix' => 'updates'], function () {
     Route::get('/settings', [Admin\UpdateController::class, 'getSettings'])->name('admin.updates.settings');
     Route::post('/settings', [Admin\UpdateController::class, 'updateSettings'])->name('admin.updates.settings.update');
 });
+*/

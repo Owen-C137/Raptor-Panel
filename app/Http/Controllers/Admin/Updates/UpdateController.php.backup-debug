@@ -4,7 +4,7 @@ namespace Pterodactyl\Http\Controllers\Admin\Updates;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
+use IlluminateHttpRedirectResponse;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\Updates\GitHub\GitHubReleaseService;
 use Pterodactyl\Services\Updates\Database\VersionService;
@@ -246,6 +246,7 @@ class UpdateController extends Controller
                 // Redirect to progress page
                 \Log::info("About to redirect to:", ["route" => "admin.updates.progress-page", "session_id" => $session->session_id]);
                 return redirect()->route('admin.updates.progress-page', $session->session_id);
+                \Log::info("Redirect sent successfully");
             }
 
             return $this->startUpdate($request, $latestUpdate['tag_name']);
@@ -943,25 +944,23 @@ class UpdateController extends Controller
      */
     public function showProgressPage(Request $request, string $sessionId)
     {
-        \Log::info("showProgressPage called with sessionId: " . $sessionId);
         try {
             $session = $this->sessionService->getSession($sessionId);
             if (!$session) {
-                \Log::warning("Session not found: " . $sessionId);
-                return redirect()->route('admin.updates.manage')->with('error', 'Update session not found');
+                return redirect()->route('admin.updates.index')->with('error', 'Update session not found');
+                \Log::info("Redirect sent successfully");
             }
 
             $currentVersion = $this->versionService->getCurrentVersion();
-            \Log::info("Showing progress page for session: " . $sessionId);
 
             return view('admin.updates.progress', [
                 'sessionId' => $sessionId,
                 'fromVersion' => $session->from_version ?? $currentVersion->version,
                 'toVersion' => $session->to_version,
             ]);
-        } catch (\Exception $e) {
-            \Log::error("Error in showProgressPage: " . $e->getMessage());
-            return redirect()->route('admin.updates.manage')->with('error', 'Failed to load progress page: ' . $e->getMessage());
+        } catch (Exception $e) {
+            return redirect()->route('admin.updates.index')->with('error', 'Failed to load progress page: ' . $e->getMessage());
+                \Log::info("Redirect sent successfully");
         }
     }
 }

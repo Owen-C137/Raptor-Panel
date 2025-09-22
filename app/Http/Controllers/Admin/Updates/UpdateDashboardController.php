@@ -643,6 +643,47 @@ class UpdateDashboardController extends Controller
     }
 
     /**
+     * Display the update confirmation page for a specific version.
+     *
+     * @param string $version
+     * @return \Illuminate\View\View
+     */
+    public function showConfirmUpdate(string $version): View
+    {
+        try {
+            // Get current version
+            $currentVersion = config('app.version', '1.0.0');
+            
+            // Get update details from GitHub
+            $updateDetails = $this->githubReleaseService->getReleaseDetails($version);
+            
+            // Get system health check
+            $systemHealth = $this->healthService->performHealthChecks();
+            
+            // Get current configuration
+            $configuration = [
+                'enabled' => config('pterodactyl.updates.enabled', true),
+                'current_version' => $currentVersion,
+                'auto_updates' => config('pterodactyl.updates.auto_update', false),
+                'maintenance_mode' => config('pterodactyl.updates.maintenance_mode', true),
+                'backup_enabled' => config('pterodactyl.updates.backup.enabled', true),
+            ];
+
+            return view('admin.updates.confirm-update', [
+                'activeTab' => 'manage',
+                'version' => $version,
+                'currentVersion' => $currentVersion,
+                'updateDetails' => $updateDetails,
+                'systemHealth' => $systemHealth,
+                'configuration' => $configuration,
+            ]);
+        } catch (Exception $e) {
+            Log::error('Failed to load update page: ' . $e->getMessage());
+            return redirect()->route('admin.updates.manage')->with('error', 'Failed to load update page: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Display the update history page.
      *
      * @return \Illuminate\View\View
