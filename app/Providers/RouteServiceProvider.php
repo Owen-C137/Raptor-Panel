@@ -43,10 +43,6 @@ class RouteServiceProvider extends ServiceProvider
                     ->prefix('/admin')
                     ->group(base_path('routes/admin.php'));
 
-                // Update System Routes
-                Route::middleware(['auth.session', RequireTwoFactorAuthentication::class, AdminAuthenticate::class])
-                    ->group(base_path('routes/admin-updates.php'));
-
                 // Shop routes are now handled by the Shop addon's service provider
 
                 Route::middleware('guest')->prefix('/auth')->group(base_path('routes/auth.php'));

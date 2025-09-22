@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Pterodactyl\Http\Controllers\Admin;
-use Pterodactyl\Http\Controllers\Admin\Updates;
 use Pterodactyl\Http\Middleware\Admin\Servers\ServerInstalled;
 
 Route::get('/', [Admin\BaseController::class, 'index'])->name('admin.index');
@@ -230,35 +229,14 @@ Route::group(['prefix' => 'nests'], function () {
 
 /*
 |--------------------------------------------------------------------------
-| Update System Routes (LEGACY - DISABLED)
+| Simple Update System Routes
 |--------------------------------------------------------------------------
 |
 | Endpoint: /admin/updates
 |
-| These routes have been moved to admin-updates.php for the new comprehensive
-| update system. Keeping these commented out to prevent conflicts.
-|
 */
-/*
 Route::group(['prefix' => 'updates'], function () {
-    // Main update page
-    Route::get('/', [Admin\UpdateController::class, 'index'])->name('admin.updates.index');
-    
-    // API endpoints for update operations
-    Route::get('/check', [Admin\UpdateController::class, 'checkForUpdates'])->name('admin.updates.check');
-    Route::get('/details/{version}', [Admin\UpdateController::class, 'getUpdateDetails'])->name('admin.updates.details');
-    Route::post('/start/{version}', [Admin\UpdateController::class, 'startUpdate'])->name('admin.updates.start');
-    Route::get("/progress-page/{sessionId}", [Updates\UpdateController::class, "showProgressPage"])->name("admin.updates.progress-page");
-    Route::get('/progress/{sessionId}', [Updates\UpdateController::class, 'getProgress'])->name('admin.updates.progress');
-    Route::post('/cancel/{sessionId}', [Admin\UpdateController::class, 'cancelUpdate'])->name('admin.updates.cancel');
-    Route::post('/rollback/{sessionId}', [Admin\UpdateController::class, 'rollbackUpdate'])->name('admin.updates.rollback');
-    
-    // Management endpoints
-    Route::get('/backups', [Admin\UpdateController::class, 'listBackups'])->name('admin.updates.backups');
-    Route::get('/history', [Admin\UpdateController::class, 'getUpdateHistory'])->name('admin.updates.history');
-    
-    // Settings endpoints
-    Route::get('/settings', [Admin\UpdateController::class, 'getSettings'])->name('admin.updates.settings');
-    Route::post('/settings', [Admin\UpdateController::class, 'updateSettings'])->name('admin.updates.settings.update');
+    Route::get('/', [Admin\SimpleUpdateController::class, 'index'])->name('admin.simple-updates.index');
+    Route::get('/check', [Admin\SimpleUpdateController::class, 'checkUpdates'])->name('admin.simple-updates.check');
+    Route::post('/perform', [Admin\SimpleUpdateController::class, 'performUpdate'])->name('admin.simple-updates.perform');
 });
-*/

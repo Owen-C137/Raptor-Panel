@@ -218,33 +218,8 @@
                                 </a>
                                 <ul class="nav-main-submenu">
                                     <li class="nav-main-item">
-                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.dashboard' ?: 'active' }}" href="{{ route('admin.updates.dashboard') }}">
-                                            <span class="nav-main-link-name">Dashboard</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-main-item">
-                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.manage' ?: 'active' }}" href="{{ route('admin.updates.manage') }}">
-                                            <span class="nav-main-link-name">Manage Updates</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-main-item">
-                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.history' ?: 'active' }}" href="{{ route('admin.updates.history') }}">
-                                            <span class="nav-main-link-name">Update History</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-main-item">
-                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.health' ?: 'active' }}" href="{{ route('admin.updates.health') }}">
-                                            <span class="nav-main-link-name">System Health</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-main-item">
-                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.safety' ?: 'active' }}" href="{{ route('admin.updates.safety') }}">
-                                            <span class="nav-main-link-name">Safety Controls</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-main-item">
-                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.updates.configuration' ?: 'active' }}" href="{{ route('admin.updates.configuration') }}">
-                                            <span class="nav-main-link-name">Configuration</span>
+                                        <a class="nav-main-link {{ Route::currentRouteName() !== 'admin.simple-updates.index' ?: 'active' }}" href="{{ route('admin.simple-updates.index') }}">
+                                            <span class="nav-main-link-name">Updates</span>
                                         </a>
                                     </li>
                                 </ul>
