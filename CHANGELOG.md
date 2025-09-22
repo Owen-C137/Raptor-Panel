@@ -2,7 +2,62 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
-## v1.3.7 - 2025-09-21
+## v1.3.7 - 2025-09-22
+
+### 🎨 Professional OneUI Update Interface & Dynamic Version System
+
+#### Added
+- **🎨 Professional OneUI Confirmation Page** - Complete redesign of update confirmation interface
+  - Modern OneUI Bootstrap 5 styling with clean block-based layout
+  - Real-time progress monitoring with animated progress bars and percentage indicators
+  - Live console output with timestamped logs, auto-scroll, and console controls
+  - Comprehensive system health check display with professional alert styling
+  - Release notes rendering with Markdown support and scrollable containers
+  - Professional warning alerts and configuration display
+  - Session management with AJAX progress polling every 2 seconds
+  - Automatic redirection upon completion with user feedback
+
+#### Enhanced
+- **⚡ Dynamic Version Management** - Implemented database-driven version system
+  - Created `VersionHelper` class for dynamic version retrieval from database
+  - Modified `AppServiceProvider` to set config version dynamically at runtime
+  - Version now reads from `panel_versions` table with fallback to config
+  - Supports real-time version updates without code changes
+- **🔧 Update Flow Improvements** - Simplified and improved update user experience
+  - Changed "Update Now" button from JavaScript handler to clean direct link
+  - Removed complex JavaScript interference that caused redirect failures
+  - Implemented professional confirmation flow: Updates List → Confirmation → Live Progress → Dashboard
+  - Fixed route conflicts between legacy and new update systems
+
+#### Fixed
+- **🐛 Route Resolution Issues** - Resolved update system redirect failures
+  - Disabled conflicting legacy routes in `routes/admin.php` 
+  - Fixed duplicate route definitions causing update button failures
+  - Updated `UpdateDashboardController::showConfirmUpdate()` with proper health service integration
+  - Fixed method name mismatches in health service calls (`runHealthChecks()` vs `performHealthCheck()`)
+- **📱 User Interface Consistency** - Maintained OneUI design standards throughout
+  - Applied consistent OneUI classes: `block`, `block-header`, `bg-body-light`
+  - Professional typography with proper heading hierarchy
+  - Mobile-responsive layout with consistent spacing
+  - Color-coded status indicators and progress elements
+
+#### Technical Improvements
+- **🔄 Session Management** - Enhanced update session tracking and monitoring
+  - Proper session ID generation and tracking
+  - Real-time progress updates via AJAX polling
+  - Error handling with graceful degradation and retry options
+- **🛡️ Code Quality** - Maintained backward compatibility while improving user experience
+  - Clean separation of concerns between controllers and services
+  - Proper namespace organization and autoloading
+  - Comprehensive error handling and user feedback
+
+#### Migration Notes
+- Version system now reads from database by default
+- Update confirmation page completely redesigned with OneUI styling
+- Legacy JavaScript update handlers removed in favor of clean link-based flow
+- All existing update functionality preserved with improved user interface
+
+## v1.3.6 - 2025-09-21
 
 ### �� Update System Testing
 

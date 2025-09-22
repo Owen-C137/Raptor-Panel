@@ -3,6 +3,7 @@
 namespace Pterodactyl\Providers;
 
 use Pterodactyl\Models;
+use Pterodactyl\Helpers\VersionHelper;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Pagination\Paginator;
@@ -22,8 +23,12 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        // Simple version sharing - will be enhanced with new update system
-        View::share('appVersion', config('app.version', '1.0.0'));
+        // Set dynamic version in config - fetch from database if available
+        $dynamicVersion = VersionHelper::getCurrentVersion();
+        config(['app.version' => $dynamicVersion]);
+
+        // Share version with all views
+        View::share('appVersion', $dynamicVersion);
         View::share('appIsGit', false);
 
         Paginator::useBootstrap();

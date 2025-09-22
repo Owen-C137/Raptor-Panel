@@ -7,11 +7,11 @@ return [
     |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
-    | This value is set when creating a Raptor Panel release. 
-    | Update this version number when releasing new features.
+    | This value is dynamically retrieved from the database when available.
+    | Falls back to hardcoded version for fresh installations.
     */
 
-    'version' => '1.3.6',
+    'version' => env('APP_VERSION', '1.3.7'), // Fallback version
 
     /*
 
