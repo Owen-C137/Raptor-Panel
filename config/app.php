@@ -11,7 +11,18 @@ return [
     | Falls back to hardcoded version for fresh installations.
     */
 
-    'version' => env('APP_VERSION', '1.3.10'), // Fallback version
+        /*
+    |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the "version" your application is currently running
+    | in. You may want to follow the "Semantic Versioning" - Given a version
+    | number MAJOR.MINOR.PATCH when an API changes.
+    |
+    */
+
+    'version' => env('APP_VERSION', '1.3.11'),
 
     /*
 

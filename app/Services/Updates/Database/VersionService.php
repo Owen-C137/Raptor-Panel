@@ -167,7 +167,20 @@ class VersionService extends BaseUpdateService
                 $versionRecord = PanelVersion::where('version', $version)->first();
                 
                 if (!$versionRecord) {
-                    throw new DatabaseOperationException("Version '{$version}' not found in database");
+                    // Try to create the version record if it doesn't exist
+                    $this->logWarning("Version '{$version}' not found in database, attempting to create it");
+                    try {
+                        $versionRecord = PanelVersion::create([
+                            'version' => $version,
+                            'release_url' => '',
+                            'checksum' => 'auto-created',
+                            'is_current' => false,
+                            'installed_at' => null
+                        ]);
+                        $this->logInfo("Auto-created version record for '{$version}'");
+                    } catch (\Exception $e) {
+                        throw new DatabaseOperationException("Version '{$version}' not found in database and could not be created: " . $e->getMessage());
+                    }
                 }
 
                 // Update current version flags

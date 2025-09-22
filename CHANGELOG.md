@@ -2,6 +2,63 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+# Raptor Panel Changelog
+
+## v1.3.11 - 2025-09-22
+
+### 🔧 Critical VersionService Database Integration Fixes
+
+#### Fixed
+- **🐛 Version Record Creation** - Fixed critical "Version not found in database" errors during updates
+  - Resolved update process failures when target version records don't exist in `panel_versions` table
+  - Fixed chicken-and-egg problem where update system tried to set versions as current before creating database records
+  - Eliminated "Failed to start update: Version 'v1.3.10' not found in database" errors during update initiation
+
+- **💾 Database Version Management** - Enhanced VersionService robustness and reliability
+  - Added auto-creation capability for missing version records in `setCurrentVersion()` method
+  - Implemented graceful fallback when version records are missing from database
+  - Fixed update orchestration workflow to properly handle new version registration
+  - Enhanced error handling and logging for version record operations
+
+#### Enhanced
+- **🔧 Update Process Reliability** - Strengthened version lifecycle management
+  - Update system now automatically creates version records for new releases when needed  
+  - Improved database transaction handling for version record creation and updates
+  - Added comprehensive logging for version record operations and auto-creation events
+  - Enhanced validation and error messaging for version-related database operations
+
+- **⚡ Performance Improvements** - Optimized version service operations
+  - Reduced database queries through improved version existence checking
+  - Streamlined version record creation process with proper transaction boundaries
+  - Enhanced caching and retrieval of current version information
+  - Improved error recovery and rollback mechanisms for failed version operations
+
+#### Technical Details
+- **📊 Database Schema Integration** - Complete version management workflow
+  - Fixed `PanelVersion` model integration with update orchestration services
+  - Ensured proper foreign key relationships and data consistency
+  - Added auto-creation with default values for release_url, checksum fields
+  - Validated complete update flow from version detection → record creation → status updates
+
+- **🛡️ Error Handling** - Comprehensive failure recovery and logging
+  - Added detailed logging for version record creation attempts and failures
+  - Implemented graceful degradation when database operations fail
+  - Enhanced exception handling with proper error context and recovery options
+  - Added validation for required fields and data integrity checks
+
+### 🧪 Testing Status
+✅ **Production Ready**: All version database integration issues resolved and tested
+
+### 📋 Migration Notes
+- Update process now automatically handles missing version records
+- No manual intervention required for version database synchronization
+- Enhanced logging provides better visibility into version management operations
+- Previous update sessions will continue to function normally
+
+---
+
+**Full Changelog**: https://github.com/Owen-C137/Raptor-Panel/compare/v1.3.10...v1.3.11
+
 ## v1.3.10 - 2025-09-22
 
 ### 🚀 Major Update System Progress & Console Display Fixes
