@@ -2,7 +2,7 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
-## v1.3.7 - 2025-09-22
+## v1.3.8 - 2025-09-22
 
 ### 🎨 Professional OneUI Update Interface & Dynamic Version System
 
