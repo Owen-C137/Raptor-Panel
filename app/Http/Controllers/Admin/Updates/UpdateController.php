@@ -108,11 +108,16 @@ class UpdateController extends Controller
     public function startUpdate(Request $request, string $version): JsonResponse
     {
         try {
-            // Validate the request
-            $request->validate([
-                'create_backup' => 'boolean',
-                'force' => 'boolean',
+            // Validate the request - accept string or boolean values for checkboxes
+            $validated = $request->validate([
+                'create_backup' => 'nullable',
+                'force' => 'nullable',
+                'target_version' => 'sometimes|string',
             ]);
+
+            // Convert string boolean values to actual booleans
+            $createBackup = filter_var($request->get('create_backup', true), FILTER_VALIDATE_BOOLEAN);
+            $force = filter_var($request->get('force', false), FILTER_VALIDATE_BOOLEAN);
 
             // Check if update is already in progress
             $activeSession = $this->sessionService->getActiveSession();
@@ -126,7 +131,7 @@ class UpdateController extends Controller
 
             // Validate system before update
             $validation = $this->validationService->validatePreUpdate($version);
-            if (!$validation['can_proceed'] && !$request->boolean('force')) {
+            if (!$validation['can_proceed'] && !$force) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Pre-update validation failed',
@@ -140,8 +145,8 @@ class UpdateController extends Controller
                 'from_version' => $this->versionService->getCurrentVersion()->version,
                 'to_version' => $version,
                 'options' => [
-                    'create_backup' => $request->boolean('create_backup', true),
-                    'force' => $request->boolean('force', false),
+                    'create_backup' => $createBackup,
+                    'force' => $force,
                 ],
                 'initiated_by' => auth()->id(),
             ]);
@@ -149,8 +154,8 @@ class UpdateController extends Controller
             // Start the update process asynchronously
             $this->orchestrationService->executeUpdate($session->session_id, [
                 'target_version' => $version,
-                'create_backup' => $request->boolean('create_backup', true),
-                'force' => $request->boolean('force', false),
+                'create_backup' => $createBackup,
+                'force' => $force,
             ]);
 
             \Log::info("Before request type check");
@@ -163,7 +168,10 @@ class UpdateController extends Controller
                 "contentType" => $request->header("Content-Type"),
                 "accept" => $request->header("Accept")
             ]);
-            if (($request->expectsJson() || $request->ajax()) && !$request->has('web_request')) {
+            
+            // For AJAX requests (like from the confirmation page), always return JSON
+            if ($request->expectsJson() || $request->ajax()) {
+                \Log::info("Returning JSON response for AJAX request", ["session_id" => $session->session_id]);
                 return response()->json([
                     'success' => true,
                     'session_id' => $session->session_id,
@@ -222,9 +230,13 @@ class UpdateController extends Controller
                 "contentType" => $request->header("Content-Type"),
                 "accept" => $request->header("Accept")
             ]);
-            if (($request->expectsJson() || $request->ajax()) && !$request->has('web_request')) {
+            
+            // For AJAX requests, return JSON response via startUpdate
+            if ($request->expectsJson() || $request->ajax()) {
+                \Log::info("Handling AJAX request via startUpdate method");
                 return $this->startUpdate($request, $latestUpdate['tag_name']);
             } else {
+                \Log::info("Handling web request with redirect");
                 // Create update session and redirect to progress page
                 $session = $this->sessionService->createSession([
                     'from_version' => $this->versionService->getCurrentVersion()->version,

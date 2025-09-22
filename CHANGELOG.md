@@ -2,6 +2,44 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.3.9 - 2025-09-22
+
+### 🔧 Critical Update System Fixes & Validation Improvements
+
+#### Fixed
+- **🐛 AJAX Request Handling** - Resolved update initiation failures in web interface
+  - Fixed conditional logic in `UpdateController::initiateUpdate()` for proper AJAX detection
+  - Removed restrictive `!$request->has('web_request')` condition blocking legitimate AJAX requests
+  - Ensured AJAX requests from confirmation page always return JSON responses
+  - Updated request debugging and logging for better troubleshooting
+
+- **✅ Validation System** - Fixed boolean parameter validation causing 500 errors
+  - Updated validation rules to accept both string and boolean values for form submissions
+  - Implemented `filter_var()` with `FILTER_VALIDATE_BOOLEAN` for reliable boolean conversion
+  - Fixed `create_backup` and `force` parameter handling in update requests
+  - Added proper null handling for optional parameters
+
+- **📱 Frontend Communication** - Enhanced AJAX request reliability
+  - Added explicit `dataType: 'json'` to update initiation requests
+  - Included proper AJAX headers for consistent request detection
+  - Fixed progress polling system stuck at "Preparing update process..."
+  - Improved error handling and user feedback during update failures
+
+#### Enhanced
+- **🔍 Debugging & Monitoring** - Comprehensive update process testing and validation
+  - Verified GitHub API integration and release detection (v1.3.8 → v1.3.9)
+  - Validated SessionService and UpdateOrchestrationService dependency injection
+  - Confirmed complete update workflow with progress tracking and session management
+  - Tested file download simulation and storage permission validation
+  - Verified all 50+ update-related routes are properly registered and functional
+
+#### Technical Details
+- **⚡ Session Management** - Complete update session lifecycle tested and verified
+  - Session creation, progress tracking, and completion workflows validated
+  - Database persistence confirmed with proper status transitions
+  - Active session cleanup and management improved
+  - Progress polling every 2 seconds with live console output working correctly
+
 ## v1.3.8 - 2025-09-22
 
 ### 🎨 Professional OneUI Update Interface & Dynamic Version System

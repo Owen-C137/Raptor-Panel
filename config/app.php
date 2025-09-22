@@ -11,7 +11,7 @@ return [
     | Falls back to hardcoded version for fresh installations.
     */
 
-    'version' => env('APP_VERSION', '1.3.8'), // Fallback version
+    'version' => env('APP_VERSION', '1.3.9'), // Fallback version
 
     /*
 

@@ -428,7 +428,7 @@
                 addConsoleLog('User confirmed update to version ' + version, 'info');
                 addConsoleLog('Preparing update process...', 'info');
 
-                // Prepare form data
+                // Prepare form data with explicit boolean conversion
                 var options = {
                     target_version: version,
                     create_backup: true,
@@ -442,6 +442,11 @@
                     url: "{{ route("admin.updates.initiate") }}",
                     type: 'POST',
                     data: options,
+                    dataType: 'json',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                    },
                     success: function(response) {
                         if (response.success && response.session_id) {
                             sessionId = response.session_id;
