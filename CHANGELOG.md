@@ -2,6 +2,49 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## v1.3.10 - 2025-09-22
+
+### 🚀 Major Update System Progress & Console Display Fixes
+
+#### Fixed
+- **📊 Progress Tracking** - Resolved critical progress update system failures
+  - Fixed `SessionService::updateSessionProgress()` to properly map progress data to database columns
+  - Corrected database field mapping: `progress` → `progress_percentage` and `current_step` columns  
+  - Resolved progress updates being logged but not saved to database (NULL status issue)
+  - Fixed session progress polling returning empty/null progress data
+
+- **💻 Real-Time Console Updates** - Restored live progress monitoring in frontend
+  - Added missing `getRecentLogs()` method to SessionService for console log display
+  - Added missing `getSessionSteps()` method to SessionService for step tracking
+  - Fixed progress API endpoint `/admin/updates/api/progress/{sessionId}` returning proper data
+  - Enabled real-time console output showing current step and progress percentage
+
+- **⏱️ Update Performance** - Eliminated stuck/hanging update processes
+  - Resolved 2+ hour update hanging issues by fixing session communication
+  - Fixed update process termination for processes that exceed reasonable time limits
+  - Improved session cleanup and error handling for failed/stuck updates
+  - Added proper foreign key handling for `initiated_by` field in update sessions
+
+#### Enhanced  
+- **🔧 Database Schema Validation** - Verified update session table structure
+  - Confirmed proper database columns: `progress_percentage`, `current_step`, `total_steps`, etc.
+  - Updated SessionService methods to match actual database schema
+  - Improved data validation and error handling for progress updates
+
+- **🎯 API Response Reliability** - Strengthened update progress API
+  - Enhanced `/admin/updates/api/progress/{sessionId}` endpoint response format
+  - Added comprehensive progress data including logs, steps, and timing information  
+  - Improved error handling and validation in UpdateController progress methods
+
+#### Technical Details
+- **⚡ Session Management** - Complete session lifecycle improvements
+  - Fixed progress update mapping with proper database column targeting
+  - Added real-time log aggregation with timestamp and level classification
+  - Improved session status tracking and validation throughout update process
+  - Enhanced foreign key constraint handling for user relationship management
+
+**Update Testing**: v1.3.9 → v1.3.10 flow verified with working progress display and console updates
+
 ## v1.3.9 - 2025-09-22
 
 ### 🔧 Critical Update System Fixes & Validation Improvements

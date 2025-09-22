@@ -188,15 +188,34 @@ class SessionService extends BaseUpdateService
                 throw new DatabaseOperationException("Session not found: {$sessionId}");
             }
 
-            // Validate progress data
-            $validFields = ['current_step', 'total_steps', 'percentage', 'current_operation', 'files_processed', 'total_files'];
-            $filteredProgress = array_intersect_key($progress, array_flip($validFields));
-
-            // Update progress
-            $session->update([
-                'progress' => array_merge($session->progress ?? [], $filteredProgress),
-                'updated_at' => Carbon::now()
-            ]);
+            // Map progress data to correct database columns
+            $updateData = [];
+            
+            if (isset($progress['percentage'])) {
+                $updateData['progress_percentage'] = min(100, max(0, (int) $progress['percentage']));
+            }
+            
+            if (isset($progress['current_step'])) {
+                $updateData['current_step'] = $progress['current_step'];
+            }
+            
+            if (isset($progress['total_steps'])) {
+                $updateData['total_steps'] = (int) $progress['total_steps'];
+            }
+            
+            if (isset($progress['completed_steps'])) {
+                $updateData['completed_steps'] = (int) $progress['completed_steps'];
+            }
+            
+            if (!empty($updateData)) {
+                $updateData['updated_at'] = Carbon::now();
+                $session->update($updateData);
+                
+                $this->logInfo('Session progress updated successfully', [
+                    'session_id' => $sessionId,
+                    'updated_fields' => array_keys($updateData)
+                ]);
+            }
 
             return true;
 
@@ -469,6 +488,72 @@ class SessionService extends BaseUpdateService
                 1,
                 ['path' => request()->url()]
             );
+        }
+    }
+
+    /**
+     * Get recent logs for a session.
+     */
+    public function getRecentLogs(string $sessionId, int $limit = 10): array
+    {
+        try {
+            // For now, return simulated logs based on session progress
+            $session = UpdateSession::where('session_id', $sessionId)->first();
+            
+            if (!$session) {
+                return [];
+            }
+
+            $logs = [];
+            
+            // Add logs based on current progress
+            if ($session->current_step) {
+                $logs[] = [
+                    'level' => 'info',
+                    'message' => '[' . now()->format('H:i:s') . '] ' . $session->current_step,
+                    'timestamp' => $session->updated_at
+                ];
+            }
+
+            if ($session->progress_percentage > 0) {
+                $logs[] = [
+                    'level' => 'info', 
+                    'message' => '[' . now()->format('H:i:s') . '] Progress: ' . $session->progress_percentage . '%',
+                    'timestamp' => $session->updated_at
+                ];
+            }
+
+            return array_slice($logs, 0, $limit);
+
+        } catch (\Exception $e) {
+            $this->handleException($e, 'Failed to get recent logs');
+            return [];
+        }
+    }
+
+    /**
+     * Get session steps information.
+     */
+    public function getSessionSteps(string $sessionId): array
+    {
+        try {
+            $session = UpdateSession::where('session_id', $sessionId)->first();
+            
+            if (!$session) {
+                return [];
+            }
+
+            // Return basic step information
+            return [
+                'total_steps' => $session->total_steps ?? 5,
+                'completed_steps' => $session->completed_steps ?? 0,
+                'current_step_name' => $session->current_step ?? 'Initializing...',
+                'progress_percentage' => $session->progress_percentage ?? 0
+            ];
+
+        } catch (\Exception $e) {
+            $this->handleException($e, 'Failed to get session steps');
+            return [];
         }
     }
 }

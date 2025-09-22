@@ -1,53 +1,325 @@
-# Raptor Panel Auto-Update System Instructions
+# Raptor Panel Release & Update Instructions
 
-## 🚀 Overview
+This document provides step-by-step instructions for creating new releases and testing the auto-update system based on the v1.3.9 release process.
 
-The Raptor Panel auto-update system has been completely redesigned as of v1.3.0 to provide a simple, reliable, and maintainable update process. The system uses GitHub Releases API for 100% reliability and downloads complete release archives for perfect file integrity.
+## Prerequisites
 
-## 📋 System Architecture
+### GitHub Token Setup
+1. **Create Personal Access Token:**
+   - Visit: https://github.com/settings/tokens
+   - Click "Generate new token" → "Generate new token (classic)"
+   - Configure:
+     - **Note**: "Raptor Panel Release Management"
+     - **Expiration**: 30+ days
+     - **Scopes**: 
+       - ✅ `repo` (Full control of private repositories)
+       - ✅ `write:packages` (optional, for packages)
 
-### Key Components
-- **GitHub Releases Integration** - Direct API integration with GitHub's official releases
-- **Archive Download System** - Downloads complete release archives (.zip files)
-- **Automatic Backup Creation** - Creates comprehensive backups before updates
-- **Session Management** - Tracks update progress and allows rollback
-- **Bootstrap 5/OneUI Interface** - Modern, responsive admin interface
+2. **Add Token to Environment:**
+   ```bash
+   # Add to .env file
+   GITHUB_TOKEN=ghp_your_token_here
+   
+   # Or export directly in terminal
+   export GITHUB_TOKEN="ghp_your_token_here"
+   ```
 
-### Core Services
-- `GitHubReleaseService` - Handles GitHub API integration and release management
-- `SessionService` - Manages update session lifecycle and state tracking
-- `VersionService` - Handles version detection and comparison
-- `SystemHealthService` - Monitors system health and update prerequisites
+## Complete Release Process
 
-## 🔄 Release Process Workflow
+### Step 1: Update Version Number
+```bash
+# Navigate to project directory
+cd /var/www/raptorpanel_dev
 
-### 1. Prepare New Release
+# Update config/app.php version
+# Change: 'version' => env('APP_VERSION', '1.3.8'),
+# To:     'version' => env('APP_VERSION', '1.3.9'),
 
-#### Update Version Number
-```php
-// File: config/app.php
-'version' => '1.3.3', // Increment version
+# Update database version
+php artisan tinker --execute="
+use Pterodactyl\Helpers\VersionHelper;
+VersionHelper::setCurrentVersion('1.3.9');
+echo 'Version updated to: ' . VersionHelper::getCurrentVersion() . '\n';
+"
 ```
 
-#### Update Changelog
+### Step 2: Update Changelog
+Edit `CHANGELOG.md` and add new version section at the top:
+
 ```markdown
-// File: CHANGELOG.md
-## v1.3.3 - 2025-09-21
+## v1.3.9 - 2025-MM-DD
 
-### 🎯 New Features
-- **Feature Name** - Description of what was added
+### 🔧 Brief Description of Changes
 
-### 🔧 Enhancements
-- **Component** - What was improved
+#### Added
+- New feature descriptions
+- Enhancement details
 
-### 🐛 Bug Fixes
-- **Issue** - What was fixed
+#### Fixed
+- Bug fix descriptions
+- Issue resolutions
 
-### 📋 Technical Changes
-- **System** - Technical improvements made
+#### Enhanced
+- Improvement descriptions
+- Performance updates
+
+#### Technical Details
+- Implementation specifics
+- System improvements
 ```
 
-#### Files to Always Update for New Release
+### Step 3: Commit and Push Changes
+```bash
+# Stage all changes
+git add -A
+
+# Commit with descriptive message
+git commit -m "🔧 v1.3.9: Brief Description of Main Changes
+
+🐛 Key Fixes:
+- Fix description 1
+- Fix description 2
+
+✅ Enhancements:
+- Enhancement description 1
+- Enhancement description 2
+
+📱 Technical Improvements:
+- Technical change 1
+- Technical change 2
+
+Ready for production testing: previous_version → 1.3.9 update flow verified"
+
+# Push to GitHub
+git push origin main
+```
+
+### Step 4: Create Git Tag and GitHub Release
+```bash
+# Create and push git tag
+git tag v1.3.9
+git push origin v1.3.9
+
+# Ensure GitHub token is available
+export GITHUB_TOKEN="ghp_your_token_here"
+
+# Create GitHub release via API
+curl -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  https://api.github.com/repos/Owen-C137/Raptor-Panel/releases \
+  -d '{
+  "tag_name": "v1.3.9",
+  "target_commitish": "main",
+  "name": "v1.3.9 - Brief Description",
+  "body": "# 🔧 v1.3.9: Detailed Release Notes\n\n## 🐛 Fixed\n\n### Category 1\n- **Description**: Details about fixes\n- **Impact**: What this solves\n\n## 🔍 Enhanced\n\n### Category 2\n- **Description**: Details about enhancements\n- **Benefit**: What this improves\n\n## 🚀 Ready for Production\n\nThis release includes:\n\n- ✅ **Component 1**: Status and details\n- ✅ **Component 2**: Status and details\n\n**Testing**: Update from v1.3.8 → v1.3.9 ready for testing.",
+  "draft": false,
+  "prerelease": false,
+  "generate_release_notes": false
+}'
+```
+
+### Step 5: Prepare for Testing
+```bash
+# Downgrade local version for testing
+php artisan tinker --execute="
+use Pterodactyl\Helpers\VersionHelper;
+VersionHelper::setCurrentVersion('1.3.8');
+echo 'Local version downgraded to: ' . VersionHelper::getCurrentVersion() . ' for testing\n';
+"
+
+# Ensure development server is running
+php artisan serve --port=8000
+```
+
+## Testing Update System
+
+### Pre-Testing Verification
+```bash
+# Verify GitHub API connection
+php artisan tinker --execute="
+use Pterodactyl\Services\Updates\GitHub\GitHubReleaseService;
+\$service = app(GitHubReleaseService::class);
+\$connected = \$service->testConnection();
+echo \$connected ? '✓ GitHub API connected' : '✗ GitHub API failed';
+echo '\n';
+"
+
+# Check for available updates
+php artisan tinker --execute="
+use Pterodactyl\Services\Updates\GitHub\GitHubReleaseService;
+use Pterodactyl\Helpers\VersionHelper;
+\$service = app(GitHubReleaseService::class);
+\$current = VersionHelper::getCurrentVersion();
+\$updates = \$service->getAvailableUpdates(\$current);
+echo 'Current: ' . \$current . '\n';
+echo 'Available updates: ' . count(\$updates) . '\n';
+foreach (\$updates as \$update) {
+    echo '  - ' . \$update['tag_name'] . '\n';
+}
+"
+```
+
+### Live Update Testing Process
+
+1. **Access Update Interface:**
+   - Navigate to: http://localhost:8000/admin/updates
+   - Click "Check for Updates"
+   - Verify new version is detected
+
+2. **Test Update Flow:**
+   - Click "Update Now" for the new version
+   - Verify professional OneUI confirmation page loads
+   - Review system health checks and release notes
+   - Click "Start Update Now"
+   - Confirm the update process begins
+
+3. **Monitor Progress:**
+   - Watch live console output for progress messages
+   - Verify progress bar updates in real-time
+   - Check session ID is displayed correctly
+   - Monitor for any error messages
+
+4. **Expected Console Output:**
+   ```
+   [INFO] Update system initialized
+   [INFO] Session ID: [uuid]
+   [INFO] Waiting for user confirmation...
+   [timestamp] User confirmed update to version 1.3.9
+   [timestamp] Update session created: [session-id]
+   [timestamp] Starting progress monitoring...
+   ```
+
+### Troubleshooting Common Issues
+
+#### AJAX Request Issues
+```bash
+# Check Laravel logs for AJAX errors
+tail -f storage/logs/laravel-$(date +%Y-%m-%d).log | grep -i error
+```
+
+#### Session Management Issues
+```bash
+# Clean up stuck sessions
+php artisan tinker --execute="
+use Pterodactyl\Models\Updates\UpdateSession;
+\$stuck = UpdateSession::whereIn('status', ['pending', 'in_progress'])->get();
+foreach (\$stuck as \$session) {
+    \$session->update(['status' => 'completed', 'completed_at' => now()]);
+    echo 'Cleaned session: ' . \$session->session_id . '\n';
+}
+"
+```
+
+#### Version Detection Issues
+```bash
+# Verify version helper is working
+php artisan tinker --execute="
+use Pterodactyl\Helpers\VersionHelper;
+echo 'Config version: ' . config('app.version') . '\n';
+echo 'Database version: ' . VersionHelper::getCurrentVersion() . '\n';
+"
+```
+
+## Post-Release Checklist
+
+- [ ] GitHub release created and published
+- [ ] Tag pushed to repository
+- [ ] Changelog updated with detailed notes
+- [ ] Local testing completed successfully
+- [ ] Update system verified working
+- [ ] Production deployment ready
+- [ ] Documentation updated if needed
+
+## Directory Structure
+```
+.github/
+└── instructions/
+    └── auto_update_instructions.instructions.md  # This file
+
+app/
+├── Http/Controllers/Admin/Updates/
+│   ├── UpdateController.php                      # Main update logic
+│   └── UpdateDashboardController.php             # UI and confirmation
+├── Services/Updates/                              # Update services
+├── Helpers/
+│   └── VersionHelper.php                         # Version management
+└── Models/Updates/                                # Update models
+
+resources/views/admin/updates/
+└── confirm-update.blade.php                      # Professional UI
+
+config/
+└── app.php                                        # Version configuration
+
+storage/logs/                                      # Debug logs
+CHANGELOG.md                                       # Release notes
+```
+
+## Security Notes
+
+- **Never commit GitHub tokens** to version control
+- Keep tokens in `.env` files that are `.gitignored`
+- Use tokens with minimal required permissions
+- Rotate tokens regularly (every 30-90 days)
+- Monitor token usage in GitHub settings
+
+## Emergency Procedures
+
+### Rollback Release
+```bash
+# Delete release and tag if needed
+curl -X DELETE \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  https://api.github.com/repos/Owen-C137/Raptor-Panel/releases/[release_id]
+
+git tag -d v1.3.9
+git push origin :refs/tags/v1.3.9
+```
+
+### Force Update Reset
+```bash
+# Emergency session cleanup
+php artisan tinker --execute="
+use Pterodactyl\Models\Updates\UpdateSession;
+UpdateSession::whereIn('status', ['pending', 'in_progress', 'paused'])->update([
+    'status' => 'failed',
+    'error_message' => 'Emergency reset',
+    'completed_at' => now()
+]);
+echo 'All active sessions reset\n';
+"
+```
+
+## Known Issues & Solutions
+
+### AJAX Request Handling
+The UpdateController requires proper AJAX detection. Ensure:
+- `expectsJson()` or `ajax()` returns true
+- Proper JSON responses are returned (not redirects)
+- Frontend sends `dataType: 'json'` in AJAX requests
+
+### Boolean Validation
+Form submissions send string values. The controller uses:
+```php
+$createBackup = filter_var($request->get('create_backup', true), FILTER_VALIDATE_BOOLEAN);
+$force = filter_var($request->get('force', false), FILTER_VALIDATE_BOOLEAN);
+```
+
+### Progress Polling
+The frontend polls every 2 seconds for progress updates:
+```javascript
+progressInterval = setInterval(function() {
+    // Poll admin.updates.api.progress route
+}, 2000);
+```
+
+---
+
+**Last Updated**: 2025-09-22  
+**Version**: 2.0  
+**Tested With**: Raptor Panel v1.3.9
 1. **config/app.php** - Version number
 2. **CHANGELOG.md** - Release notes and changelog
 3. **Any feature files** - New functionality or bug fixes
