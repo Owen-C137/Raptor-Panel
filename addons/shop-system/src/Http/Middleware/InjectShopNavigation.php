@@ -126,11 +126,19 @@ class InjectShopNavigation
         // Simple JavaScript for One UI shop navigation (no submenus needed)
         $treeviewScript = '
         <script>
-        $(document).ready(function() {
-            // Simple navigation handling - no complex submenu logic needed
-            // One UI will handle the basic navigation functionality
-            console.log("Shop navigation loaded successfully");
-        });
+        // Wait for jQuery to be available before running
+        (function checkJQueryShop() {
+            if (typeof $ !== "undefined") {
+                $(document).ready(function() {
+                    // Simple navigation handling - no complex submenu logic needed
+                    // One UI will handle the basic navigation functionality
+                    console.log("Shop navigation loaded successfully");
+                });
+            } else {
+                // Retry in 100ms
+                setTimeout(checkJQueryShop, 100);
+            }
+        })();
         </script>';
         
         // Try multiple patterns to inject shop navigation (match One UI nav-main structure)

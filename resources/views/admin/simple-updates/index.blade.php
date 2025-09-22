@@ -194,90 +194,99 @@
 
 @section('footer-scripts')
 <script>
-$(document).ready(function() {
-    let updateInProgress = false;
-
-    $('#check-updates').click(function() {
-        const btn = $(this);
-        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Checking...');
-        
-        $.get('{{ route("admin.simple-updates.check") }}')
-            .done(function(data) {
-                location.reload();
-            })
-            .fail(function() {
-                alert('Failed to check for updates');
-            })
-            .always(function() {
-                btn.prop('disabled', false).html('<i class="fas fa-sync-alt me-1"></i>Check for Updates');
-            });
-    });
-
-    $('#perform-update').click(function() {
-        if (updateInProgress) return;
-        
-        const version = $(this).data('version');
-        $('#update-version-confirm').text(version);
-        
-        const modal = new bootstrap.Modal(document.getElementById('confirm-update-modal'));
-        modal.show();
-    });
-
-    $('#confirm-update').click(function() {
-        if (updateInProgress) return;
-        
-        updateInProgress = true;
-        const version = $('#perform-update').data('version');
-        
-        const modal = bootstrap.Modal.getInstance(document.getElementById('confirm-update-modal'));
-        modal.hide();
-        
-        $('#update-log').show();
-        
-        const progressBar = $('#update-progress');
-        const messages = $('#update-messages');
-        
-        // Simulate progress updates
-        let progress = 0;
-        const progressInterval = setInterval(function() {
-            progress += Math.random() * 20;
-            if (progress > 90) progress = 90;
+// Wait for jQuery to be available before running
+(function checkJQueryUpdates() {
+    if (typeof $ !== 'undefined') {
+        $(document).ready(function() {
+            console.log('Update page JavaScript loaded');
+            console.log('jQuery version:', $.fn.jquery);
+            console.log('Update button exists:', $('#perform-update').length);
+            console.log('Check button exists:', $('#check-updates').length);
             
-            progressBar.css('width', progress + '%').attr('aria-valuenow', progress);
-        }, 1000);
+            let updateInProgress = false;
 
-        // Add initial message
-        messages.append('Starting update process...\n');
-        
-        $.post('{{ route("admin.simple-updates.perform") }}', {
-            version: version,
-            _token: '{{ csrf_token() }}'
-        })
-        .done(function(data) {
-            clearInterval(progressInterval);
-            progressBar.css('width', '100%').attr('aria-valuenow', 100).removeClass('progress-bar-animated');
-            
-            if (data.success) {
-                messages.append('✓ Update completed successfully!\n');
-                messages.append('Backup created at: ' + data.backup_path + '\n');
+            $('#check-updates').click(function() {
+                console.log('Check updates clicked');
+                const btn = $(this);
+                btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Checking...');
                 
-                setTimeout(function() {
-                    location.reload();
-                }, 2000);
-            } else {
-                messages.append('✗ Update failed: ' + data.error + '\n');
-                progressBar.addClass('bg-danger');
-            }
-        })
-        .fail(function(xhr) {
-            clearInterval(progressInterval);
-            progressBar.css('width', '100%').attr('aria-valuenow', 100).addClass('bg-danger').removeClass('progress-bar-animated');
-            messages.append('✗ Update failed: ' + (xhr.responseJSON?.error || 'Unknown error') + '\n');
-        })
-        .always(function() {
-            updateInProgress = false;
+                $.get('{{ route("admin.simple-updates.check") }}')
+                    .done(function(data) {
+                        location.reload();
+                    })
+                    .fail(function() {
+                        alert('Failed to check for updates');
+                    })
+                    .always(function() {
+                        btn.prop('disabled', false).html('<i class="fas fa-sync-alt me-1"></i>Check for Updates');
+                    });
+            });
+
+            $('#perform-update').click(function() {
+                console.log('Update button clicked!');
+                if (updateInProgress) return;
+                
+                const version = $(this).data('version');
+                console.log('Version to update to:', version);
+                
+                // Simple confirmation dialog as backup
+                if (!confirm(`Are you sure you want to update to version ${version}?`)) {
+                    return;
+                }
+                
+                // Proceed with update directly for now (bypass modal)
+                updateInProgress = true;
+                $('#update-log').show();
+                
+                const progressBar = $('#update-progress');
+                const messages = $('#update-messages');
+                
+                // Add initial message
+                messages.append('Starting update process...\n');
+                
+                // Simulate progress updates
+                let progress = 0;
+                const progressInterval = setInterval(function() {
+                    progress += Math.random() * 20;
+                    if (progress > 90) progress = 90;
+                    
+                    progressBar.css('width', progress + '%').attr('aria-valuenow', progress);
+                }, 1000);
+                
+                $.post('{{ route("admin.simple-updates.perform") }}', {
+                    version: version,
+                    _token: '{{ csrf_token() }}'
+                })
+                .done(function(data) {
+                    clearInterval(progressInterval);
+                    progressBar.css('width', '100%').attr('aria-valuenow', 100).removeClass('progress-bar-animated');
+                    
+                    if (data.success) {
+                        messages.append('✓ Update completed successfully!\n');
+                        messages.append('Backup created at: ' + data.backup_path + '\n');
+                        
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        messages.append('✗ Update failed: ' + data.error + '\n');
+                        progressBar.addClass('bg-danger');
+                    }
+                })
+                .fail(function(xhr) {
+                    clearInterval(progressInterval);
+                    progressBar.css('width', '100%').attr('aria-valuenow', 100).addClass('bg-danger').removeClass('progress-bar-animated');
+                    messages.append('✗ Update failed: ' + (xhr.responseJSON?.error || 'Unknown error') + '\n');
+                })
+                .always(function() {
+                    updateInProgress = false;
+                });
+            });
         });
-    });
-});
+    } else {
+        // Retry in 100ms
+        setTimeout(checkJQueryUpdates, 100);
+    }
+})();
 </script>
 @endsection
