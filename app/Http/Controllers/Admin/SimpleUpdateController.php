@@ -74,48 +74,75 @@ class SimpleUpdateController extends Controller
 
         // Set up Server-Sent Events response
         return response()->stream(function () use ($downloadUrl) {
-            // Configure SSE headers
-            echo "data: " . json_encode(['type' => 'start', 'message' => 'Update process starting...']) . "\n\n";
-            flush();
+            // Disable output buffering for real-time streaming
+            if (ob_get_level()) {
+                ob_end_clean();
+            }
+            
+            // Set up streaming environment
+            ignore_user_abort(true);
+            set_time_limit(0);
+            
+            // Send initial connection test
+            $this->sendSSEData(['type' => 'start', 'message' => 'Update process starting...']);
+            $this->sendSSEData(['type' => 'log', 'message' => 'Establishing real-time connection...']);
 
             // Clear any existing output log
             $this->updateService->clearOutputLog();
 
             // Hook into the service to stream logs in real-time
             $this->updateService->setStreamCallback(function($logEntry) {
-                echo "data: " . json_encode([
+                $this->sendSSEData([
                     'type' => 'log',
                     'message' => $logEntry,
                     'timestamp' => date('H:i:s')
-                ]) . "\n\n";
-                flush();
+                ]);
+                
+                // Add small delay to prevent overwhelming the stream
+                usleep(10000); // 10ms delay
             });
 
             try {
                 $result = $this->updateService->performUpdate($downloadUrl);
                 
                 // Send final result
-                echo "data: " . json_encode([
+                $this->sendSSEData([
                     'type' => 'complete',
                     'success' => $result['success'],
                     'message' => $result['message'] ?? 'Update completed'
-                ]) . "\n\n";
-                flush();
+                ]);
 
             } catch (\Exception $e) {
-                echo "data: " . json_encode([
+                $this->sendSSEData([
                     'type' => 'error',
                     'message' => $e->getMessage()
-                ]) . "\n\n";
-                flush();
+                ]);
             }
 
         }, 200, [
             'Content-Type' => 'text/event-stream',
-            'Cache-Control' => 'no-cache',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
             'Connection' => 'keep-alive',
-            'X-Accel-Buffering' => 'no' // Disable nginx buffering
+            'X-Accel-Buffering' => 'no', // Disable nginx buffering
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Headers' => 'Cache-Control'
         ]);
+    }
+    
+    /**
+     * Send Server-Sent Event data with proper formatting
+     */
+    private function sendSSEData(array $data): void
+    {
+        echo "data: " . json_encode($data) . "\n\n";
+        
+        // Force immediate output
+        if (ob_get_level()) {
+            ob_flush();
+        }
+        flush();
     }
 
     /**

@@ -88,11 +88,14 @@ class SimpleUpdateService
         $this->clearOutputLog();
         
         $this->log('Starting update process');
+        $this->log('Initializing update system...');
+        usleep(500000); // 0.5 second delay for visibility
 
         try {
             // Fix ownership of the entire application directory before starting
             $this->log('Fixing application directory ownership');
             $this->fixOwnershipRecursive(base_path());
+            $this->log('Fixed recursive ownership for ' . base_path());
 
             // Ensure temp directory exists with proper permissions
             if (!file_exists($this->tempDir)) {
@@ -105,9 +108,16 @@ class SimpleUpdateService
             
             // Download update
             $this->log('Downloading update file');
+            $this->log('Downloading from: ' . $downloadUrl);
+            usleep(250000); // 0.25 second delay for visibility
+            
             if (!$this->downloadFile($downloadUrl, $zipFile)) {
                 return ['success' => false, 'message' => 'Failed to download update file'];
             }
+            
+            $this->log('File downloaded successfully to: ' . $zipFile);
+            $fileSize = number_format(filesize($zipFile) / 1024 / 1024, 2);
+            $this->log("Download completed: {$fileSize} MB");
 
             // Create backup before making changes
             $this->log('Creating backup of current installation');
@@ -149,14 +159,16 @@ class SimpleUpdateService
             // Clear caches
             $this->log('Clearing application caches');
             Artisan::call('cache:clear');
-            Artisan::call('config:clear');
+            Artisan::call('config:clear'); 
             Artisan::call('route:clear');
             Artisan::call('view:clear');
+            $this->log('Application caches cleared successfully');
 
             // Cleanup
             $this->log('Cleaning up temporary files');
             unlink($zipFile);
             $this->deleteDirectory($extractDir);
+            $this->log('Temporary files cleaned up');
 
             $this->log('Update completed successfully');
             return [
@@ -293,31 +305,35 @@ class SimpleUpdateService
         }
         
         $this->log('Extracting ZIP contents to: ' . $extractPath);
+        $fileCount = $zip->numFiles;
+        $this->log("ZIP contains {$fileCount} files to extract");
+        
         $zip->extractTo($extractPath);
         $zip->close();
         $this->log('ZIP extraction completed');
+        usleep(250000); // 0.25 second delay for visibility
         
         // Find the extracted folder (GitHub archives have a folder name like "Repo-Name-version")
-        $folders = File::directories($extractPath);
-        $this->log('Found ' . count($folders) . ' directories in extracted archive');
+        $directories = glob($extractPath . '/*', GLOB_ONLYDIR);
+        $this->log('Found ' . count($directories) . ' directories in extracted archive');
         
-        if (empty($folders)) {
-            throw new \Exception("Invalid update archive structure");
+        if (count($directories) !== 1) {
+            throw new \Exception('Expected exactly one directory in extracted archive, found ' . count($directories));
         }
         
-        $sourceDir = $folders[0];
+        $sourceDir = $directories[0];
         $targetDir = base_path();
         
         $this->log('Source directory: ' . $sourceDir);
         $this->log('Target directory: ' . $targetDir);
-        $this->log('Starting file copy process');
         
-        // Copy files (skip sensitive ones)
+        // Copy files
+        $this->log('Starting file copy process');
         $this->copyUpdateFiles($sourceDir, $targetDir);
         
+        // Clean up extraction directory
         $this->log('File copy completed, cleaning up extraction directory');
-        // Clean up
-        File::deleteDirectory($extractPath);
+        $this->deleteDirectory($extractPath);
         $this->log('Cleanup completed');
     }
 

@@ -2,6 +2,38 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.34] - 2025-09-24
+
+### 🚀 **MAJOR: Enhanced Real-Time Streaming Update System**
+- **Enhanced**: Complete overhaul of real-time streaming terminal output during updates
+- **Fixed**: Logs now appear immediately as operations complete (no more batch display at end)
+- **Added**: Strategic delays and detailed progress feedback for better user experience
+- **Improved**: Server-Sent Events (SSE) implementation with proper output buffering control
+- **Enhanced**: More detailed logging with file counts, sizes, and step-by-step progress
+
+### 🔧 **Streaming System Improvements**
+- **Fixed**: PHP output buffering issues causing delayed log display
+- **Enhanced**: SSE headers with proper cache control and nginx buffering disabled
+- **Added**: `sendSSEData()` helper method for consistent message formatting
+- **Improved**: Real-time progress tracking with 10ms delays between messages
+- **Added**: File size reporting after downloads (MB display)
+- **Enhanced**: ZIP extraction progress with file counts
+
+### 🛠️ **Technical Enhancements**
+- **Added**: `ob_end_clean()` to disable output buffering during streaming
+- **Enhanced**: Stream callback system with immediate message delivery
+- **Improved**: rsync progress reporting with live transfer statistics
+- **Added**: Strategic `usleep()` delays for visibility (0.5s, 0.25s intervals)
+- **Fixed**: Duplicate code cleanup in SimpleUpdateService
+- **Enhanced**: Better error handling and connection management for streaming
+
+### 📊 **User Experience Improvements**
+- **Result**: Update logs now stream in real-time as each step completes
+- **Added**: Immediate feedback: "Update process starting..." appears instantly
+- **Enhanced**: Live download progress with file sizes and transfer rates
+- **Improved**: Step-by-step visibility of entire update process
+- **Fixed**: No more waiting for all logs to appear at once at the end
+
 ## [v1.3.33.2] - 2025-09-24
 
 ### 🔑 **HOTFIX: GitHub API Authentication & Rate Limits**
