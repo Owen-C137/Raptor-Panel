@@ -2,6 +2,56 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.26] - 2025-09-24
+
+### 🔧 **TIMEOUT FIX: Enhanced Update System Resilience**
+- **Fixed**: HTTP 504 timeout issues during long-running updates (5+ minutes)
+- **Extended**: AJAX timeout from 2 minutes to 10 minutes to accommodate full update process
+- **Extended**: PHP execution timeout to 10 minutes for update controller
+- **Enhanced**: Smart timeout detection with auto-refresh functionality
+- **Improved**: Better error handling for gateway timeouts and request timeouts
+
+### ⏱️ **Timeout Management**
+- **Server Timeout**: Increased PHP `max_execution_time` to 600 seconds (10 minutes)
+- **Client Timeout**: Extended AJAX timeout to 600,000ms (10 minutes)
+- **Auto-Recovery**: Automatic page refresh after timeout to check if update completed in background
+- **Smart Detection**: Distinguishes between network timeouts vs actual update failures
+
+### 🛡️ **Enhanced Error Handling**
+```javascript
+// Timeout Detection:
+if (textStatus === 'timeout') {
+    // Shows helpful message about background processing
+    // Auto-refreshes after 5 seconds to check completion status
+}
+
+// Gateway Timeout (504):
+if (xhr.status === 504) {
+    // Detects when update completes but response times out
+    // Auto-refreshes after 3 seconds to verify success
+}
+```
+
+### 💡 **User Experience Improvements**
+- **Timeout Messages**: Clear explanation when requests timeout but update continues
+- **Auto-Recovery**: Automatic page refresh to verify if background update completed
+- **Progress Continuity**: Updates now complete successfully even if UI times out
+- **Smart Feedback**: Distinguishes between actual failures vs timeout issues
+
+### 🔍 **Technical Details**
+- **Issue**: 5+ minute update process exceeded default HTTP timeouts (60-120 seconds)
+- **Root Cause**: 4889 files taking ~5 minutes to copy, causing 504 Gateway Timeout
+- **Solution**: Extended all timeout limits and added smart recovery mechanisms
+- **Validation**: Update process logs show completion even when UI times out
+
+### 📊 **Update Process Timing**
+- **File Copy**: ~5 minutes for 4889 files (normal and expected)
+- **Total Process**: ~5-6 minutes end-to-end (download, backup, extract, copy, finalize)
+- **Previous Timeout**: 60-120 seconds (causing false failures)
+- **New Timeout**: 10 minutes (accommodates full process with buffer)
+
+---
+
 ## [v1.3.25] - 2025-09-24
 
 ### 🐛 **HOTFIX: JavaScript Syntax Error**

@@ -644,9 +644,14 @@
                 // Start actual update
                 addTerminalLine('📡 Connecting to update server...', 'info');
                 
-                $.post('{{ route("admin.simple-updates.perform") }}', {
-                    version: version,
-                    _token: '{{ csrf_token() }}'
+                $.ajax({
+                    url: '{{ route("admin.simple-updates.perform") }}',
+                    type: 'POST',
+                    data: {
+                        version: version,
+                        _token: '{{ csrf_token() }}'
+                    },
+                    timeout: 600000 // 10 minutes timeout (600,000ms)
                 })
                 .done(function(data) {
                     console.log('✅ Update request successful:', data);
@@ -702,18 +707,40 @@
                         $closeBtn.prop('disabled', false);
                     }
                 })
-                .fail(function(xhr) {
-                    console.error('❌ AJAX request failed:', xhr);
+                .fail(function(xhr, textStatus, errorThrown) {
+                    console.error('❌ AJAX request failed:', xhr, textStatus, errorThrown);
                     clearInterval(progressInterval);
                     clearInterval(timerInterval);
                     
                     let errorMsg = 'Unknown error';
-                    if (xhr.responseJSON?.error) {
+                    
+                    // Handle timeout specifically
+                    if (textStatus === 'timeout') {
+                        errorMsg = 'Request timed out - Update may still be running in background. Please check the version after a few minutes.';
+                        addTerminalLine('⚠️ Request timed out after 10 minutes', 'warning');
+                        addTerminalLine('💡 The update process may still be running in the background', 'info');
+                        addTerminalLine('🔄 Checking if update completed...', 'info');
+                        
+                        // Auto-check if update completed after timeout
+                        setTimeout(function() {
+                            location.reload(); // Refresh to check if version changed
+                        }, 5000);
+                    } else if (xhr.responseJSON?.error) {
                         errorMsg = xhr.responseJSON.error;
                     } else if (xhr.responseJSON?.message) {
                         errorMsg = xhr.responseJSON.message;
                     } else if (xhr.status === 0) {
                         errorMsg = 'Network error - check console for details';
+                    } else if (xhr.status === 504) {
+                        errorMsg = 'Gateway timeout - Update may have completed in background';
+                        addTerminalLine('⚠️ Gateway timeout detected', 'warning');
+                        addTerminalLine('💡 Update may have completed successfully in the background', 'info');
+                        addTerminalLine('🔄 Auto-refreshing to check version...', 'info');
+                        
+                        // Auto-refresh after 504 timeout
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3000);
                     } else {
                         errorMsg = `HTTP ${xhr.status}: ${xhr.statusText}`;
                     }

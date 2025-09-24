@@ -66,6 +66,9 @@ class SimpleUpdateService
      */
     public function performUpdate(string $downloadUrl): array
     {
+        // Clear any previous output
+        $this->clearOutputLog();
+        
         $this->log('Starting update process');
 
         try {
@@ -90,6 +93,7 @@ class SimpleUpdateService
 
             // Create backup before making changes
             $this->log('Creating backup of current installation');
+            $backupPath = null;
             try {
                 $backupPath = $this->createBackup();
                 $this->log("Backup created successfully: {$backupPath}");
@@ -137,11 +141,21 @@ class SimpleUpdateService
             $this->deleteDirectory($extractDir);
 
             $this->log('Update completed successfully');
-            return ['success' => true, 'message' => 'Update completed successfully'];
+            return [
+                'success' => true, 
+                'message' => 'Update completed successfully',
+                'output' => $this->getOutputLog(),
+                'backup_path' => $backupPath ?? null
+            ];
 
         } catch (\Exception $e) {
             $this->log('Update failed: ' . $e->getMessage(), 'error');
-            return ['success' => false, 'message' => 'Update failed: ' . $e->getMessage()];
+            return [
+                'success' => false, 
+                'message' => 'Update failed: ' . $e->getMessage(),
+                'output' => $this->getOutputLog(),
+                'error' => $e->getMessage()
+            ];
         }
     }
 

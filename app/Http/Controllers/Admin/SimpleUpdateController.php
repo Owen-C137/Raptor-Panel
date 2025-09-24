@@ -45,6 +45,10 @@ class SimpleUpdateController extends Controller
      */
     public function performUpdate(Request $request): JsonResponse
     {
+        // Increase timeout for long-running update process
+        set_time_limit(600); // 10 minutes
+        ini_set('max_execution_time', 600);
+        
         $request->validate([
             'version' => 'required|string'
         ]);
