@@ -294,108 +294,74 @@ class SimpleUpdateService
     }
 
     /**
-     * Copy update files, skipping sensitive directories
+     * Copy update files using rsync for much better performance
      */
     private function copyUpdateFiles(string $source, string $target): void
     {
         $skipPaths = [
-            'storage/',
-            'bootstrap/cache/',
-            '.env',
-            '.env.example',
-            'vendor/',
-            'node_modules/',
-            '.git/',
-            '.gitignore'
+            'storage',
+            'bootstrap/cache',
+            '.env*',
+            'vendor',
+            'node_modules',
+            '.git*'
         ];
         
-        $this->log('Scanning source directory for files');
-        $files = File::allFiles($source);
-        $this->log('Found ' . count($files) . ' files to process');
+        $this->log('Using rsync for high-performance file transfer');
         
-        $copied = 0;
-        $skipped = 0;
-        $totalFiles = count($files);
+        // Create rsync exclude patterns
+        $excludeArgs = [];
+        foreach ($skipPaths as $skipPath) {
+            $excludeArgs[] = "--exclude='{$skipPath}'";
+        }
+        $excludeString = implode(' ', $excludeArgs);
         
-        foreach ($files as $file) {
-            $relativePath = str_replace($source . '/', '', $file->getPathname());
+        // Use rsync for blazing fast file copy with progress
+        $this->log('Starting bulk file transfer with rsync...');
+        
+        // Build rsync command for optimal performance
+        $rsyncCommand = "rsync -av --progress {$excludeString} --stats '{$source}/' '{$target}/' 2>&1";
+        
+        $this->log('Executing: rsync with optimized settings');
+        
+        // Execute rsync and capture output for progress
+        $process = popen($rsyncCommand, 'r');
+        if (!$process) {
+            throw new \Exception('Failed to start rsync process');
+        }
+        
+        $transferredFiles = 0;
+        while (($line = fgets($process)) !== false) {
+            $line = trim($line);
             
-            // Skip sensitive paths
-            $skip = false;
-            foreach ($skipPaths as $skipPath) {
-                if (str_starts_with($relativePath, $skipPath)) {
-                    $skip = true;
-                    break;
+            // Parse rsync progress output
+            if (preg_match('/^\s*(\d+)\s+\d+%\s+[\d.]+[GMK]?B\/s/', $line, $matches)) {
+                // Progress line with file count
+                $transferredFiles = (int)$matches[1];
+                if ($transferredFiles > 0 && $transferredFiles % 500 === 0) {
+                    $this->log("Progress: {$transferredFiles} files transferred (high-speed bulk copy)");
                 }
-            }
-            
-            if (!$skip) {
-                $targetPath = $target . '/' . $relativePath;
-                $targetDir = dirname($targetPath);
-                
-                try {
-                    // Ensure target directory exists
-                    if (!File::exists($targetDir)) {
-                        File::makeDirectory($targetDir, 0755, true);
-                        // Fix ownership immediately after creation
-                        $this->fixOwnership($targetDir);
-                    }
-                    
-                    // Copy the file
-                    File::copy($file->getPathname(), $targetPath);
-                    
-                    // Fix ownership of the copied file
-                    $this->fixOwnership($targetPath);
-                    
-                    $copied++;
-                    
-                    // Log progress every 100 files
-                    if ($copied % 100 === 0) {
-                        $percentage = round(($copied + $skipped) / $totalFiles * 100, 1);
-                        $this->log("Progress: {$copied} files copied, {$skipped} skipped ({$percentage}% complete)");
-                    }
-                    
-                } catch (\Exception $e) {
-                    if (str_contains($e->getMessage(), 'Permission denied')) {
-                        $this->log("Permission denied copying {$relativePath}, attempting fix...", 'warning');
-                        
-                        // Try to fix ownership of parent directory and retry
-                        $this->fixOwnership($target);
-                        $this->fixOwnership($targetDir);
-                        
-                        // Remove existing file if it exists but has wrong permissions
-                        if (File::exists($targetPath)) {
-                            try {
-                                File::delete($targetPath);
-                            } catch (\Exception $deleteError) {
-                                // If we can't delete, try changing ownership first
-                                $this->fixOwnership($targetPath);
-                                File::delete($targetPath);
-                            }
-                        }
-                        
-                        // Retry the copy
-                        File::copy($file->getPathname(), $targetPath);
-                        $this->fixOwnership($targetPath);
-                        
-                        $this->log("Successfully copied {$relativePath} after fixing permissions");
-                        $copied++;
-                    } else {
-                        throw $e;
-                    }
-                }
-            } else {
-                $skipped++;
-                
-                // Log progress every 100 files (including skipped)
-                if (($copied + $skipped) % 100 === 0) {
-                    $percentage = round(($copied + $skipped) / $totalFiles * 100, 1);
-                    $this->log("Progress: {$copied} files copied, {$skipped} skipped ({$percentage}% complete)");
-                }
+            } elseif (preg_match('/^Number of files transferred:\s*(\d+)/', $line, $matches)) {
+                $finalCount = (int)$matches[1];
+                $this->log("Bulk transfer completed: {$finalCount} files transferred");
+            } elseif (str_contains($line, 'sent') && str_contains($line, 'bytes')) {
+                // Final statistics line
+                $this->log("Transfer statistics: {$line}");
             }
         }
         
-        $this->log("File copy completed: {$copied} files copied, {$skipped} files skipped (100% complete)");
+        $exitCode = pclose($process);
+        
+        if ($exitCode !== 0) {
+            throw new \Exception("Rsync failed with exit code: {$exitCode}");
+        }
+        
+        $this->log('High-speed file transfer completed successfully');
+        
+        // Fix ownership in bulk at the end (much faster)
+        $this->log('Applying bulk ownership fixes...');
+        $this->fixOwnership($target);
+        $this->log('Ownership fixes completed');
     }
 
     /**
@@ -626,10 +592,6 @@ class SimpleUpdateService
     {
         $logEntry = "[" . date('H:i:s') . "] {$message}";
         $this->outputLog[] = $logEntry;
-        
-        // Output to terminal (for AJAX response)
-        echo $logEntry . "\n";
-        flush();
         
         // Also log to Laravel logs
         Log::log($level, "[SimpleUpdate] {$message}");

@@ -71,18 +71,16 @@ class SimpleUpdateController extends Controller
             ]);
         }
 
-        // Start output buffering to capture terminal output
-        ob_start();
+        // Clear any existing output log
+        $this->updateService->clearOutputLog();
         
         $result = $this->updateService->performUpdate($downloadUrl);
         
-        // Get the terminal output
-        $terminalOutput = ob_get_clean();
+        // Get the terminal output from service
+        $terminalOutput = $this->updateService->getOutputLog();
         
-        // Add terminal output to result if not already included
-        if (!isset($result['terminal_output'])) {
-            $result['terminal_output'] = $terminalOutput;
-        }
+        // Add terminal output to result
+        $result['output'] = $terminalOutput;
         
         return response()->json($result);
     }
