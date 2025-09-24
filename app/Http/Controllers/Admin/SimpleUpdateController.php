@@ -4,6 +4,7 @@ namespace Pterodactyl\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\SimpleUpdateService;
 
@@ -43,7 +44,7 @@ class SimpleUpdateController extends Controller
     /**
      * Perform update via streaming SSE
      */
-    public function performUpdateStream(Request $request): Response
+    public function performUpdateStream(Request $request): StreamedResponse
     {
         // Increase timeout for long-running update process
         set_time_limit(600); // 10 minutes

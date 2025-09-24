@@ -2,6 +2,15 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.33.1] - 2025-09-24
+
+### 🔧 **HOTFIX: Streaming Controller Return Type**
+- **Fixed**: `performUpdateStream()` method return type declaration
+- **Fixed**: Added proper `StreamedResponse` import to controller
+- **Fixed**: Resolved TypeError preventing streaming endpoint from working
+- **Fixed**: 500 error on `/admin/updates/stream` endpoint
+- **Result**: Real-time streaming terminal output now works correctly
+
 ## [v1.3.33] - 2025-09-24
 
 ### 🌊 **REAL-TIME STREAMING UPDATE LOGS**
