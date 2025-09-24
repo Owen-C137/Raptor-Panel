@@ -189,28 +189,22 @@
                 </div>
             </div>
             
-            <!-- Terminal Console -->
-            <div class="terminal-console">
+            <!-- Terminal Console (Hidden - will be shown in modal) -->
+            <div class="terminal-console d-none" id="terminal-preview">
                 <div class="terminal-header">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center gap-2">
                             <i class="fas fa-circle text-danger" style="font-size: 0.5rem;"></i>
                             <i class="fas fa-circle text-warning" style="font-size: 0.5rem;"></i>
                             <i class="fas fa-circle text-success" style="font-size: 0.5rem;"></i>
-                            <span class="terminal-path ms-2">Raptor Panel Update Console</span>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="terminal-time">Update in Progress</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" id="update-minimize">
-                                <i class="fa fa-minus"></i>
-                            </button>
+                            <span class="terminal-path ms-2">Terminal will open during update</span>
                         </div>
                     </div>
                 </div>
-                <div class="terminal-body" id="terminal-messages">
+                <div class="terminal-body">
                     <div class="terminal-line">
                         <span class="terminal-prompt">user@raptorpanel:~$</span>
-                        <span class="terminal-text">Starting update process...</span>
+                        <span class="terminal-text">Click "Install Update" to begin...</span>
                     </div>
                 </div>
             </div>
@@ -281,6 +275,186 @@
     </div>
 </div>
 <!-- END Update Confirmation Modal -->
+
+<!-- Full-Screen Terminal Modal -->
+<div class="modal fade" id="terminal-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+            <!-- Blurred Background Overlay -->
+            <div class="position-fixed w-100 h-100 top-0 start-0" style="backdrop-filter: blur(10px); background: rgba(0,0,0,0.8); z-index: -1;"></div>
+            
+            <!-- Terminal Header -->
+            <div class="modal-header bg-dark text-light border-secondary">
+                <div class="d-flex align-items-center w-100 justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-circle text-danger" style="font-size: 0.8rem;"></i>
+                        <i class="fas fa-circle text-warning" style="font-size: 0.8rem;"></i>
+                        <i class="fas fa-circle text-success" style="font-size: 0.8rem;"></i>
+                        <h5 class="modal-title ms-3 mb-0">
+                            <i class="fas fa-terminal me-2"></i>
+                            Raptor Panel Update Console
+                        </h5>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" role="status" id="update-spinner">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <span class="text-muted" id="update-status">Update in Progress</span>
+                        </div>
+                        <div class="text-muted small" id="update-progress">0%</div>
+                        <!-- Close button (disabled during update) -->
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" id="terminal-close" disabled>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terminal Body -->
+            <div class="modal-body bg-black text-light p-0" style="font-family: 'Courier New', monospace; overflow-y: auto; max-height: calc(100vh - 120px);">
+                <div class="p-4" id="terminal-output">
+                    <div class="terminal-line mb-2">
+                        <span class="text-success">user@raptorpanel</span>
+                        <span class="text-white">:</span>
+                        <span class="text-primary">~</span>
+                        <span class="text-white">$ </span>
+                        <span class="text-warning" id="terminal-command">Starting update process...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Terminal Footer -->
+            <div class="modal-footer bg-dark text-light border-secondary justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Update cannot be cancelled once started
+                    </small>
+                    <small class="text-muted" id="update-timer">
+                        <i class="fas fa-clock me-1"></i>
+                        <span id="elapsed-time">00:00</span>
+                    </small>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">Version:</small>
+                    <span class="badge bg-primary" id="target-version">1.3.23</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END Full-Screen Terminal Modal -->
+
+<style>
+    /* Full-Screen Terminal Modal Styles */
+    #terminal-modal .modal-fullscreen {
+        width: 100vw;
+        height: 100vh;
+        max-width: none;
+        margin: 0;
+    }
+    
+    #terminal-modal .modal-content {
+        height: 100vh;
+        border: none;
+        border-radius: 0;
+    }
+    
+    #terminal-output {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.4;
+        background: #000;
+        color: #00ff00;
+        padding: 20px;
+        overflow-y: auto;
+        max-height: calc(100vh - 200px);
+        scrollbar-width: thin;
+        scrollbar-color: #333 #000;
+    }
+    
+    #terminal-output::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    #terminal-output::-webkit-scrollbar-track {
+        background: #000;
+    }
+    
+    #terminal-output::-webkit-scrollbar-thumb {
+        background: #333;
+        border-radius: 4px;
+    }
+    
+    #terminal-output::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+    
+    .terminal-line {
+        margin-bottom: 4px;
+        word-wrap: break-word;
+        animation: terminalTypewriter 0.1s ease-out;
+    }
+    
+    @keyframes terminalTypewriter {
+        from { opacity: 0; transform: translateY(2px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .text-success { color: #28a745 !important; }
+    .text-danger { color: #dc3545 !important; }
+    .text-warning { color: #ffc107 !important; }
+    .text-info { color: #17a2b8 !important; }
+    .text-muted { color: #666 !important; }
+    
+    /* Blinking cursor effect */
+    .terminal-cursor {
+        display: inline-block;
+        width: 8px;
+        height: 14px;
+        background: #00ff00;
+        animation: blink 1s infinite;
+        margin-left: 2px;
+    }
+    
+    @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+    
+    /* Modal backdrop enhancement */
+    #terminal-modal.modal.show {
+        backdrop-filter: blur(10px);
+    }
+    
+    #terminal-modal .modal-backdrop {
+        background: rgba(0, 0, 0, 0.9);
+    }
+    
+    /* Terminal header enhancements */
+    #terminal-modal .modal-header {
+        border-bottom: 2px solid #333;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d30 100%);
+    }
+    
+    #terminal-modal .modal-footer {
+        border-top: 2px solid #333;
+        background: linear-gradient(135deg, #2d2d30 0%, #1a1a1a 100%);
+    }
+    
+    /* Spinner customization */
+    #update-spinner {
+        border-color: #007bff transparent transparent transparent;
+    }
+    
+    /* Progress indicator */
+    #update-progress {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-weight: bold;
+        min-width: 40px;
+        text-align: center;
+    }
+</style>
 @endsection
 
 @section('footer-scripts')
@@ -386,32 +560,68 @@
                 // Hide the confirmation modal
                 $('#confirm-update-modal').modal('hide');
                 
-                // Start the update process
+                // Show the full-screen terminal modal
+                showTerminalModal(version);
+            });
+
+            // Full-screen terminal modal functionality
+            function showTerminalModal(version) {
+                // Initialize modal elements
+                const $modal = $('#terminal-modal');
+                const $output = $('#terminal-output');
+                const $command = $('#terminal-command');
+                const $status = $('#update-status');
+                const $progress = $('#update-progress');
+                const $targetVersion = $('#target-version');
+                const $closeBtn = $('#terminal-close');
+                const $spinner = $('#update-spinner');
+                
+                // Set up initial state
+                $targetVersion.text(version);
+                $command.text(`raptor-panel update --version=${version}`);
+                $status.text('Update in Progress');
+                $progress.text('0%');
+                $closeBtn.prop('disabled', true);
+                $spinner.show();
+                
+                // Clear terminal output and add initial command
+                $output.html(`
+                    <div class="terminal-line mb-2">
+                        <span class="text-success">user@raptorpanel</span>
+                        <span class="text-white">:</span>
+                        <span class="text-primary">~</span>
+                        <span class="text-white">$ </span>
+                        <span class="text-warning">raptor-panel update --version=${version}</span>
+                    </div>
+                `);
+                
+                // Start timer
+                let startTime = Date.now();
+                const timerInterval = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                    const seconds = (elapsed % 60).toString().padStart(2, '0');
+                    $('#elapsed-time').text(`${minutes}:${seconds}`);
+                }, 1000);
+                
+                // Show modal
+                $modal.modal('show');
+                
+                // Start update process
                 updateInProgress = true;
-                $('#update-log').show();
                 
-                // Initialize terminal display
-                const progressBar = $('#update-progress');
-                const messages = $('#terminal-messages');
+                // Add initial message
+                addTerminalLine('🚀 Initializing update process...', 'info');
                 
-                // Clear any existing content and show progress section
-                messages.html('<div class="terminal-line"><span class="terminal-prompt">user@raptorpanel:~$</span><span class="terminal-text">raptor-panel update --version=' + version + '</span></div>');
-                
-                // Show the update progress section
-                $('#update-log').slideDown(300);
-                
-                // Add initial progress message
-                addTerminalMessage('🚀 Initializing update process...', 'info');
-                
-                // Simulate progress updates with realistic steps
+                // Simulate progress updates
                 let progress = 0;
                 const progressSteps = [
-                    { msg: '�️ Checking and fixing file permissions...', percent: 10 },
-                    { msg: '�📦 Downloading update package...', percent: 20 },
+                    { msg: '🔧 Checking and fixing file permissions...', percent: 10 },
+                    { msg: '📦 Downloading update package...', percent: 20 },
                     { msg: '🔍 Verifying download integrity...', percent: 30 },
                     { msg: '💾 Creating backup of current files...', percent: 40 },
                     { msg: '📂 Extracting update files...', percent: 55 },
-                    { msg: '🔧 Applying file updates (includes new VersionService.php)...', percent: 70 },
+                    { msg: '� Applying file updates...', percent: 70 },
                     { msg: '🗄️ Running database migrations...', percent: 85 },
                     { msg: '🧹 Cleaning up temporary files...', percent: 92 },
                     { msg: '✨ Finalizing update process...', percent: 95 }
@@ -419,21 +629,20 @@
                 let stepIndex = 0;
                 
                 const progressInterval = setInterval(function() {
-                    progress += Math.random() * 8 + 2; // 2-10% increments
+                    progress += Math.random() * 8 + 2;
                     if (progress > 90) progress = 90;
                     
-                    progressBar.css('width', progress + '%').attr('aria-valuenow', progress);
-                    progressBar.find('span').text(Math.round(progress) + '% Complete');
+                    $progress.text(Math.round(progress) + '%');
                     
-                    // Show progress steps at appropriate intervals
+                    // Show progress steps
                     if (stepIndex < progressSteps.length && progress >= progressSteps[stepIndex].percent - 5) {
-                        addTerminalMessage(progressSteps[stepIndex].msg, 'info');
+                        addTerminalLine(progressSteps[stepIndex].msg, 'info');
                         stepIndex++;
                     }
                 }, 1500);
                 
-                console.log('🚀 Starting AJAX request to perform update...');
-                addTerminalMessage('📡 Connecting to update server...', 'info');
+                // Start actual update
+                addTerminalLine('📡 Connecting to update server...', 'info');
                 
                 $.post('{{ route("admin.simple-updates.perform") }}', {
                     version: version,
@@ -442,35 +651,61 @@
                 .done(function(data) {
                     console.log('✅ Update request successful:', data);
                     clearInterval(progressInterval);
-                    progressBar.css('width', '100%').attr('aria-valuenow', 100).removeClass('progress-bar-animated');
-                    progressBar.find('span').text('100% Complete');
+                    clearInterval(timerInterval);
+                    
+                    $progress.text('100%');
                     
                     if (data.success) {
-                        addTerminalMessage('✅ Update completed successfully!', 'success');
+                        addTerminalLine('✅ Update completed successfully!', 'success');
                         if (data.backup_path) {
-                            addTerminalMessage('💾 Backup created at: ' + data.backup_path, 'info');
+                            addTerminalLine('💾 Backup created at: ' + data.backup_path, 'info');
                         }
-                        addTerminalMessage('🔄 Reloading panel in 3 seconds...', 'warning');
+                        addTerminalLine(`🎉 Successfully updated to version ${version}!`, 'success');
+                        addTerminalLine('🔄 Reloading panel in 3 seconds...', 'warning');
                         
+                        // Update status
+                        $status.text('Update Complete');
+                        $spinner.hide();
+                        
+                        // Show success notification and auto-close
                         setTimeout(function() {
-                            console.log('🔄 Reloading page...');
-                            location.reload();
+                            $modal.modal('hide');
+                            
+                            // Show success alert
+                            const $alert = $(`
+                                <div class="alert alert-success alert-dismissible fade show position-fixed" 
+                                     style="top: 20px; right: 20px; z-index: 9999; min-width: 350px;">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle fa-2x text-success me-3"></i>
+                                        <div>
+                                            <h6 class="alert-heading mb-1">Update Complete!</h6>
+                                            <small>Successfully updated to version ${version}</small>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            `);
+                            
+                            $('body').append($alert);
+                            
+                            // Auto-dismiss alert after 5 seconds
+                            setTimeout(() => $alert.alert('close'), 5000);
+                            
+                            // Reload page
+                            setTimeout(() => location.reload(), 1000);
                         }, 3000);
                     } else {
                         console.error('❌ Update failed:', data.error);
-                        addTerminalMessage('❌ Update failed: ' + data.error, 'danger');
-                        progressBar.removeClass('bg-primary').addClass('bg-danger');
+                        addTerminalLine('❌ Update failed: ' + data.error, 'danger');
+                        $status.text('Update Failed');
+                        $spinner.hide();
+                        $closeBtn.prop('disabled', false);
                     }
                 })
                 .fail(function(xhr) {
                     console.error('❌ AJAX request failed:', xhr);
-                    console.error('Response status:', xhr.status);
-                    console.error('Response text:', xhr.responseText);
-                    console.error('Response JSON:', xhr.responseJSON);
-                    
                     clearInterval(progressInterval);
-                    progressBar.css('width', '100%').attr('aria-valuenow', 100).removeClass('bg-primary').addClass('bg-danger').removeClass('progress-bar-animated');
-                    progressBar.find('span').text('Update Failed');
+                    clearInterval(timerInterval);
                     
                     let errorMsg = 'Unknown error';
                     if (xhr.responseJSON?.error) {
@@ -483,55 +718,60 @@
                         errorMsg = `HTTP ${xhr.status}: ${xhr.statusText}`;
                     }
                     
-                    addTerminalMessage('❌ Update failed: ' + errorMsg, 'danger');
+                    addTerminalLine('❌ Update failed: ' + errorMsg, 'danger');
+                    $status.text('Update Failed');
+                    $progress.text('Error');
+                    $spinner.hide();
+                    $closeBtn.prop('disabled', false);
                 })
                 .always(function() {
                     console.log('🏁 Update request completed');
                     updateInProgress = false;
                 });
+            }
+
+            // Helper function to add terminal lines
+            function addTerminalLine(message, type = 'info') {
+                const $output = $('#terminal-output');
+                let textColor = 'text-light';
+                let icon = '';
+                
+                switch(type) {
+                    case 'success':
+                        textColor = 'text-success';
+                        icon = '✅ ';
+                        break;
+                    case 'danger':
+                    case 'error':
+                        textColor = 'text-danger';
+                        icon = '❌ ';
+                        break;
+                    case 'warning':
+                        textColor = 'text-warning';
+                        icon = '⚠️ ';
+                        break;
+                    case 'info':
+                    default:
+                        textColor = 'text-info';
+                        icon = '📄 ';
+                        break;
+                }
+                
+                const timestamp = new Date().toLocaleTimeString();
+                const $line = $(`
+                    <div class="terminal-line mb-1 ${textColor}">
+                        <span class="text-muted small">[${timestamp}]</span>
+                        <span class="ms-2">${icon}${message}</span>
+                    </div>
+                `);
+                
+                $output.append($line);
+                
+                // Auto-scroll to bottom
+                const outputEl = $output[0];
+                outputEl.scrollTop = outputEl.scrollHeight;
+            }
             });
         });
-        
-        // Terminal message helper function
-        function addTerminalMessage(message, type = 'info') {
-            const logTypes = {
-                'info': 'log-info',
-                'start': 'log-start',
-                'progress': 'log-progress',
-                'success': 'log-success', 
-                'warning': 'log-warning',
-                'danger': 'log-error',
-                'error': 'log-error',
-                'final': 'log-final'
-            };
-            
-            const icons = {
-                'info': '🔵',
-                'start': '🚀',
-                'progress': '⚡',
-                'success': '✅', 
-                'warning': '⚠️',
-                'danger': '❌',
-                'error': '❌',
-                'final': '🎉'
-            };
-            
-            const logType = logTypes[type] || 'log-info';
-            const icon = icons[type] || 'ℹ️';
-            const timestamp = new Date().toLocaleTimeString();
-            const terminalMessages = $('#terminal-messages');
-            
-            terminalMessages.append(
-                '<div class="terminal-line ' + logType + '">' +
-                '<span class="terminal-timestamp">' + timestamp + '</span>' +
-                '<span class="terminal-icon">' + icon + '</span>' +
-                '<span class="terminal-message">' + message + '</span>' +
-                '</div>'
-            );
-            
-            // Auto scroll to bottom
-            const terminalBody = terminalMessages;
-            terminalBody.scrollTop(terminalBody[0].scrollHeight);
-        }
     </script>
 @endsection

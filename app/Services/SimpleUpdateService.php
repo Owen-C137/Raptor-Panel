@@ -300,6 +300,7 @@ class SimpleUpdateService
         
         $copied = 0;
         $skipped = 0;
+        $totalFiles = count($files);
         
         foreach ($files as $file) {
             $relativePath = str_replace($source . '/', '', $file->getPathname());
@@ -333,6 +334,12 @@ class SimpleUpdateService
                     
                     $copied++;
                     
+                    // Log progress every 100 files
+                    if ($copied % 100 === 0) {
+                        $percentage = round(($copied + $skipped) / $totalFiles * 100, 1);
+                        $this->log("Progress: {$copied} files copied, {$skipped} skipped ({$percentage}% complete)");
+                    }
+                    
                 } catch (\Exception $e) {
                     if (str_contains($e->getMessage(), 'Permission denied')) {
                         $this->log("Permission denied copying {$relativePath}, attempting fix...", 'warning');
@@ -364,10 +371,16 @@ class SimpleUpdateService
                 }
             } else {
                 $skipped++;
+                
+                // Log progress every 100 files (including skipped)
+                if (($copied + $skipped) % 100 === 0) {
+                    $percentage = round(($copied + $skipped) / $totalFiles * 100, 1);
+                    $this->log("Progress: {$copied} files copied, {$skipped} skipped ({$percentage}% complete)");
+                }
             }
         }
         
-        $this->log("File copy completed: {$copied} files copied, {$skipped} files skipped");
+        $this->log("File copy completed: {$copied} files copied, {$skipped} files skipped (100% complete)");
     }
 
     /**

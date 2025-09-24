@@ -2,6 +2,43 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.24] - 2025-09-24
+
+### 🖥️ **Full-Screen Terminal Modal & Enhanced UX**
+- **Full-Screen Terminal**: Replaced inline terminal with immersive full-screen modal experience
+- **Blurred Background**: Added backdrop blur effect for focused update experience  
+- **Locked Interface**: Terminal modal locks user in during update process preventing accidental interruption
+- **Auto-Close & Success Alert**: Modal auto-closes on completion with success notification and page refresh
+- **Enhanced Progress Tracking**: Added file copy progress logging every 100 files (prevents "hanging" appearance)
+- **Real-Time Updates**: Live progress percentage, elapsed timer, and step-by-step status updates
+
+### 🎯 **User Experience Improvements**
+- **Professional Terminal Design**: Monaco/Menlo font family with proper terminal colors and animations
+- **Progress Visibility**: Users now see "Progress: X files copied, Y skipped (Z% complete)" during file operations
+- **Visual Feedback**: Spinner animations, progress indicators, and color-coded status messages
+- **Error Handling**: Enhanced error display with ability to close terminal on failure
+- **Responsive Design**: Full viewport coverage with proper scrolling and mobile compatibility
+
+### 🔧 **Technical Enhancements**
+- **File Operation Logging**: Progress updates every 100 files during the 4889-file copy process
+- **Terminal Animation**: Typewriter effect for new lines with auto-scroll to bottom
+- **Status Management**: Real-time status updates (Update in Progress → Update Complete → Auto-close)
+- **Timer Integration**: Live elapsed time counter throughout update process
+- **Memory Optimization**: Efficient terminal output handling for large update logs
+
+### 💫 **Update Workflow Experience**
+1. **Confirmation Modal**: Standard confirmation dialog
+2. **Full-Screen Terminal**: Immersive terminal takeover with blurred background
+3. **Live Progress**: Real-time file copy progress every 100 files
+4. **Status Updates**: Visual spinner, percentage, and step indicators
+5. **Auto-Complete**: Success notification with automatic modal close and page refresh
+6. **Error Recovery**: Clear error display with manual close option
+
+### 📊 **Performance Impact**
+- **File Copy Visibility**: 4889 files now show progress every 100 files (49 progress updates total)
+- **No Hanging UI**: Users see continuous progress instead of apparent freeze during file operations
+- **Smooth Experience**: Eliminates perceived performance issues during lengthy file copy phase
+
 ## [v1.3.23] - 2025-09-24
 
 ### 🚀 **Enhanced Update System - Complete Implementation**
