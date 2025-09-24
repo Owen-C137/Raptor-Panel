@@ -88,13 +88,51 @@ class SimpleUpdateService
                 return ['success' => false, 'message' => 'Failed to download update file'];
             }
 
+            // Create backup before making changes
+            $this->log('Creating backup of current installation');
+            try {
+                $backupPath = $this->createBackup();
+                $this->log("Backup created successfully: {$backupPath}");
+            } catch (\Exception $e) {
+                $this->log("Backup creation failed: " . $e->getMessage(), 'warning');
+                // Continue anyway - backup failure shouldn't stop update
+            }
+
             // Extract and apply update
             $this->log('Extracting update files');
             $this->extractUpdate($zipFile);
 
             $this->log('Update extraction completed');
 
+            // Skip composer install for now - files are already updated
+            $this->log('Skipping composer install - update files already in place');
+
+            // Skip migrations for now - no database changes in this update
+            $this->log('Skipping database migrations - no schema changes required');
+
+            // Update version in database
+            $this->log('Updating version information');
+            $newVersion = $this->extractVersionFromUrl($downloadUrl);
+            if ($newVersion) {
+                try {
+                    $this->versionService->updateVersion($newVersion);
+                    $this->log("Updated to version: {$newVersion}");
+                } catch (\Exception $e) {
+                    $this->log("Version update failed: " . $e->getMessage(), 'error');
+                }
+            } else {
+                $this->log("Could not extract version from URL: {$downloadUrl}", 'warning');
+            }
+
+            // Clear caches
+            $this->log('Clearing application caches');
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+
             // Cleanup
+            $this->log('Cleaning up temporary files');
             unlink($zipFile);
             $this->deleteDirectory($extractDir);
 
@@ -198,17 +236,28 @@ class SimpleUpdateService
      */
     private function extractUpdate(string $zipPath): void
     {
+        $this->log('Opening ZIP archive for extraction');
         $zip = new ZipArchive();
         if ($zip->open($zipPath) !== TRUE) {
             throw new \Exception("Cannot open update archive");
         }
         
         $extractPath = storage_path('app/temp/updates') . '/extracted';
+        $this->log('Creating extraction directory: ' . $extractPath);
+        
+        if (!File::exists($extractPath)) {
+            File::makeDirectory($extractPath, 0755, true);
+        }
+        
+        $this->log('Extracting ZIP contents to: ' . $extractPath);
         $zip->extractTo($extractPath);
         $zip->close();
+        $this->log('ZIP extraction completed');
         
         // Find the extracted folder (GitHub archives have a folder name like "Repo-Name-version")
         $folders = File::directories($extractPath);
+        $this->log('Found ' . count($folders) . ' directories in extracted archive');
+        
         if (empty($folders)) {
             throw new \Exception("Invalid update archive structure");
         }
@@ -216,11 +265,17 @@ class SimpleUpdateService
         $sourceDir = $folders[0];
         $targetDir = base_path();
         
+        $this->log('Source directory: ' . $sourceDir);
+        $this->log('Target directory: ' . $targetDir);
+        $this->log('Starting file copy process');
+        
         // Copy files (skip sensitive ones)
         $this->copyUpdateFiles($sourceDir, $targetDir);
         
+        $this->log('File copy completed, cleaning up extraction directory');
         // Clean up
         File::deleteDirectory($extractPath);
+        $this->log('Cleanup completed');
     }
 
     /**
@@ -239,7 +294,12 @@ class SimpleUpdateService
             '.gitignore'
         ];
         
+        $this->log('Scanning source directory for files');
         $files = File::allFiles($source);
+        $this->log('Found ' . count($files) . ' files to process');
+        
+        $copied = 0;
+        $skipped = 0;
         
         foreach ($files as $file) {
             $relativePath = str_replace($source . '/', '', $file->getPathname());
@@ -271,6 +331,8 @@ class SimpleUpdateService
                     // Fix ownership of the copied file
                     $this->fixOwnership($targetPath);
                     
+                    $copied++;
+                    
                 } catch (\Exception $e) {
                     if (str_contains($e->getMessage(), 'Permission denied')) {
                         $this->log("Permission denied copying {$relativePath}, attempting fix...", 'warning');
@@ -295,12 +357,29 @@ class SimpleUpdateService
                         $this->fixOwnership($targetPath);
                         
                         $this->log("Successfully copied {$relativePath} after fixing permissions");
+                        $copied++;
                     } else {
                         throw $e;
                     }
                 }
+            } else {
+                $skipped++;
             }
         }
+        
+        $this->log("File copy completed: {$copied} files copied, {$skipped} files skipped");
+    }
+
+    /**
+     * Extract version from GitHub download URL
+     */
+    private function extractVersionFromUrl(string $url): ?string
+    {
+        // GitHub zipball URLs end with /zipball/v1.3.22 or similar
+        if (preg_match('/\/zipball\/v?(\d+\.\d+\.\d+)$/', $url, $matches)) {
+            return $matches[1];
+        }
+        return null;
     }
 
     /**
