@@ -64,56 +64,46 @@ class SimpleUpdateService
     /**
      * Perform the update
      */
-    public function performUpdate(string $version): array
+    public function performUpdate(string $downloadUrl): array
     {
+        $this->log('Starting update process');
+
         try {
-            // Step 0: Ensure proper permissions before starting
-            $this->log("Checking and fixing file permissions...");
-            $this->ensureUpdatePermissions();
+            // Fix ownership of the entire application directory before starting
+            $this->log('Fixing application directory ownership');
+            $this->fixOwnershipRecursive(base_path());
+
+            // Ensure temp directory exists with proper permissions
+            $tempDir = storage_path('app/temp');
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+                $this->fixOwnership($tempDir);
+            }
+
+            $zipFile = $tempDir . '/update.zip';
             
-            // Step 1: Download the update
-            $this->log("Downloading version {$version}...");
-            $downloadPath = $this->downloadUpdate($version);
-            
-            // Step 2: Create backup
-            $this->log("Creating backup...");
-            $backupPath = $this->createBackup();
-            
-            // Step 3: Extract and apply update
-            $this->log("Extracting update...");
-            $this->extractUpdate($downloadPath);
-            
-            // Step 4: Run post-update tasks
-            $this->log("Running composer install...");
-            $this->runComposerInstall();
-            
-            $this->log("Running database migrations...");
-            $this->runMigrations();
-            
-            $this->log("Clearing cache...");
-            $this->clearCache();
-            
-            // Step 5: Update version in config
-            $this->updateVersion($version);
-            
-            // Clean up
-            File::delete($downloadPath);
-            
-            $this->log("Update completed successfully!");
-            
-            return [
-                'success' => true,
-                'backup_path' => $backupPath,
-                'message' => 'Update completed successfully'
-            ];
-            
+            // Download update
+            $this->log('Downloading update file');
+            if (!$this->downloadFile($downloadUrl, $zipFile)) {
+                return ['success' => false, 'message' => 'Failed to download update file'];
+            }
+
+            // Extract and apply update
+            $this->log('Extracting update files');
+            $this->extractUpdate($zipFile);
+
+            $this->log('Update extraction completed');
+
+            // Cleanup
+            unlink($zipFile);
+            $this->deleteDirectory($extractDir);
+
+            $this->log('Update completed successfully');
+            return ['success' => true, 'message' => 'Update completed successfully'];
+
         } catch (\Exception $e) {
-            $this->log("Update failed: " . $e->getMessage(), 'error');
-            
-            return [
-                'success' => false,
-                'error' => $e->getMessage()
-            ];
+            $this->log('Update failed: ' . $e->getMessage(), 'error');
+            return ['success' => false, 'message' => 'Update failed: ' . $e->getMessage()];
         }
     }
 
@@ -189,7 +179,7 @@ class SimpleUpdateService
             throw new \Exception("Cannot open update archive");
         }
         
-        $extractPath = $this->tempDir . '/extracted';
+        $extractPath = storage_path('app/temp') . '/extracted';
         $zip->extractTo($extractPath);
         $zip->close();
         
@@ -244,34 +234,43 @@ class SimpleUpdateService
                 $targetDir = dirname($targetPath);
                 
                 try {
-                    // Ensure target directory exists with proper permissions
+                    // Ensure target directory exists
                     if (!File::exists($targetDir)) {
                         File::makeDirectory($targetDir, 0755, true);
-                        $this->fixDirectoryPermissions($targetDir);
+                        // Fix ownership immediately after creation
+                        $this->fixOwnership($targetDir);
                     }
                     
-                    // Attempt to copy file
+                    // Copy the file
                     File::copy($file->getPathname(), $targetPath);
                     
-                    // Fix file permissions after copy
-                    $this->fixFilePermissions($targetPath);
+                    // Fix ownership of the copied file
+                    $this->fixOwnership($targetPath);
                     
                 } catch (\Exception $e) {
-                    // If copy fails due to permissions, try to fix them first
                     if (str_contains($e->getMessage(), 'Permission denied')) {
-                        $this->log("Permission denied for {$relativePath}, attempting to fix permissions...", 'warning');
+                        $this->log("Permission denied copying {$relativePath}, attempting fix...", 'warning');
                         
-                        // Try to fix permissions and retry
-                        $this->fixDirectoryPermissions($targetDir);
+                        // Try to fix ownership of parent directory and retry
+                        $this->fixOwnership($target);
+                        $this->fixOwnership($targetDir);
+                        
+                        // Remove existing file if it exists but has wrong permissions
                         if (File::exists($targetPath)) {
-                            $this->fixFilePermissions($targetPath);
+                            try {
+                                File::delete($targetPath);
+                            } catch (\Exception $deleteError) {
+                                // If we can't delete, try changing ownership first
+                                $this->fixOwnership($targetPath);
+                                File::delete($targetPath);
+                            }
                         }
                         
                         // Retry the copy
                         File::copy($file->getPathname(), $targetPath);
-                        $this->fixFilePermissions($targetPath);
+                        $this->fixOwnership($targetPath);
                         
-                        $this->log("Successfully copied {$relativePath} after fixing permissions", 'info');
+                        $this->log("Successfully copied {$relativePath} after fixing permissions");
                     } else {
                         throw $e;
                     }
@@ -404,115 +403,68 @@ class SimpleUpdateService
     }
 
     /**
-     * Fix directory permissions to ensure proper access
+     * Fix ownership of files and directories to web server user
      */
-    private function fixDirectoryPermissions(string $directory): void
+    private function fixOwnership(string $path): void
     {
         try {
-            // Set directory permissions to 755 (rwxr-xr-x)
-            chmod($directory, 0755);
-            
-            // Try to change owner to web server user (www-data)
             $webUser = 'www-data';
-            if (function_exists('posix_getpwnam') && posix_getpwnam($webUser)) {
-                chown($directory, $webUser);
-                chgrp($directory, $webUser);
-            }
             
-            $this->log("Fixed permissions for directory: {$directory}");
-        } catch (\Exception $e) {
-            $this->log("Could not fix directory permissions for {$directory}: " . $e->getMessage(), 'warning');
-        }
-    }
-
-    /**
-     * Fix file permissions to ensure proper access
-     */
-    private function fixFilePermissions(string $file): void
-    {
-        try {
-            // Set file permissions to 644 (rw-r--r--)
-            chmod($file, 0644);
+            // Check if we're running as root or have sudo access
+            $currentUser = posix_getpwuid(posix_geteuid())['name'] ?? 'unknown';
             
-            // Try to change owner to web server user (www-data)
-            $webUser = 'www-data';
-            if (function_exists('posix_getpwnam') && posix_getpwnam($webUser)) {
-                chown($file, $webUser);
-                chgrp($file, $webUser);
-            }
-            
-        } catch (\Exception $e) {
-            $this->log("Could not fix file permissions for {$file}: " . $e->getMessage(), 'warning');
-        }
-    }
-
-    /**
-     * Pre-update permission check and fix
-     */
-    private function ensureUpdatePermissions(): void
-    {
-        $criticalPaths = [
-            'app/',
-            'addons/',
-            'config/',
-            'database/',
-            'routes/',
-            'resources/',
-            'public/'
-        ];
-        
-        $basePath = base_path();
-        $permissionIssues = [];
-        
-        foreach ($criticalPaths as $path) {
-            $fullPath = $basePath . '/' . $path;
-            
-            if (File::exists($fullPath)) {
-                // Check if we can write to this path
-                if (!is_writable($fullPath)) {
-                    $permissionIssues[] = $path;
-                    $this->log("Permission issue detected for: {$path}", 'warning');
-                    
-                    // Try to fix permissions
-                    if (File::isDirectory($fullPath)) {
-                        $this->fixDirectoryPermissions($fullPath);
-                        
-                        // Also fix permissions recursively for important directories
-                        if (in_array($path, ['app/', 'addons/', 'config/'])) {
-                            $this->fixDirectoryPermissionsRecursive($fullPath);
-                        }
-                    } else {
-                        $this->fixFilePermissions($fullPath);
-                    }
-                }
-            }
-        }
-        
-        if (!empty($permissionIssues)) {
-            $this->log("Fixed permissions for " . count($permissionIssues) . " paths", 'info');
-        }
-    }
-
-    /**
-     * Fix permissions recursively for a directory
-     */
-    private function fixDirectoryPermissionsRecursive(string $directory): void
-    {
-        try {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::SELF_FIRST
-            );
-            
-            foreach ($iterator as $item) {
-                if ($item->isDir()) {
-                    $this->fixDirectoryPermissions($item->getPathname());
+            if ($currentUser === 'root') {
+                // We can directly change ownership
+                if (is_dir($path)) {
+                    chown($path, $webUser);
+                    chgrp($path, $webUser);
+                    chmod($path, 0755);
                 } else {
-                    $this->fixFilePermissions($item->getPathname());
+                    chown($path, $webUser);
+                    chgrp($path, $webUser); 
+                    chmod($path, 0644);
+                }
+            } else {
+                // Try using sudo for ownership changes
+                if (is_dir($path)) {
+                    exec("sudo chown {$webUser}:{$webUser} " . escapeshellarg($path) . " 2>/dev/null");
+                    exec("sudo chmod 755 " . escapeshellarg($path) . " 2>/dev/null");
+                } else {
+                    exec("sudo chown {$webUser}:{$webUser} " . escapeshellarg($path) . " 2>/dev/null");
+                    exec("sudo chmod 644 " . escapeshellarg($path) . " 2>/dev/null");
                 }
             }
+            
         } catch (\Exception $e) {
-            $this->log("Could not fix recursive permissions for {$directory}: " . $e->getMessage(), 'warning');
+            $this->log("Could not fix ownership for {$path}: " . $e->getMessage(), 'debug');
+        }
+    }
+
+    /**
+     * Fix ownership recursively for directories
+     */
+    private function fixOwnershipRecursive(string $directory): void
+    {
+        try {
+            $webUser = 'www-data';
+            $currentUser = posix_getpwuid(posix_geteuid())['name'] ?? 'unknown';
+            
+            if ($currentUser === 'root') {
+                // Use native PHP functions
+                exec("chown -R {$webUser}:{$webUser} " . escapeshellarg($directory));
+                exec("find " . escapeshellarg($directory) . " -type d -exec chmod 755 {} \\;");
+                exec("find " . escapeshellarg($directory) . " -type f -exec chmod 644 {} \\;");
+            } else {
+                // Use sudo
+                exec("sudo chown -R {$webUser}:{$webUser} " . escapeshellarg($directory));
+                exec("sudo find " . escapeshellarg($directory) . " -type d -exec chmod 755 {} \\;");
+                exec("sudo find " . escapeshellarg($directory) . " -type f -exec chmod 644 {} \\;");
+            }
+            
+            $this->log("Fixed recursive ownership for {$directory}");
+            
+        } catch (\Exception $e) {
+            $this->log("Could not fix recursive ownership for {$directory}: " . $e->getMessage(), 'warning');
         }
     }
 

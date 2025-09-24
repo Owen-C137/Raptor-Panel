@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
                 // Dynamically set the app version from database using VersionService
+        $dynamicVersion = config('app.version', '1.3.16'); // Default fallback
         try {
             $versionService = app(\Pterodactyl\Services\VersionService::class);
             
@@ -33,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
             $dynamicVersion = $versionService->getCurrentVersion();
             config(['app.version' => $dynamicVersion]);
         } catch (\Exception $e) {
-            // If VersionService fails, leave config as is (no fallback needed)
+            // If VersionService fails, use fallback version
             \Log::debug('Could not set dynamic app version: ' . $e->getMessage());
         }
 

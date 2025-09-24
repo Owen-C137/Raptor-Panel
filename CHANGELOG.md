@@ -2,38 +2,43 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.19] - 2025-09-24
+
+### 🔧 **Update System Fix - GitHub Archive Extraction**
+- **Fixed GitHub Folder Extraction**: Resolved critical issue where GitHub archive downloads were not properly extracted
+- **Method Call Correction**: Fixed `performUpdate()` calling non-existent `extractFile()` method, now properly calls `extractUpdate()`
+- **Archive Structure Handling**: Proper handling of GitHub's archive folder structure (`Raptor-Panel-1.3.x/`)
+- **Enhanced Permission Management**: Improved file ownership and permission handling during updates
+- **Extraction Logic**: Updates now correctly find and extract from GitHub's wrapped folder structure
+- **Temp Directory Cleanup**: Proper cleanup of temporary extraction directories after updates
+- **Error Prevention**: Prevents partial updates that leave extracted folders in wrong locations
+
+### 🛡️ **System Reliability**
+- **Update Process Integrity**: Complete update process now works end-to-end without manual intervention
+- **File Copy Robustness**: Enhanced file copying with proper error handling and recovery
+- **Directory Management**: Improved temporary directory handling and cleanup
+- **Namespace Consistency**: Fixed VersionService namespace issues for proper autoloading
+
+### 🚀 **Performance Improvements**
+- **Streamlined Extraction**: More efficient extraction process with proper GitHub folder detection
+- **Reduced Failed Updates**: Eliminates common update failures due to extraction issues
+- **Better Logging**: Enhanced logging throughout the update process for better debugging
+
 ## [v1.3.18] - 2025-09-24
 
-### 🛡️ **Permission Management System**
-- **Automatic Permission Fixing**: Update system now automatically checks and fixes file permissions before updating
-- **Smart Error Recovery**: If file copy fails due to permissions, system attempts to fix permissions and retry
-- **Recursive Permission Management**: Handles entire directory structures for critical application paths
-- **User-Friendly Permission Feedback**: Clear messages about permission fixes in the update interface
-- **Pre-Update Validation**: System validates and corrects permissions before starting update process
+### 🔄 **Permission Management Enhancement**
+- **Advanced Permission Fixing**: Enhanced update system with comprehensive file ownership management
+- **Recursive Permission Handling**: Added recursive directory ownership fixing for update processes
+- **Enhanced Error Recovery**: Improved error handling with retry logic for permission-denied scenarios
+- **Pre-Update Validation**: System validates and fixes permissions before attempting updates
+- **www-data Ownership**: Automatic ownership correction to web server user during updates
+- **Directory Creation Safety**: Safe directory creation with immediate permission correction
 
-### 🔄 **Cache Management Enhancement**
-- **Auto-Cache Clearing**: "Check for Updates" button now automatically clears version cache for accurate detection
-- **Force Refresh Method**: Added `forceRefresh()` method to VersionService for reliable cache invalidation
-- **Config Cache Integration**: Automatic `config:clear` during update checks to ensure fresh version data
-- **Improved Version Detection**: Eliminates need for users to manually clear cache to see new versions
-
-### 🎨 **User Interface Improvements**
-- **Permission Notice System**: Informative alerts explaining automatic permission management during updates
-- **Enhanced Progress Indicators**: Update progress now includes permission checking and file creation steps
-- **Better Error Communication**: Clear indication when permission issues are detected and resolved
-- **Improved Update Feedback**: More descriptive messages about new file creation (e.g., VersionService.php)
-
-### 🔧 **Technical Enhancements**
-- **Robust File Operations**: Enhanced file copying with automatic permission correction for new files
-- **Comprehensive Error Handling**: Graceful recovery from permission-denied errors with multiple retry strategies
-- **Enhanced Logging**: All permission operations logged for troubleshooting and transparency
-- **Future-Proof Architecture**: System designed to handle new files and directories in future updates
-
-### 🚀 **Reliability Improvements**
-- **Eliminates Manual Intervention**: Users no longer need to manually run chmod commands during updates
-- **Handles New File Creation**: Properly manages creation of new files like VersionService.php with correct permissions
-- **Fail-Safe Update Process**: Multiple fallback strategies ensure updates complete successfully
-- **Cross-Environment Compatibility**: Works reliably across different server configurations and permissions setups
+### 🛡️ **System Reliability**
+- **Robust File Operations**: Enhanced file copy operations with permission management integration
+- **Update Process Hardening**: More resilient update process with comprehensive error handling
+- **Cache Management Integration**: Auto-cache clearing on update checks for immediate UI feedback
+- **Progress Indicators**: Improved admin interface with better update progress feedback
 
 ## [v1.3.17] - 2025-09-24
 
