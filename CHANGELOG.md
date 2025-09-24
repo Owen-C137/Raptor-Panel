@@ -2,6 +2,42 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.30] - 2025-09-24
+
+### 🔧 **CRITICAL FIX: StartupCommandService Allocation Error**
+- **Fixed**: `Attempt to read property "ip" on int` fatal error in `StartupCommandService`
+- **Issue**: Server allocation relationship returning integer instead of Allocation object
+- **Solution**: Implemented manual allocation lookup to bypass relationship issues
+- **Enhanced**: Added proper error handling for missing server allocations
+- **Improved**: Added Allocation model import and exception handling
+- **Impact**: Eliminates server API errors that were causing 500 responses
+
+### 🛠️ **Technical Details**
+- **Error Location**: `app/Services/Servers/StartupCommandService.php` line 15
+- **Root Cause**: `$server->allocation` returning `int(0)` instead of Allocation object
+- **Fix Method**: Direct database lookup using `Allocation::find($server->allocation_id)`
+- **Fallback**: Exception thrown if allocation not found for better debugging
+- **Testing**: Verified fix resolves startup command generation errors
+
+### 📋 **Code Changes**
+```php
+// Before: $server->allocation->ip (caused error)
+// After: Manual allocation lookup
+$allocation = \Pterodactyl\Models\Allocation::find($server->allocation_id);
+if (!$allocation) {
+    throw new \Exception("Allocation not found for server {$server->id}");
+}
+$replace = [$server->memory, $allocation->ip, $allocation->port];
+```
+
+### ✅ **Verification**
+- **Server API**: No more 500 errors on server endpoints
+- **Startup Commands**: Generated successfully for all servers
+- **Panel Stability**: Eliminated random allocation-related crashes
+- **User Experience**: Smoother server management without unexpected errors
+
+---
+
 ## [v1.3.29] - 2025-09-24
 
 ### 🖥️ **ENHANCED: Real-Time Terminal Output Display**

@@ -611,38 +611,7 @@
                 updateInProgress = true;
                 
                 // Add initial message
-                addTerminalLine('🚀 Initializing update process...', 'info');
-                
-                // Simulate progress updates
-                let progress = 0;
-                const progressSteps = [
-                    { msg: '🔧 Checking and fixing file permissions...', percent: 10 },
-                    { msg: '📦 Downloading update package...', percent: 20 },
-                    { msg: '🔍 Verifying download integrity...', percent: 30 },
-                    { msg: '💾 Creating backup of current files...', percent: 40 },
-                    { msg: '📂 Extracting update files...', percent: 55 },
-                    { msg: '� Applying file updates...', percent: 70 },
-                    { msg: '🗄️ Running database migrations...', percent: 85 },
-                    { msg: '🧹 Cleaning up temporary files...', percent: 92 },
-                    { msg: '✨ Finalizing update process...', percent: 95 }
-                ];
-                let stepIndex = 0;
-                
-                const progressInterval = setInterval(function() {
-                    progress += Math.random() * 8 + 2;
-                    if (progress > 90) progress = 90;
-                    
-                    $progress.text(Math.round(progress) + '%');
-                    
-                    // Show progress steps
-                    if (stepIndex < progressSteps.length && progress >= progressSteps[stepIndex].percent - 5) {
-                        addTerminalLine(progressSteps[stepIndex].msg, 'info');
-                        stepIndex++;
-                    }
-                }, 1500);
-                
-                // Start actual update
-                addTerminalLine('📡 Connecting to update server...', 'info');
+                addTerminalLine('🚀 Starting update request...', 'info');
                 
                 $.ajax({
                     url: '{{ route("admin.simple-updates.perform") }}',
@@ -655,7 +624,6 @@
                 })
                 .done(function(data) {
                     console.log('✅ Update request successful:', data);
-                    clearInterval(progressInterval);
                     clearInterval(timerInterval);
                     
                     $progress.text('100%');
@@ -665,6 +633,12 @@
                         data.output.forEach(function(line) {
                             if (line.trim()) {
                                 addTerminalLine(line.trim(), 'info');
+                                
+                                // Extract progress percentage from logs
+                                const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
+                                if (progressMatch) {
+                                    $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
+                                }
                             }
                         });
                     } else if (data.terminal_output && typeof data.terminal_output === 'string') {
@@ -673,6 +647,12 @@
                         lines.forEach(function(line) {
                             if (line.trim()) {
                                 addTerminalLine(line.trim(), 'info');
+                                
+                                // Extract progress percentage from logs
+                                const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
+                                if (progressMatch) {
+                                    $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
+                                }
                             }
                         });
                     }
@@ -722,6 +702,12 @@
                             data.output.forEach(function(line) {
                                 if (line.trim()) {
                                     addTerminalLine(line.trim(), 'info');
+                                    
+                                    // Extract progress percentage from logs even on failure
+                                    const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
+                                    if (progressMatch) {
+                                        $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
+                                    }
                                 }
                             });
                         } else if (data.terminal_output && typeof data.terminal_output === 'string') {
@@ -729,6 +715,12 @@
                             lines.forEach(function(line) {
                                 if (line.trim()) {
                                     addTerminalLine(line.trim(), 'info');
+                                    
+                                    // Extract progress percentage from logs even on failure
+                                    const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
+                                    if (progressMatch) {
+                                        $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
+                                    }
                                 }
                             });
                         }
@@ -742,7 +734,6 @@
                 })
                 .fail(function(xhr, textStatus, errorThrown) {
                     console.error('❌ AJAX request failed:', xhr, textStatus, errorThrown);
-                    clearInterval(progressInterval);
                     clearInterval(timerInterval);
                     
                     let errorMsg = 'Unknown error';

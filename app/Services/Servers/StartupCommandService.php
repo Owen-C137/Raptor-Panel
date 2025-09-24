@@ -3,6 +3,7 @@
 namespace Pterodactyl\Services\Servers;
 
 use Pterodactyl\Models\Server;
+use Pterodactyl\Models\Allocation;
 
 class StartupCommandService
 {
@@ -11,8 +12,15 @@ class StartupCommandService
      */
     public function handle(Server $server, bool $hideAllValues = false): string
     {
+        // Manually get allocation to avoid relationship issues
+        $allocation = \Pterodactyl\Models\Allocation::find($server->allocation_id);
+        
+        if (!$allocation) {
+            throw new \Exception("Allocation not found for server {$server->id}");
+        }
+
         $find = ['{{SERVER_MEMORY}}', '{{SERVER_IP}}', '{{SERVER_PORT}}'];
-        $replace = [$server->memory, $server->allocation->ip, $server->allocation->port];
+        $replace = [$server->memory, $allocation->ip, $allocation->port];
 
         foreach ($server->variables as $variable) {
             $find[] = '{{' . $variable->env_variable . '}}';
