@@ -2,6 +2,40 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.15] - 2025-09-24
+
+### 🎨 **UI/UX Improvements**
+- **Enhanced Update Interface**: Moved inline CSS to main OneUI stylesheet for better maintainability
+- **GitHub-Style Release Notes**: Added collapsible, GitHub-style document viewer for release notes
+- **Terminal Console**: Improved terminal styling with consistent GitHub color scheme
+- **Professional Modal System**: Enhanced update confirmation modal with OneUI styling
+- **Release Notes Toggle**: Added show/hide functionality with smooth animations
+
+### 🔧 **Technical Improvements** 
+- **CSS Optimization**: Consolidated terminal and update interface styles into main CSS file
+- **JavaScript Enhancements**: Improved modal handling and eliminated Bootstrap conflicts
+- **Code Organization**: Better separation of concerns with centralized styling
+- **Performance**: Reduced inline styles for better caching and load times
+
+### 🐛 **Bug Fixes**
+- **Fixed JavaScript Errors**: Resolved duplicate variable declarations in update system
+- **Modal Conflicts**: Fixed Bootstrap modal compatibility issues with OneUI framework  
+- **Terminal Layout**: Improved terminal console layout and removed unnecessary block wrappers
+- **Permission Issues**: Enhanced backup file creation with proper permissions handling
+
+### 🔒 **Security & Maintenance**
+- **File Cleanup**: Removed unnecessary backup and temporary files
+- **Permission Management**: Improved file system permissions for update process
+- **Error Handling**: Better error messages and recovery mechanisms for failed updates
+
+### 📱 **User Experience**
+- **Smoother Animations**: Added elegant slide transitions for release notes toggle
+- **Better Feedback**: Enhanced progress indicators with realistic update steps  
+- **Professional Design**: Consistent styling across all update interfaces
+- **Accessibility**: Improved keyboard navigation and screen reader support
+
+---
+
 ## [v1.3.14] - 2025-09-24
 
 ### 🔧 Auto Update System Fixes & Improvements

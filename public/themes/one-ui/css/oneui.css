@@ -35143,3 +35143,268 @@ html.dark table.table.dataTable.table-striped > tbody > tr:nth-of-type(2n+1) > *
 .terminal-header .text-muted {
     font-size: 11px;
 }
+
+/* GitHub Document Styling */
+.github-document {
+    border: 1px solid #d1d9e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+html.dark .github-document {
+    border-color: #30363d;
+    background: #0d1117;
+}
+
+.github-document-header {
+    background: #f6f8fa;
+    border-bottom: 1px solid #d1d9e0;
+    padding: 12px 16px;
+    font-size: 14px;
+}
+
+html.dark .github-document-header {
+    background: #161b22;
+    border-bottom-color: #30363d;
+}
+
+.github-document-content {
+    padding: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.github-document-content::-webkit-scrollbar {
+    width: 12px;
+}
+
+.github-document-content::-webkit-scrollbar-track {
+    background: #f6f8fa;
+}
+
+html.dark .github-document-content::-webkit-scrollbar-track {
+    background: #161b22;
+}
+
+.github-document-content::-webkit-scrollbar-thumb {
+    background: #d1d9e0;
+    border-radius: 6px;
+    border: 2px solid #f6f8fa;
+}
+
+html.dark .github-document-content::-webkit-scrollbar-thumb {
+    background: #30363d;
+    border-color: #161b22;
+}
+
+.github-document-content::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+html.dark .github-document-content::-webkit-scrollbar-thumb:hover {
+    background: #484f58;
+}
+
+.markdown-content {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #24292f;
+}
+
+html.dark .markdown-content {
+    color: #c9d1d9;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.markdown-content h1 {
+    font-size: 2em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #d1d9e0;
+}
+
+html.dark .markdown-content h1 {
+    border-bottom-color: #30363d;
+}
+
+.markdown-content h2 {
+    font-size: 1.5em;
+    padding-bottom: 0.3em;
+    border-bottom: 1px solid #d1d9e0;
+}
+
+html.dark .markdown-content h2 {
+    border-bottom-color: #30363d;
+}
+
+.markdown-content h3 {
+    font-size: 1.25em;
+}
+
+.markdown-content h4 {
+    font-size: 1em;
+}
+
+.markdown-content h5 {
+    font-size: 0.875em;
+}
+
+.markdown-content h6 {
+    font-size: 0.85em;
+    color: #656d76;
+}
+
+html.dark .markdown-content h6 {
+    color: #7d8590;
+}
+
+.markdown-content p {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    margin-top: 0;
+    margin-bottom: 16px;
+    padding-left: 2em;
+}
+
+.markdown-content li {
+    margin-bottom: 0.25em;
+}
+
+.markdown-content code {
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+html.dark .markdown-content code {
+    background-color: rgba(110, 118, 129, 0.4);
+}
+
+.markdown-content pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+html.dark .markdown-content pre {
+    background-color: #161b22;
+}
+
+.markdown-content blockquote {
+    padding: 0 1em;
+    color: #656d76;
+    border-left: 0.25em solid #d1d9e0;
+    margin-bottom: 16px;
+}
+
+html.dark .markdown-content blockquote {
+    color: #7d8590;
+    border-left-color: #30363d;
+}
+
+/* GitHub file icon styling */
+.github-document-header .fas.fa-file-alt {
+    color: #656d76;
+    font-size: 16px;
+}
+
+html.dark .github-document-header .fas.fa-file-alt {
+    color: #7d8590;
+}
+
+/* Smooth animation for toggle */
+#release-notes-content {
+    transition: all 0.3s ease;
+}
+
+#toggle-release-notes {
+    transition: all 0.2s ease;
+}
+
+#toggle-release-notes:hover {
+    transform: translateY(-1px);
+}
+
+#toggle-release-notes:disabled {
+    transform: none;
+    opacity: 0.6;
+}
+
+/* Enhanced markdown content styling */
+.markdown-content strong {
+    font-weight: 600;
+}
+
+.markdown-content em {
+    font-style: italic;
+}
+
+.markdown-content hr {
+    height: 0.25em;
+    padding: 0;
+    margin: 24px 0;
+    background-color: #d1d9e0;
+    border: 0;
+}
+
+html.dark .markdown-content hr {
+    background-color: #30363d;
+}
+
+/* Code block improvements */
+.markdown-content pre code {
+    background: transparent;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+}
+
+/* Table styling */
+.markdown-content table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.markdown-content table th,
+.markdown-content table td {
+    padding: 6px 13px;
+    border: 1px solid #d1d9e0;
+}
+
+html.dark .markdown-content table th,
+html.dark .markdown-content table td {
+    border-color: #30363d;
+}
+
+.markdown-content table th {
+    font-weight: 600;
+    background-color: #f6f8fa;
+}
+
+html.dark .markdown-content table th {
+    background-color: #161b22;
+}
