@@ -2,6 +2,20 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.20] - 2025-09-24
+
+### 🐛 **Critical Hotfix - Missing Download Method**
+- **Fixed HTTP 500 Error**: Resolved `Call to undefined method downloadFile()` error during updates
+- **Added Missing downloadFile Method**: Implemented the missing method that was being called but didn't exist
+- **Download Error Handling**: Added proper HTTP status checking and exception handling for downloads
+- **Update Process Completion**: Update system now works end-to-end without method call errors
+- **Logging Enhancement**: Added detailed logging for download operations and failures
+
+### 🔧 **System Reliability**
+- **Method Consistency**: Ensured all called methods exist and are properly implemented
+- **HTTP Client Integration**: Proper integration with existing GuzzleHttp client for downloads
+- **Error Recovery**: Better error messages and handling for failed downloads
+
 ## [v1.3.19] - 2025-09-24
 
 ### 🔧 **Update System Fix - GitHub Archive Extraction**
