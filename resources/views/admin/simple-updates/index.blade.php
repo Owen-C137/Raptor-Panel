@@ -607,178 +607,14 @@
                 // Show modal
                 $modal.modal('show');
                 
-                // Start update process
+                // Start update process with real-time streaming
                 updateInProgress = true;
                 
                 // Add initial message
-                addTerminalLine('🚀 Starting update request...', 'info');
+                addTerminalLine('🚀 Connecting to update stream...', 'info');
                 
-                $.ajax({
-                    url: '{{ route("admin.simple-updates.perform") }}',
-                    type: 'POST',
-                    data: {
-                        version: version,
-                        _token: '{{ csrf_token() }}'
-                    },
-                    timeout: 600000 // 10 minutes timeout (600,000ms)
-                })
-                .done(function(data) {
-                    console.log('✅ Update request successful:', data);
-                    clearInterval(timerInterval);
-                    
-                    $progress.text('100%');
-                    
-                    // Display all terminal output from the update process
-                    if (data.output && Array.isArray(data.output)) {
-                        data.output.forEach(function(line) {
-                            if (line.trim()) {
-                                addTerminalLine(line.trim(), 'info');
-                                
-                                // Extract progress percentage from logs
-                                const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
-                                if (progressMatch) {
-                                    $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
-                                }
-                            }
-                        });
-                    } else if (data.terminal_output && typeof data.terminal_output === 'string') {
-                        // Handle terminal output as string
-                        const lines = data.terminal_output.split('\n');
-                        lines.forEach(function(line) {
-                            if (line.trim()) {
-                                addTerminalLine(line.trim(), 'info');
-                                
-                                // Extract progress percentage from logs
-                                const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
-                                if (progressMatch) {
-                                    $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
-                                }
-                            }
-                        });
-                    }
-                    
-                    if (data.success) {
-                        addTerminalLine('✅ Update completed successfully!', 'success');
-                        if (data.backup_path) {
-                            addTerminalLine('💾 Backup created at: ' + data.backup_path, 'info');
-                        }
-                        addTerminalLine(`🎉 Successfully updated to version ${version}!`, 'success');
-                        addTerminalLine('🔄 Reloading panel in 3 seconds...', 'warning');
-                        
-                        // Update status
-                        $status.text('Update Complete');
-                        $spinner.hide();
-                        
-                        // Show success notification and auto-close
-                        setTimeout(function() {
-                            $modal.modal('hide');
-                            
-                            // Show success alert
-                            const $alert = $(`
-                                <div class="alert alert-success alert-dismissible fade show position-fixed" 
-                                     style="top: 20px; right: 20px; z-index: 9999; min-width: 350px;">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-check-circle fa-2x text-success me-3"></i>
-                                        <div>
-                                            <h6 class="alert-heading mb-1">Update Complete!</h6>
-                                            <small>Successfully updated to version ${version}</small>
-                                        </div>
-                                    </div>
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            `);
-                            
-                            $('body').append($alert);
-                            
-                            // Auto-dismiss alert after 5 seconds
-                            setTimeout(() => $alert.alert('close'), 5000);
-                            
-                            // Reload page
-                            setTimeout(() => location.reload(), 1000);
-                        }, 3000);
-                    } else {
-                        // Display terminal output for failed updates too
-                        if (data.output && Array.isArray(data.output)) {
-                            data.output.forEach(function(line) {
-                                if (line.trim()) {
-                                    addTerminalLine(line.trim(), 'info');
-                                    
-                                    // Extract progress percentage from logs even on failure
-                                    const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
-                                    if (progressMatch) {
-                                        $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
-                                    }
-                                }
-                            });
-                        } else if (data.terminal_output && typeof data.terminal_output === 'string') {
-                            const lines = data.terminal_output.split('\n');
-                            lines.forEach(function(line) {
-                                if (line.trim()) {
-                                    addTerminalLine(line.trim(), 'info');
-                                    
-                                    // Extract progress percentage from logs even on failure
-                                    const progressMatch = line.match(/\((\d+(?:\.\d+)?)% complete\)/);
-                                    if (progressMatch) {
-                                        $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
-                                    }
-                                }
-                            });
-                        }
-                        
-                        console.error('❌ Update failed:', data.error);
-                        addTerminalLine('❌ Update failed: ' + (data.message || data.error || 'Unknown error'), 'danger');
-                        $status.text('Update Failed');
-                        $spinner.hide();
-                        $closeBtn.prop('disabled', false);
-                    }
-                })
-                .fail(function(xhr, textStatus, errorThrown) {
-                    console.error('❌ AJAX request failed:', xhr, textStatus, errorThrown);
-                    clearInterval(timerInterval);
-                    
-                    let errorMsg = 'Unknown error';
-                    
-                    // Handle timeout specifically
-                    if (textStatus === 'timeout') {
-                        errorMsg = 'Request timed out - Update may still be running in background. Please check the version after a few minutes.';
-                        addTerminalLine('⚠️ Request timed out after 10 minutes', 'warning');
-                        addTerminalLine('💡 The update process may still be running in the background', 'info');
-                        addTerminalLine('🔄 Checking if update completed...', 'info');
-                        
-                        // Auto-check if update completed after timeout
-                        setTimeout(function() {
-                            location.reload(); // Refresh to check if version changed
-                        }, 5000);
-                    } else if (xhr.responseJSON?.error) {
-                        errorMsg = xhr.responseJSON.error;
-                    } else if (xhr.responseJSON?.message) {
-                        errorMsg = xhr.responseJSON.message;
-                    } else if (xhr.status === 0) {
-                        errorMsg = 'Network error - check console for details';
-                    } else if (xhr.status === 504) {
-                        errorMsg = 'Gateway timeout - Update may have completed in background';
-                        addTerminalLine('⚠️ Gateway timeout detected', 'warning');
-                        addTerminalLine('💡 Update may have completed successfully in the background', 'info');
-                        addTerminalLine('🔄 Auto-refreshing to check version...', 'info');
-                        
-                        // Auto-refresh after 504 timeout
-                        setTimeout(function() {
-                            location.reload();
-                        }, 3000);
-                    } else {
-                        errorMsg = `HTTP ${xhr.status}: ${xhr.statusText}`;
-                    }
-                    
-                    addTerminalLine('❌ Update failed: ' + errorMsg, 'danger');
-                    $status.text('Update Failed');
-                    $progress.text('Error');
-                    $spinner.hide();
-                    $closeBtn.prop('disabled', false);
-                })
-                .always(function() {
-                    console.log('🏁 Update request completed');
-                    updateInProgress = false;
-                });
+                // Use Server-Sent Events for real-time streaming
+                startUpdateStream(version, timerInterval, $progress, $status, $modal);
             }
 
             // Helper function to add terminal lines
@@ -821,6 +657,125 @@
                 // Auto-scroll to bottom
                 const outputEl = $output[0];
                 outputEl.scrollTop = outputEl.scrollHeight;
+            }
+
+            // Server-Sent Events streaming function for real-time updates
+            function startUpdateStream(version, timerInterval, $progress, $status, $modal) {
+                // Start SSE request for real-time streaming
+                const formData = new FormData();
+                formData.append('version', version);
+                formData.append('_token', '{{ csrf_token() }}');
+
+                // Use fetch for streaming response
+                fetch('{{ route("admin.simple-updates.stream") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'text/event-stream',
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    function readStream() {
+                        return reader.read().then(({ done, value }) => {
+                            if (done) {
+                                console.log('Stream completed');
+                                return;
+                            }
+                            
+                            const chunk = decoder.decode(value, { stream: true });
+                            const lines = chunk.split('\n');
+                            
+                            lines.forEach(line => {
+                                if (line.trim().startsWith('data: ')) {
+                                    try {
+                                        const data = JSON.parse(line.substring(6));
+                                        handleStreamMessage(data, timerInterval, $progress, $status, $modal, version);
+                                    } catch (e) {
+                                        console.error('Error parsing stream data:', e, line);
+                                    }
+                                }
+                            });
+                            
+                            return readStream();
+                        });
+                    }
+                    
+                    return readStream();
+                })
+                .catch(error => {
+                    console.error('Stream error:', error);
+                    clearInterval(timerInterval);
+                    addTerminalLine('❌ Stream connection failed: ' + error.message, 'error');
+                    $status.text('❌ Update failed').removeClass('text-warning').addClass('text-danger');
+                });
+            }
+
+            function handleStreamMessage(data, timerInterval, $progress, $status, $modal, version) {
+                switch (data.type) {
+                    case 'start':
+                        addTerminalLine('🚀 ' + data.message, 'info');
+                        break;
+                        
+                    case 'log':
+                        addTerminalLine(data.message, 'info');
+                        
+                        // Extract progress percentage from logs
+                        const progressMatch = data.message.match(/\((\d+(?:\.\d+)?)% complete\)/);
+                        if (progressMatch) {
+                            $progress.text(Math.round(parseFloat(progressMatch[1])) + '%');
+                        }
+                        
+                        // Extract transfer progress from rsync
+                        const transferMatch = data.message.match(/(\d+) files transferred/);
+                        if (transferMatch) {
+                            const fileCount = parseInt(transferMatch[1]);
+                            addTerminalLine(`📦 Transferred ${fileCount} files (high-speed bulk copy)`, 'success');
+                        }
+                        break;
+                        
+                    case 'complete':
+                        clearInterval(timerInterval);
+                        $progress.text('100%');
+                        
+                        if (data.success) {
+                            $status.text('✅ Update completed successfully!').removeClass('text-warning').addClass('text-success');
+                            addTerminalLine('🎉 Update process completed successfully!', 'success');
+                            addTerminalLine('📦 Version updated to: ' + version, 'success');
+                            addTerminalLine('🔄 The system is now running the latest version', 'success');
+                            
+                            setTimeout(() => {
+                                const $alert = $(`
+                                    <div class="alert alert-success alert-dismissible fade show position-fixed" 
+                                         style="top: 20px; right: 20px; z-index: 9999; min-width: 350px;">
+                                        <strong>🎉 Update Successful!</strong><br>
+                                        Raptor Panel has been updated to <strong>v${version}</strong>
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                `);
+                                
+                                $('body').append($alert);
+                                setTimeout(() => $alert.alert('close'), 5000);
+                                setTimeout(() => location.reload(), 1000);
+                            }, 3000);
+                        } else {
+                            $status.text('❌ Update failed').removeClass('text-warning').addClass('text-danger');
+                            addTerminalLine('❌ Update failed: ' + (data.message || 'Unknown error'), 'error');
+                        }
+                        break;
+                        
+                    case 'error':
+                        clearInterval(timerInterval);
+                        addTerminalLine('❌ Error: ' + data.message, 'error');
+                        $status.text('❌ Update failed').removeClass('text-warning').addClass('text-danger');
+                        break;
+                }
             }
         });
     </script>

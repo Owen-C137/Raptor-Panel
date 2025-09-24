@@ -41,7 +41,84 @@ class SimpleUpdateController extends Controller
     }
 
     /**
-     * Perform update via AJAX
+     * Perform update via streaming SSE
+     */
+    public function performUpdateStream(Request $request): Response
+    {
+        // Increase timeout for long-running update process
+        set_time_limit(600); // 10 minutes
+        ini_set('max_execution_time', 600);
+        
+        $request->validate([
+            'version' => 'required|string'
+        ]);
+
+        // Get the download URL for the requested version
+        $updateInfo = $this->updateService->checkForUpdates();
+        
+        if (!$updateInfo['available']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No updates available or failed to check for updates'
+            ]);
+        }
+
+        $downloadUrl = $updateInfo['download_url'];
+        if (!$downloadUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Download URL not available'
+            ]);
+        }
+
+        // Set up Server-Sent Events response
+        return response()->stream(function () use ($downloadUrl) {
+            // Configure SSE headers
+            echo "data: " . json_encode(['type' => 'start', 'message' => 'Update process starting...']) . "\n\n";
+            flush();
+
+            // Clear any existing output log
+            $this->updateService->clearOutputLog();
+
+            // Hook into the service to stream logs in real-time
+            $this->updateService->setStreamCallback(function($logEntry) {
+                echo "data: " . json_encode([
+                    'type' => 'log',
+                    'message' => $logEntry,
+                    'timestamp' => date('H:i:s')
+                ]) . "\n\n";
+                flush();
+            });
+
+            try {
+                $result = $this->updateService->performUpdate($downloadUrl);
+                
+                // Send final result
+                echo "data: " . json_encode([
+                    'type' => 'complete',
+                    'success' => $result['success'],
+                    'message' => $result['message'] ?? 'Update completed'
+                ]) . "\n\n";
+                flush();
+
+            } catch (\Exception $e) {
+                echo "data: " . json_encode([
+                    'type' => 'error',
+                    'message' => $e->getMessage()
+                ]) . "\n\n";
+                flush();
+            }
+
+        }, 200, [
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache',
+            'Connection' => 'keep-alive',
+            'X-Accel-Buffering' => 'no' // Disable nginx buffering
+        ]);
+    }
+
+    /**
+     * Perform update via AJAX (fallback method)
      */
     public function performUpdate(Request $request): JsonResponse
     {

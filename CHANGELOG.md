@@ -2,6 +2,23 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.33] - 2025-09-24
+
+### 🌊 **REAL-TIME STREAMING UPDATE LOGS**
+- **NEW**: Server-Sent Events (SSE) for live terminal output during updates
+- **Fixed**: Terminal logs now display in real-time as they happen (not all at once at the end)
+- **Enhanced**: Streaming controller with real-time callback system
+- **Improved**: Frontend uses fetch streaming instead of blocking AJAX
+- **Added**: Live progress monitoring with immediate visual feedback
+- **Result**: Users see each update step as it happens, not just the final result
+
+### 🔧 **Technical Implementation**
+- **Backend**: New `/admin/updates/stream` endpoint for Server-Sent Events
+- **Service**: `setStreamCallback()` method for real-time log broadcasting
+- **Frontend**: Fetch API with streaming response reader
+- **Protocol**: Proper SSE with `text/event-stream` content type
+- **Performance**: Non-blocking real-time updates with immediate feedback
+
 ## [v1.3.32] - 2025-09-24
 
 ### 🚀 **CRITICAL PERFORMANCE & OUTPUT FIXES**

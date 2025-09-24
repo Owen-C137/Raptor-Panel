@@ -239,4 +239,5 @@ Route::group(['prefix' => 'updates'], function () {
     Route::get('/', [Admin\SimpleUpdateController::class, 'index'])->name('admin.simple-updates.index');
     Route::get('/check', [Admin\SimpleUpdateController::class, 'checkUpdates'])->name('admin.simple-updates.check');
     Route::post('/perform', [Admin\SimpleUpdateController::class, 'performUpdate'])->name('admin.simple-updates.perform');
+    Route::post('/stream', [Admin\SimpleUpdateController::class, 'performUpdateStream'])->name('admin.simple-updates.stream');
 });

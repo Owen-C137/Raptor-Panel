@@ -25,6 +25,7 @@ class SimpleUpdateService
     private Client $http;
     private VersionService $versionService;
     private array $outputLog = [];
+    private ?\Closure $streamCallback = null;
 
     public function __construct(VersionService $versionService = null)
     {
@@ -586,12 +587,25 @@ class SimpleUpdateService
     }
 
     /**
+     * Set streaming callback for real-time logs
+     */
+    public function setStreamCallback(?\Closure $callback): void
+    {
+        $this->streamCallback = $callback;
+    }
+
+    /**
      * Log message
      */
     private function log(string $message, string $level = 'info'): void
     {
         $logEntry = "[" . date('H:i:s') . "] {$message}";
         $this->outputLog[] = $logEntry;
+        
+        // Stream log in real-time if callback is set
+        if ($this->streamCallback) {
+            call_user_func($this->streamCallback, $logEntry);
+        }
         
         // Also log to Laravel logs
         Log::log($level, "[SimpleUpdate] {$message}");
