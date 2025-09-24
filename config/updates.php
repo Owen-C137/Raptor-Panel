@@ -25,7 +25,7 @@ return [
         'owner' => env('GITHUB_OWNER', 'RaptorPanel'),
         'repo' => env('GITHUB_REPO', 'raptor-panel'),
         'api_base' => 'https://api.github.com',
-        'api_token' => env('GITHUB_API_TOKEN', null), // Optional for private repos
+        'api_token' => env('GITHUB_TOKEN', env('GITHUB_API_TOKEN', null)), // Support both GITHUB_TOKEN and GITHUB_API_TOKEN
         'timeout' => 30,
         'user_agent' => 'Raptor-Panel-Updater/1.0',
     ],

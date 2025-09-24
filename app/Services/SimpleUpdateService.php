@@ -44,7 +44,23 @@ class SimpleUpdateService
     public function checkForUpdates(): array
     {
         try {
-            $response = $this->http->get("https://api.github.com/repos/{$this->repoOwner}/{$this->repoName}/releases/latest");
+            // Build headers for API request
+            $headers = [
+                'User-Agent' => 'Raptor-Panel-Updater/1.0',
+                'Accept' => 'application/vnd.github.v3+json'
+            ];
+            
+            // Add authentication if GitHub API token is configured
+            if ($token = config('updates.github.api_token')) {
+                $headers['Authorization'] = "Bearer {$token}";
+                $this->log("Using authenticated GitHub API requests (higher rate limits)");
+            } else {
+                $this->log("Using unauthenticated GitHub API requests (60/hour limit)");
+            }
+            
+            $response = $this->http->get("https://api.github.com/repos/{$this->repoOwner}/{$this->repoName}/releases/latest", [
+                'headers' => $headers
+            ]);
             $release = json_decode($response->getBody(), true);
             
             $currentVersion = $this->versionService->getCurrentVersion();
@@ -168,7 +184,18 @@ class SimpleUpdateService
     {
         try {
             $this->log("Downloading from: {$url}");
-            $response = $this->http->get($url);
+            
+            // Build headers for download request
+            $headers = [
+                'User-Agent' => 'Raptor-Panel-Updater/1.0'
+            ];
+            
+            // Add authentication if GitHub API token is configured  
+            if ($token = config('updates.github.api_token')) {
+                $headers['Authorization'] = "Bearer {$token}";
+            }
+            
+            $response = $this->http->get($url, ['headers' => $headers]);
             
             if ($response->getStatusCode() !== 200) {
                 $this->log("Download failed with status: " . $response->getStatusCode(), 'error');

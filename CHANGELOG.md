@@ -2,6 +2,23 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.33.2] - 2025-09-24
+
+### 🔑 **HOTFIX: GitHub API Authentication & Rate Limits**
+- **Fixed**: Added GitHub API token authentication to prevent rate limiting
+- **Fixed**: "403 rate limit exceeded" errors during update checks
+- **Enhanced**: Update service now supports both authenticated and unauthenticated requests
+- **Improved**: Uses existing `GITHUB_TOKEN` from environment configuration
+- **Added**: Proper headers and authentication for all GitHub API calls
+- **Result**: Reliable update checking with 5,000 requests/hour instead of 60
+
+### 🔧 **Technical Implementation**
+- **API Authentication**: Automatic detection and use of `GITHUB_TOKEN` if available
+- **Backward Compatibility**: Still works without token (with reduced limits)
+- **Enhanced Headers**: Proper User-Agent and Accept headers for GitHub API
+- **Rate Limit Resolution**: Eliminates "API rate limit exceeded" errors
+- **Configuration**: Updated config to support both `GITHUB_TOKEN` and `GITHUB_API_TOKEN`
+
 ## [v1.3.33.1] - 2025-09-24
 
 ### 🔧 **HOTFIX: Streaming Controller Return Type**
