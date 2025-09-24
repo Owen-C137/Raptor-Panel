@@ -2,6 +2,36 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.25] - 2025-09-24
+
+### 🐛 **HOTFIX: JavaScript Syntax Error**
+- **Fixed**: Removed duplicate closing brace `});` causing JavaScript syntax error at line 1201
+- **Fixed**: Terminal modal now loads without JavaScript errors
+- **Improved**: Cache clearing process to ensure version display updates correctly
+- **Status**: JavaScript syntax error that prevented terminal modal from functioning properly
+
+### 🔧 **Technical Details**
+- **Issue**: Extra closing brace in `addTerminalLine` function caused `Uncaught SyntaxError: Unexpected token '}'`
+- **Solution**: Cleaned up JavaScript closure structure in `resources/views/admin/simple-updates/index.blade.php`
+- **Impact**: Terminal modal now functions correctly without console errors
+- **Cache**: Enhanced cache clearing to ensure version changes are immediately reflected
+
+### ⚡ **Quick Fix Summary**
+```javascript
+// Before (v1.3.24) - Syntax Error:
+            }
+            });  // ← Extra closing brace causing error
+        });
+    </script>
+
+// After (v1.3.25) - Fixed:
+            }
+        });
+    </script>
+```
+
+---
+
 ## [v1.3.24] - 2025-09-24
 
 ### 🖥️ **Full-Screen Terminal Modal & Enhanced UX**

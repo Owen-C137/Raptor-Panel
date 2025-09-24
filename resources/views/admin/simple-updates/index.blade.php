@@ -771,7 +771,6 @@
                 const outputEl = $output[0];
                 outputEl.scrollTop = outputEl.scrollHeight;
             }
-            });
         });
     </script>
 @endsection
