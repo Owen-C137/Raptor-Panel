@@ -94,4 +94,13 @@ class VersionService
         
         return $this->getCurrentVersion();
     }
+
+    /**
+     * Force refresh version cache (useful for update checks)
+     */
+    public function forceRefresh(): string
+    {
+        Cache::forget(self::CACHE_KEY);
+        return $this->getCurrentVersion();
+    }
 }

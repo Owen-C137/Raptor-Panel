@@ -6,14 +6,17 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Pterodactyl\Http\Controllers\Controller;
 use Pterodactyl\Services\SimpleUpdateService;
+use Pterodactyl\Services\VersionService;
 
 class SimpleUpdateController extends Controller
 {
     private SimpleUpdateService $updateService;
+    private VersionService $versionService;
 
-    public function __construct(SimpleUpdateService $updateService)
+    public function __construct(SimpleUpdateService $updateService, VersionService $versionService)
     {
         $this->updateService = $updateService;
+        $this->versionService = $versionService;
     }
 
     /**
@@ -35,6 +38,12 @@ class SimpleUpdateController extends Controller
      */
     public function checkUpdates(): JsonResponse
     {
+        // Force refresh version cache to ensure accurate update detection
+        $this->versionService->forceRefresh();
+        
+        // Also clear config cache to pick up any changes
+        \Artisan::call('config:clear');
+        
         $updateInfo = $this->updateService->checkForUpdates();
         
         return response()->json($updateInfo);

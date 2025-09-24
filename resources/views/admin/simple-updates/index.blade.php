@@ -129,6 +129,20 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Permission Notification Area -->
+                <div id="permission-notice" class="alert alert-info d-none" role="alert">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5 class="alert-heading">Permission Management</h5>
+                            <p class="mb-2">The update system will automatically fix file permissions if needed during the update process.</p>
+                            <p class="mb-0"><strong>Note:</strong> New files (like VersionService.php) will be created with proper permissions automatically.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="block-content block-content-full text-end bg-body-light">
                 <button type="button" class="btn btn-sm btn-alt-secondary me-1" id="check-updates">
@@ -326,7 +340,15 @@
                 
                 $.get('{{ route("admin.simple-updates.check") }}')
                     .done(function(data) {
-                        location.reload();
+                        // Show permission notice if update is available
+                        if (data.available) {
+                            $('#permission-notice').removeClass('d-none').hide().slideDown(300);
+                        }
+                        
+                        // Reload to show updated information
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
                     })
                     .fail(function() {
                         alert('Failed to check for updates');
@@ -384,14 +406,15 @@
                 // Simulate progress updates with realistic steps
                 let progress = 0;
                 const progressSteps = [
-                    { msg: '📦 Downloading update package...', percent: 15 },
-                    { msg: '🔍 Verifying download integrity...', percent: 25 },
-                    { msg: '💾 Creating backup of current files...', percent: 35 },
-                    { msg: '📂 Extracting update files...', percent: 50 },
-                    { msg: '🔧 Applying file updates...', percent: 65 },
-                    { msg: '🗄️ Running database migrations...', percent: 80 },
-                    { msg: '🧹 Cleaning up temporary files...', percent: 85 },
-                    { msg: '✨ Finalizing update process...', percent: 90 }
+                    { msg: '�️ Checking and fixing file permissions...', percent: 10 },
+                    { msg: '�📦 Downloading update package...', percent: 20 },
+                    { msg: '🔍 Verifying download integrity...', percent: 30 },
+                    { msg: '💾 Creating backup of current files...', percent: 40 },
+                    { msg: '📂 Extracting update files...', percent: 55 },
+                    { msg: '🔧 Applying file updates (includes new VersionService.php)...', percent: 70 },
+                    { msg: '🗄️ Running database migrations...', percent: 85 },
+                    { msg: '🧹 Cleaning up temporary files...', percent: 92 },
+                    { msg: '✨ Finalizing update process...', percent: 95 }
                 ];
                 let stepIndex = 0;
                 
