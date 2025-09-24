@@ -266,7 +266,11 @@ return [
          */
         PterodactylAddons\ShopSystem\ShopServiceProvider::class,
 
-        
+        /*
+         * Mod Manager Service Provider - Self-contained addon
+         */
+        PterodactylAddons\ModManager\Providers\ModManagerServiceProvider::class,
+
         Pterodactyl\Providers\RouteServiceProvider::class,
         Pterodactyl\Providers\RepositoryServiceProvider::class,
         Pterodactyl\Providers\ViewComposerServiceProvider::class,

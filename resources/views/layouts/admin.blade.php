@@ -23,6 +23,8 @@
             {!! Theme::css('vendor/sweetalert/sweetalert.min.css?t={cache-version}') !!}
             {!! Theme::css('vendor/animate/animate.min.css?t={cache-version}') !!}
             <link id="css-main" rel="stylesheet" href="/themes/one-ui/css/oneui.min.css?t={cache-version}" type="text/css">
+            <link id="css-main" rel="stylesheet" href="/themes/one-ui/css/oneui.css?t={cache-version}" type="text/css">
+
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
 
@@ -272,6 +274,13 @@
                                 <a class="nav-main-link {{ ! starts_with(Route::currentRouteName(), 'admin.nests') ?: 'active' }}" href="{{ route('admin.nests') }}">
                                     <i class="nav-main-link-icon fa fa-th-large"></i>
                                     <span class="nav-main-link-name">Nests</span>
+                                </a>
+                            </li>
+                            <li class="nav-main-heading">ADDONS</li>
+                            <li class="nav-main-item {{ ! starts_with(Route::currentRouteName(), 'admin.mod-manager') ?: 'open' }}">
+                                <a class="nav-main-link {{ ! starts_with(Route::currentRouteName(), 'admin.mod-manager') ?: 'active' }}" href="{{ route('admin.mod-manager.index') }}">
+                                    <i class="nav-main-link-icon fas fa-download"></i>
+                                    <span class="nav-main-link-name">Mod Manager</span>
                                 </a>
                             </li>
                         </ul>
