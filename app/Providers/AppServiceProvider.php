@@ -3,7 +3,6 @@
 namespace Pterodactyl\Providers;
 
 use Pterodactyl\Models;
-use Pterodactyl\Helpers\VersionHelper;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Pagination\Paginator;
@@ -23,9 +22,20 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        // Set dynamic version in config - fetch from database if available
-        $dynamicVersion = VersionHelper::getCurrentVersion();
-        config(['app.version' => $dynamicVersion]);
+                // Dynamically set the app version from database using VersionService
+        try {
+            $versionService = app(\Pterodactyl\Services\VersionService::class);
+            
+            // Initialize version in database if it doesn't exist
+            $versionService->initializeVersion();
+            
+            // Get and set the dynamic version
+            $dynamicVersion = $versionService->getCurrentVersion();
+            config(['app.version' => $dynamicVersion]);
+        } catch (\Exception $e) {
+            // If VersionService fails, leave config as is (no fallback needed)
+            \Log::debug('Could not set dynamic app version: ' . $e->getMessage());
+        }
 
         // Share version with all views
         View::share('appVersion', $dynamicVersion);

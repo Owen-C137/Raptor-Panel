@@ -33,12 +33,14 @@ class BaseController extends Controller
         $nodes = Node::count();
         $users = User::count();
         
+        $versionService = app(\Pterodactyl\Services\VersionService::class);
+        
         return $this->view->make('admin.index', [
             'servers' => $servers,
             'suspensions' => $suspensions,
             'nodes' => $nodes,
             'users' => $users,
-            'appVersion' => config('app.version', '1.0.0'), // Get version from config
+            'appVersion' => $versionService->getCurrentVersion(),
         ]);
     }
     

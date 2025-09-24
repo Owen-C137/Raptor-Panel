@@ -19,10 +19,12 @@ return [
     | This value determines the "version" your application is currently running
     | in. You may want to follow the "Semantic Versioning" - Given a version
     | number MAJOR.MINOR.PATCH when an API changes.
+    | Note: Version is now managed via database (settings table) and accessed
+    | through the VersionService instead of config.
     |
     */
 
-    'version' => '1.3.16',
+    // Version removed - now managed via database through VersionService
 
     /*
 

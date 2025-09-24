@@ -23,11 +23,13 @@ class SimpleUpdateService
     private string $repoName = 'Raptor-Panel';
     private string $tempDir;
     private Client $http;
+    private VersionService $versionService;
 
-    public function __construct()
+    public function __construct(VersionService $versionService = null)
     {
         $this->tempDir = storage_path('app/temp/updates');
         $this->http = new Client(['timeout' => 30]);
+        $this->versionService = $versionService ?: app(VersionService::class);
         
         if (!File::exists($this->tempDir)) {
             File::makeDirectory($this->tempDir, 0755, true);
@@ -43,7 +45,7 @@ class SimpleUpdateService
             $response = $this->http->get("https://api.github.com/repos/{$this->repoOwner}/{$this->repoName}/releases/latest");
             $release = json_decode($response->getBody(), true);
             
-            $currentVersion = config('app.version');
+            $currentVersion = $this->versionService->getCurrentVersion();
             $latestVersion = ltrim($release['tag_name'], 'v');
             
             return [
@@ -337,16 +339,23 @@ class SimpleUpdateService
      */
     private function updateVersion(string $version): void
     {
-        $configPath = config_path('app.php');
-        $content = File::get($configPath);
+        // Update version in database (primary source of truth)
+        $this->versionService->updateVersion($version);
         
-        $content = preg_replace(
-            "/'version' => env\('APP_VERSION', '[^']*'\),/",
-            "'version' => env('APP_VERSION', '{$version}'),",
-            $content
-        );
-        
-        File::put($configPath, $content);
+        // Also update .env file as backup
+        $envPath = base_path('.env');
+        if (File::exists($envPath)) {
+            $content = File::get($envPath);
+            
+            // Update or add APP_VERSION in .env
+            if (str_contains($content, 'APP_VERSION=')) {
+                $content = preg_replace('/APP_VERSION=.*/', "APP_VERSION={$version}", $content);
+            } else {
+                $content .= "\nAPP_VERSION={$version}\n";
+            }
+            
+            File::put($envPath, $content);
+        }
     }
 
     /**

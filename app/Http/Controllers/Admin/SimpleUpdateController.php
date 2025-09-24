@@ -22,9 +22,10 @@ class SimpleUpdateController extends Controller
     public function index()
     {
         $updateInfo = $this->updateService->checkForUpdates();
+        $versionService = app(\Pterodactyl\Services\VersionService::class);
         
         return view('admin.simple-updates.index', [
-            'current_version' => config('app.version'),
+            'current_version' => $versionService->getCurrentVersion(),
             'update_info' => $updateInfo
         ]);
     }

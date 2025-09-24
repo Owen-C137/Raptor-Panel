@@ -40,13 +40,13 @@
                 <i class="fas fa-info-circle me-2"></i>System Update Test Notice
             </h5>
             <p class="mb-2">
-                <strong>Welcome to Raptor Panel v1.3.3!</strong> This version includes enhanced admin dashboard features and improved system notifications. 
+                <strong>Welcome to Raptor Panel v{{ $appVersion }}!</strong> This version includes enhanced admin dashboard features and improved system notifications. 
                 This notice demonstrates the live update system functionality.
             </p>
             <p class="mb-0">
                 <small class="text-muted">
                     <i class="fas fa-calendar me-1"></i>Updated: {{ date('F j, Y \a\t g:i A') }}
-                    | <i class="fas fa-code-branch me-1"></i>Version: 1.3.3
+                    | <i class="fas fa-code-branch me-1"></i>Version: {{ $appVersion }}
                 </small>
             </p>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>

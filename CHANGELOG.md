@@ -2,6 +2,28 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.17] - 2025-09-24
+
+### 🔄 **Version Management System Enhancement**
+- **Database-Driven Versioning**: Transitioned from config-based to database-driven version management
+- **Auto-Initialization**: System automatically creates version setting in database on first load
+- **Improved GitHub Integration**: Enhanced version communication between panel and GitHub releases
+- **Config Cleanup**: Removed hardcoded version fallbacks for cleaner architecture
+- **Consistent Display**: Fixed version display inconsistencies across admin panels
+
+### 🛡️ **System Reliability**  
+- **AppServiceProvider Enhancement**: Updated to use VersionService instead of legacy VersionHelper
+- **Fallback Chain Optimization**: Improved version fallback system (DB → Config → Env → Default)
+- **Cache Management**: Better version caching and cache invalidation
+- **Error Handling**: Enhanced error handling for version initialization failures
+- **Backward Compatibility**: Maintains compatibility with existing installations
+
+### 🏗️ **Architecture Improvements**
+- **VersionService Integration**: Centralized version management through dedicated service
+- **Automatic Migration**: New installations get version setting automatically without manual setup  
+- **Update Process**: Streamlined version updates during GitHub-based upgrades
+- **Future-Proof**: Architecture ready for advanced version management features
+
 ## [v1.3.16] - 2025-09-24
 
 ### 🔧 **Critical Update System Fix**
