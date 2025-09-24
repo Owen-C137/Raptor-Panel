@@ -624,19 +624,13 @@ class SimpleUpdateService
      */
     private function log(string $message, string $level = 'info'): void
     {
-        // Log to Laravel logs for debugging
+        $logEntry = "[" . date('H:i:s') . "] {$message}";
+        $this->outputLog[] = $logEntry;
         Log::log($level, "[SimpleUpdate] {$message}");
-        
-        // Also capture for terminal output
-        $this->outputLog[] = [
-            'timestamp' => now()->format('H:i:s'),
-            'level' => $level,
-            'message' => $message
-        ];
     }
 
     /**
-     * Get captured output for terminal display
+     * Get the output log
      */
     public function getOutputLog(): array
     {
