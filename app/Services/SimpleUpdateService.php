@@ -108,6 +108,30 @@ class SimpleUpdateService
     }
 
     /**
+     * Download file from URL
+     */
+    private function downloadFile(string $url, string $destination): bool
+    {
+        try {
+            $this->log("Downloading from: {$url}");
+            $response = $this->http->get($url);
+            
+            if ($response->getStatusCode() !== 200) {
+                $this->log("Download failed with status: " . $response->getStatusCode(), 'error');
+                return false;
+            }
+            
+            File::put($destination, $response->getBody());
+            $this->log("File downloaded successfully to: {$destination}");
+            
+            return true;
+        } catch (\Exception $e) {
+            $this->log("Download failed: " . $e->getMessage(), 'error');
+            return false;
+        }
+    }
+
+    /**
      * Download update from GitHub
      */
     private function downloadUpdate(string $version): string
