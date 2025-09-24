@@ -49,7 +49,25 @@ class SimpleUpdateController extends Controller
             'version' => 'required|string'
         ]);
 
-        $result = $this->updateService->performUpdate($request->version);
+        // Get the download URL for the requested version
+        $updateInfo = $this->updateService->checkForUpdates();
+        
+        if (!$updateInfo['available']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No updates available or failed to check for updates'
+            ]);
+        }
+
+        $downloadUrl = $updateInfo['download_url'];
+        if (!$downloadUrl) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Download URL not available'
+            ]);
+        }
+
+        $result = $this->updateService->performUpdate($downloadUrl);
         
         return response()->json($result);
     }
