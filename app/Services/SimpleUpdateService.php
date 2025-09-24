@@ -144,9 +144,10 @@ class SimpleUpdateService
             throw new \Exception("Cannot create backup archive");
         }
         
-        // Backup critical files only
+        // Backup critical files including addons
         $criticalPaths = [
             'app/',
+            'addons/',
             'config/',
             'database/migrations/',
             'routes/',
@@ -260,14 +261,62 @@ class SimpleUpdateService
 
     /**
      * Run database migrations
+     * Includes both core migrations and addon migrations
      */
     private function runMigrations(): void
     {
+        // Run core migrations first
         Artisan::call('migrate', ['--force' => true]);
         
         $output = Artisan::output();
         if (str_contains($output, 'error') || str_contains($output, 'failed')) {
-            throw new \Exception("Migration failed: " . $output);
+            throw new \Exception("Core migration failed: " . $output);
+        }
+        
+        // Run addon migrations
+        $this->runAddonMigrations();
+    }
+    
+    /**
+     * Run migrations for all installed addons
+     */
+    private function runAddonMigrations(): void
+    {
+        $addonsPath = base_path('addons');
+        
+        if (!File::exists($addonsPath)) {
+            return; // No addons directory
+        }
+        
+        $addonDirs = File::directories($addonsPath);
+        
+        foreach ($addonDirs as $addonDir) {
+            $migrationPath = $addonDir . '/database/migrations';
+            
+            if (File::exists($migrationPath)) {
+                $addonName = basename($addonDir);
+                
+                try {
+                    // Run migrations for this addon
+                    Artisan::call('migrate', [
+                        '--path' => 'addons/' . $addonName . '/database/migrations',
+                        '--force' => true
+                    ]);
+                    
+                    $output = Artisan::output();
+                    if (str_contains($output, 'error') || str_contains($output, 'failed')) {
+                        Log::warning("Addon migration warning for {$addonName}: " . $output);
+                        // Don't throw exception for addon migrations to prevent update failure
+                        // Just log the warning and continue
+                    }
+                    
+                    Log::info("Successfully ran migrations for addon: {$addonName}");
+                    
+                } catch (\Exception $e) {
+                    Log::error("Failed to run migrations for addon {$addonName}: " . $e->getMessage());
+                    // Don't throw exception for addon migrations to prevent update failure
+                }
+            }
         }
     }
 

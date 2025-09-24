@@ -2,6 +2,27 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.16] - 2025-09-24
+
+### 🔧 **Critical Update System Fix**
+- **Addon Migration Support**: Fixed critical issue where update system wasn't running addon migrations
+- **Auto-Detection**: Update system now automatically detects and runs migrations for all installed addons
+- **Backup Enhancement**: Addon files now included in automatic backups before updates
+- **Migration Safety**: Addon migration failures are logged but don't block core updates
+- **Future-Proof**: Any new addons with migrations will be automatically handled during updates
+
+### 🛡️ **System Reliability**
+- **Migration Management**: Resolved duplicate column errors by handling existing migration states
+- **PHP Extension**: Added bcmath extension requirement handling for better compatibility
+- **Error Recovery**: Improved migration conflict resolution and database state management
+- **Comprehensive Logging**: Enhanced logging for addon migration status and errors
+
+### 🏗️ **Infrastructure Improvements**
+- **Addon Architecture**: Strengthened addon integration with core update system
+- **Database Integrity**: Better handling of migration conflicts and existing schema states
+- **Update Robustness**: More resilient update process that handles complex addon scenarios
+- **Developer Experience**: Simplified addon development with automatic migration handling
+
 ## [v1.3.15] - 2025-09-24
 
 ### 🎨 **UI/UX Improvements**
