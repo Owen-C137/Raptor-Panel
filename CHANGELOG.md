@@ -2,6 +2,21 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.21] - 2025-09-24
+
+### 🐛 **Critical Hotfix - Download URL Parameter Fix**
+- **Fixed Controller Parameter Issue**: Controller was passing version string instead of GitHub download URL to performUpdate()
+- **Download URL Resolution**: Added proper download URL retrieval from checkForUpdates() method
+- **Connection Timeout Fix**: Resolved cURL timeout errors caused by invalid URL parameter
+- **Enhanced Error Handling**: Added validation for missing download URLs before attempting updates
+- **Update Process Completion**: Complete end-to-end update workflow now functions correctly
+
+### 🔧 **System Reliability**
+- **Parameter Validation**: Proper validation of download URLs before processing
+- **Error Prevention**: Prevents invalid URL downloads that cause connection timeouts  
+- **Method Integration**: Better integration between controller and service methods
+- **User Feedback**: Clearer error messages for update failures
+
 ## [v1.3.20] - 2025-09-24
 
 ### 🐛 **Critical Hotfix - Missing Download Method**
