@@ -24,6 +24,7 @@ class SimpleUpdateService
     private string $tempDir;
     private Client $http;
     private VersionService $versionService;
+    private array $outputLog = [];
 
     public function __construct(VersionService $versionService = null)
     {
@@ -623,6 +624,30 @@ class SimpleUpdateService
      */
     private function log(string $message, string $level = 'info'): void
     {
+        // Log to Laravel logs for debugging
         Log::log($level, "[SimpleUpdate] {$message}");
+        
+        // Also capture for terminal output
+        $this->outputLog[] = [
+            'timestamp' => now()->format('H:i:s'),
+            'level' => $level,
+            'message' => $message
+        ];
+    }
+
+    /**
+     * Get captured output for terminal display
+     */
+    public function getOutputLog(): array
+    {
+        return $this->outputLog;
+    }
+
+    /**
+     * Clear the output log
+     */
+    public function clearOutputLog(): void
+    {
+        $this->outputLog = [];
     }
 }

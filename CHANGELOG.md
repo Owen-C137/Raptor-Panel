@@ -2,6 +2,39 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.27] - 2025-09-24
+
+### 🐛 **HOTFIX: Missing Output Log Methods**
+- **Fixed**: Fatal error `Call to undefined method clearOutputLog()`
+- **Added**: Missing `clearOutputLog()` and `getOutputLog()` methods in `SimpleUpdateService`
+- **Added**: Missing `$outputLog` property declaration
+- **Restored**: Terminal output capture functionality for progress display
+
+### 🔧 **Technical Details**
+- **Error**: `Call to undefined method Pterodactyl\Services\SimpleUpdateService::clearOutputLog()`
+- **Cause**: Methods were called but not defined in the class
+- **Fix**: Added complete output logging infrastructure to `SimpleUpdateService`
+- **Impact**: Update process now works without HTTP 500 errors
+
+### 📋 **Added Methods**
+```php
+class SimpleUpdateService {
+    private array $outputLog = [];
+    
+    public function getOutputLog(): array
+    public function clearOutputLog(): void
+    private function log(): void // Enhanced to capture output
+}
+```
+
+### ⚡ **Quick Fix Summary**
+- **Missing Property**: Added `private array $outputLog = []`
+- **Missing Methods**: Added `getOutputLog()` and `clearOutputLog()`
+- **Enhanced Logging**: Modified `log()` method to capture output for terminal display
+- **Status**: Update system now fully functional
+
+---
+
 ## [v1.3.26] - 2025-09-24
 
 ### 🔧 **TIMEOUT FIX: Enhanced Update System Resilience**
