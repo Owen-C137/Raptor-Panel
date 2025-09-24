@@ -2,6 +2,50 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.14] - 2025-09-24
+
+### 🔧 Auto Update System Fixes & Improvements
+
+#### Fixed
+- **🐛 Service Provider Registration** - Fixed fatal errors in UpdateServiceProviderSimple
+  - Removed references to 6 non-existent service classes causing Laravel crashes
+  - GitHubReleaseService, VersionService, SessionService, BackupService, ValidationService, HealthService
+  - Now only registers SimpleUpdateService which actually exists in the codebase
+  
+- **🔄 GitHub API Integration** - Resolved 404 errors preventing update detection
+  - Created first official GitHub release (v1.3.13) fixing "no releases found" errors
+  - Auto update system now properly detects new releases from GitHub API
+  - Version comparison and update availability detection working correctly
+
+#### Enhanced  
+- **📊 Update Dashboard Reliability** - Complete auto update workflow now functional
+  - Update dashboard loads without fatal service registration errors
+  - Real-time version checking against GitHub releases working
+  - Download URLs and release notes properly retrieved from GitHub API
+  - Enhanced error handling and logging for update operations
+
+#### Technical Improvements
+- **🛡️ Service Provider Stability** - Comprehensive service registration fixes
+  - Added detailed comments explaining missing services and requirements
+  - Prevented future registration of non-existent service classes
+  - Improved Laravel application boot reliability
+  - Enhanced debugging information for service-related issues
+
+### 🎯 System Status
+- ✅ **Auto Update System**: Fully functional and tested
+- ✅ **GitHub Integration**: Working with proper release detection  
+- ✅ **Version Management**: Accurate version comparison and availability checking
+- ✅ **Service Registration**: Clean Laravel boot without fatal errors
+- ✅ **Update Dashboard**: Accessible and operational
+
+### 🧪 Testing Improvements
+- Added comprehensive auto update system testing
+- Verified GitHub API connectivity and release detection  
+- Confirmed version comparison accuracy
+- Validated service provider registration stability
+
+---
+
 ## [v1.3.13] - 2025-09-24
 
 ### 🎉 Major Features Added
