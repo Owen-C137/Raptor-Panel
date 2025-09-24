@@ -2,6 +2,53 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.29] - 2025-09-24
+
+### 🖥️ **ENHANCED: Real-Time Terminal Output Display**
+- **Enhanced**: Full terminal output now displays in real-time during updates
+- **Added**: Echo and flush to `log()` method for immediate terminal feedback  
+- **Implemented**: Output buffering in update controller to capture all terminal output
+- **Enhanced**: Frontend AJAX handling to display complete update logs
+- **Improved**: Error handling shows terminal output even when updates fail
+- **Enhanced**: Better progress visibility with all backend logs displayed in modal
+
+### 🔧 **Technical Improvements**
+- **Backend**: Added `echo` and `flush()` to `SimpleUpdateService::log()` method
+- **Controller**: Implemented output buffering with `ob_start()` and `ob_get_clean()`
+- **Frontend**: Enhanced AJAX success/fail handlers to process `data.output` and `data.terminal_output`
+- **UI**: All update progress logs now appear in the full-screen terminal modal
+- **UX**: Users can see every step of the update process in real-time
+
+### 📋 **New Features**
+```php
+// Enhanced logging with terminal output
+private function log(string $message, string $level = 'info'): void {
+    $logEntry = "[" . date('H:i:s') . "] {$message}";
+    $this->outputLog[] = $logEntry;
+    echo $logEntry . "\n";  // Real-time terminal output
+    flush();                // Immediate display
+    Log::log($level, "[SimpleUpdate] {$message}");
+}
+```
+
+### ✨ **User Experience**
+- **Real-Time Progress**: See every file operation, download step, and system command
+- **Complete Visibility**: No more wondering if the update is working
+- **Error Transparency**: Failed updates show full logs for better debugging
+- **Professional Feel**: Terminal-style output with timestamps and progress indicators
+
+---
+
+## [v1.3.28] - 2025-09-24
+
+### 🔧 **CRITICAL FIX: Missing Output Log Methods**
+- **Fixed**: Fatal error `Call to undefined method clearOutputLog()`
+- **Added**: Missing `clearOutputLog()` and `getOutputLog()` methods in `SimpleUpdateService`
+- **Added**: Missing `$outputLog` property declaration
+- **Restored**: Terminal output capture functionality for progress display
+
+---
+
 ## [v1.3.27] - 2025-09-24
 
 ### 🐛 **HOTFIX: Missing Output Log Methods**

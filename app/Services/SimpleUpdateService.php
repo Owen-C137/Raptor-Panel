@@ -626,6 +626,12 @@ class SimpleUpdateService
     {
         $logEntry = "[" . date('H:i:s') . "] {$message}";
         $this->outputLog[] = $logEntry;
+        
+        // Output to terminal (for AJAX response)
+        echo $logEntry . "\n";
+        flush();
+        
+        // Also log to Laravel logs
         Log::log($level, "[SimpleUpdate] {$message}");
     }
 

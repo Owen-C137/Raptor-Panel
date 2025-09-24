@@ -660,6 +660,23 @@
                     
                     $progress.text('100%');
                     
+                    // Display all terminal output from the update process
+                    if (data.output && Array.isArray(data.output)) {
+                        data.output.forEach(function(line) {
+                            if (line.trim()) {
+                                addTerminalLine(line.trim(), 'info');
+                            }
+                        });
+                    } else if (data.terminal_output && typeof data.terminal_output === 'string') {
+                        // Handle terminal output as string
+                        const lines = data.terminal_output.split('\n');
+                        lines.forEach(function(line) {
+                            if (line.trim()) {
+                                addTerminalLine(line.trim(), 'info');
+                            }
+                        });
+                    }
+                    
                     if (data.success) {
                         addTerminalLine('✅ Update completed successfully!', 'success');
                         if (data.backup_path) {
@@ -700,8 +717,24 @@
                             setTimeout(() => location.reload(), 1000);
                         }, 3000);
                     } else {
+                        // Display terminal output for failed updates too
+                        if (data.output && Array.isArray(data.output)) {
+                            data.output.forEach(function(line) {
+                                if (line.trim()) {
+                                    addTerminalLine(line.trim(), 'info');
+                                }
+                            });
+                        } else if (data.terminal_output && typeof data.terminal_output === 'string') {
+                            const lines = data.terminal_output.split('\n');
+                            lines.forEach(function(line) {
+                                if (line.trim()) {
+                                    addTerminalLine(line.trim(), 'info');
+                                }
+                            });
+                        }
+                        
                         console.error('❌ Update failed:', data.error);
-                        addTerminalLine('❌ Update failed: ' + data.error, 'danger');
+                        addTerminalLine('❌ Update failed: ' + (data.message || data.error || 'Unknown error'), 'danger');
                         $status.text('Update Failed');
                         $spinner.hide();
                         $closeBtn.prop('disabled', false);
