@@ -74,13 +74,13 @@ class SimpleUpdateService
             $this->fixOwnershipRecursive(base_path());
 
             // Ensure temp directory exists with proper permissions
-            $tempDir = storage_path('app/temp');
-            if (!file_exists($tempDir)) {
-                mkdir($tempDir, 0755, true);
-                $this->fixOwnership($tempDir);
+            if (!file_exists($this->tempDir)) {
+                mkdir($this->tempDir, 0755, true);
+                $this->fixOwnership($this->tempDir);
             }
 
-            $zipFile = $tempDir . '/update.zip';
+            $zipFile = $this->tempDir . '/update.zip';
+            $extractDir = $this->tempDir . '/extracted';
             
             // Download update
             $this->log('Downloading update file');
@@ -203,7 +203,7 @@ class SimpleUpdateService
             throw new \Exception("Cannot open update archive");
         }
         
-        $extractPath = storage_path('app/temp') . '/extracted';
+        $extractPath = storage_path('app/temp/updates') . '/extracted';
         $zip->extractTo($extractPath);
         $zip->close();
         
@@ -489,6 +489,26 @@ class SimpleUpdateService
             
         } catch (\Exception $e) {
             $this->log("Could not fix recursive ownership for {$directory}: " . $e->getMessage(), 'warning');
+        }
+    }
+
+    /**
+     * Delete directory recursively
+     */
+    private function deleteDirectory(string $directory): bool
+    {
+        try {
+            if (!is_dir($directory)) {
+                return true;
+            }
+
+            File::deleteDirectory($directory);
+            $this->log("Deleted directory: {$directory}");
+            
+            return true;
+        } catch (\Exception $e) {
+            $this->log("Could not delete directory {$directory}: " . $e->getMessage(), 'error');
+            return false;
         }
     }
 
