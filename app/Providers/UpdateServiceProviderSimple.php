@@ -3,18 +3,16 @@
 namespace Pterodactyl\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Pterodactyl\Services\Updates\GitHub\GitHubReleaseService;
-use Pterodactyl\Services\Updates\Database\VersionService;
-use Pterodactyl\Services\Updates\Database\SessionService;
-use Pterodactyl\Services\Updates\Files\BackupService;
-use Pterodactyl\Services\Updates\ValidationService;
-use Pterodactyl\Services\Updates\HealthService;
+use Pterodactyl\Services\SimpleUpdateService;
 
 /**
- * Update Service Provider (Simplified)
+ * Update Service Provider (Fixed)
  * 
- * Registers only the basic update services needed for the dashboard to work.
- * Complex services are disabled until constructor issues are resolved.
+ * Registers only services that actually exist.
+ * The SimpleUpdateService is the main working update service.
+ * 
+ * Note: Previously tried to register non-existent services which caused
+ * fatal errors. Now only registers what exists in the codebase.
  */
 class UpdateServiceProviderSimple extends ServiceProvider
 {
@@ -23,36 +21,23 @@ class UpdateServiceProviderSimple extends ServiceProvider
      */
     public function register(): void
     {
-        // Register GitHub Services
-        $this->app->singleton(GitHubReleaseService::class, function ($app) {
-            return new GitHubReleaseService();
+        // Register the main SimpleUpdateService - this is the one that actually exists and works
+        $this->app->singleton(SimpleUpdateService::class, function ($app) {
+            return new SimpleUpdateService();
         });
 
-        // Register Basic Database Services  
-        $this->app->singleton(VersionService::class, function ($app) {
-            return new VersionService();
-        });
-
-        $this->app->singleton(SessionService::class, function ($app) {
-            return new SessionService();
-        });
-
-        // Register File Services
-        $this->app->singleton(BackupService::class, function ($app) {
-            return new BackupService();
-        });
-
-        // Register ValidationService for UpdateController
-        $this->app->singleton(ValidationService::class, function ($app) {
-            return new ValidationService();
-        });
-
-        // Register Health Service
-        $this->app->singleton(HealthService::class, function ($app) {
-            return new HealthService(
-                app(\Pterodactyl\Contracts\Repository\SettingsRepositoryInterface::class)
-            );
-        });
+        /* 
+         * COMMENTED OUT: These services don't exist in the codebase and were causing fatal errors
+         * 
+         * - GitHubReleaseService::class (app/Services/Updates/GitHub/ doesn't exist)
+         * - VersionService::class (app/Services/Updates/Database/ doesn't exist) 
+         * - SessionService::class (app/Services/Updates/Database/ doesn't exist)
+         * - BackupService::class (app/Services/Updates/Files/ doesn't exist)
+         * - ValidationService::class (app/Services/Updates/ doesn't exist)
+         * - HealthService::class (app/Services/Updates/ doesn't exist)
+         * 
+         * If these services are needed, they must be created first before being registered here.
+         */
     }
 
     /**
