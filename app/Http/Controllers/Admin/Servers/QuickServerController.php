@@ -54,6 +54,7 @@ class QuickServerController extends Controller
                                 'docker_image' => $egg->docker_image,
                                 'startup' => $egg->startup,
                                 'config' => $egg->config,
+                                'required_variables' => $this->getEggRequiredVariables($egg),
                             ];
                         }),
                     ];
@@ -166,6 +167,8 @@ class QuickServerController extends Controller
             'auto_start' => 'boolean',
             'random_name' => 'boolean',
             'custom_name' => 'nullable|string|max:255',
+            'environment' => 'nullable|array', // User-provided environment variables
+            'environment.*' => 'nullable|string|max:500', // Individual environment variable values
         ]);
 
         try {
@@ -216,8 +219,23 @@ class QuickServerController extends Controller
                 $serverName = $validated['custom_name'] ?? $this->generateRandomServerName($egg->name);
             }
 
-            // Get default environment variables
+            // Get default environment variables and merge with user-provided ones
             $environment = $this->getDefaultEnvironmentVariables($egg);
+            
+            // Override with user-provided environment variables
+            if (!empty($validated['environment'])) {
+                foreach ($validated['environment'] as $key => $value) {
+                    if (!empty($value)) {
+                        $environment[$key] = $value;
+                    }
+                }
+                
+                \Log::info('User-provided environment variables merged', [
+                    'egg_id' => $egg->id,
+                    'user_provided_count' => count($validated['environment']),
+                    'user_provided_vars' => array_keys($validated['environment'])
+                ]);
+            }
 
             // Get current user or fall back to first admin user
             $userId = auth()->user()->id ?? User::where('root_admin', true)->first()->id ?? 1;
@@ -530,6 +548,49 @@ class QuickServerController extends Controller
         
         // Final fallback
         return 'quicktest';
+    }
+
+    /**
+     * Get required variables for an egg that need user input
+     */
+    private function getEggRequiredVariables(Egg $egg): array
+    {
+        // Ensure variables are loaded
+        if (!$egg->relationLoaded('variables')) {
+            $egg->load('variables');
+        }
+        
+        $variables = $egg->variables ?? collect();
+        $requiredVariables = [];
+        
+        foreach ($variables as $variable) {
+            // Skip variables that have default values
+            if (!empty($variable->default_value)) {
+                continue;
+            }
+            
+            // Check if variable has validation rules that make it required
+            $rules = strtolower($variable->rules ?? '');
+            $isRequired = str_contains($rules, 'required');
+            
+            // Also consider user-viewable variables without defaults as potentially required
+            $isPotentiallyRequired = $variable->user_viewable && empty($variable->default_value);
+            
+            if ($isRequired || $isPotentiallyRequired) {
+                $requiredVariables[] = [
+                    'env_variable' => $variable->env_variable,
+                    'name' => $variable->name,
+                    'description' => $variable->description,
+                    'rules' => $variable->rules,
+                    'user_viewable' => $variable->user_viewable,
+                    'user_editable' => $variable->user_editable,
+                    'is_required' => $isRequired,
+                    'suggested_default' => $this->getSmartDefault($variable),
+                ];
+            }
+        }
+        
+        return $requiredVariables;
     }
 
     /**

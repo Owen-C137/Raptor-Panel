@@ -156,13 +156,8 @@ class SimpleUpdateService
                 $this->log("Could not extract version from URL: {$downloadUrl}", 'warning');
             }
 
-            // Clear caches
-            $this->log('Clearing application caches');
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear'); 
-            Artisan::call('route:clear');
-            Artisan::call('view:clear');
-            $this->log('Application caches cleared successfully');
+            // Clear and rebuild caches for updated application (CRITICAL for proper functionality)
+            $this->clearCache();
 
             // Cleanup
             $this->log('Cleaning up temporary files');
@@ -495,15 +490,36 @@ class SimpleUpdateService
     }
 
     /**
-     * Clear all caches
+     * Clear all caches after successful update
      */
     private function clearCache(): void
     {
-        Artisan::call('config:clear');
-        Artisan::call('route:clear');
-        Artisan::call('view:clear');
-        Artisan::call('config:cache');
-        Artisan::call('route:cache');
+        $this->log('Clearing Laravel caches for updated application');
+        
+        try {
+            // Clear all Laravel caches
+            $this->log('Clearing application cache...');
+            Artisan::call('cache:clear');
+            
+            $this->log('Clearing configuration cache...');
+            Artisan::call('config:clear');
+            
+            $this->log('Clearing route cache...');
+            Artisan::call('route:clear');
+            
+            $this->log('Clearing view cache...');
+            Artisan::call('view:clear');
+            
+            // Rebuild config cache for better performance
+            $this->log('Rebuilding configuration cache...');
+            Artisan::call('config:cache');
+            
+            $this->log('All Laravel caches cleared and rebuilt successfully');
+            
+        } catch (\Exception $e) {
+            $this->log('Warning: Cache clearing encountered an issue: ' . $e->getMessage(), 'warning');
+            $this->log('Update completed successfully, but some caches may need manual clearing');
+        }
     }
 
     /**

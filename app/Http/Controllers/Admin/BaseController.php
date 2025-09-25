@@ -33,7 +33,22 @@ class BaseController extends Controller
         $nodes = Node::count();
         $users = User::count();
         
+        // Get version information
         $versionService = app(\Pterodactyl\Services\VersionService::class);
+        $updateService = app(\Pterodactyl\Services\SimpleUpdateService::class);
+        
+        // Check for updates
+        $updateCheck = Cache::remember('raptor_panel_update_check', 1800, function () use ($updateService) {
+            return $updateService->checkForUpdates();
+        });
+        
+        // Create version object for template
+        $version = (object) [
+            'current' => $versionService->getCurrentVersion(),
+            'latest' => $updateCheck['latest_version'] ?? $versionService->getCurrentVersion(),
+            'is_latest' => !($updateCheck['available'] ?? false),
+            'update_available' => $updateCheck['available'] ?? false,
+        ];
         
         return $this->view->make('admin.index', [
             'servers' => $servers,
@@ -41,6 +56,7 @@ class BaseController extends Controller
             'nodes' => $nodes,
             'users' => $users,
             'appVersion' => $versionService->getCurrentVersion(),
+            'version' => $version,
         ]);
     }
     

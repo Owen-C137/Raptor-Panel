@@ -2,6 +2,37 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.37] - 2025-09-25
+
+### 🎨 **MAJOR: Enhanced Admin Dashboard with Version Management**
+- **Redesigned**: Complete admin dashboard overhaul with comprehensive system information display
+- **Enhanced**: Real-time version checking with visual status indicators and update notifications
+- **Added**: Color-coded version status with success (green) and warning (yellow) indicators
+- **Improved**: Smart update detection automatically checks GitHub releases every 30 minutes
+- **Added**: Quick-access update buttons that link directly to the update management page
+- **Enhanced**: Dynamic changelog links that point to specific version releases on GitHub
+
+### 🛡️ **COMPREHENSIVE SYSTEM INFORMATION**
+- **Added**: Detailed server information panel with OS, architecture, memory limits, and execution settings
+- **Enhanced**: Application information panel showing Laravel version, environment, debug status, and database driver
+- **Improved**: Professional card-based layout with OneUI design compliance and responsive mobile support
+- **Added**: Visual environment badges with color coding (Production=green, Development=yellow)
+- **Enhanced**: Security indicators for debug mode status and system configuration warnings
+
+### 🔄 **SMART VERSION MANAGEMENT SYSTEM**
+- **Fixed**: Update buttons now correctly link to `/admin/updates` instead of settings page
+- **Enhanced**: Changelog buttons dynamically link to specific version tags (e.g., v1.3.37) on GitHub
+- **Improved**: Version checking integration with existing `SimpleUpdateService` for reliable update detection
+- **Added**: Cached version checks (30min) to prevent GitHub API rate limiting while maintaining accuracy
+- **Enhanced**: Automatic cache clearing for immediate visibility of version changes after updates
+
+### 🎯 **USER EXPERIENCE IMPROVEMENTS**
+- **Enhanced**: At-a-glance system status with immediate visual feedback on update availability
+- **Added**: Professional information cards with icons, proper spacing, and intuitive information hierarchy  
+- **Improved**: Mobile-responsive design ensuring dashboard works perfectly on all device sizes
+- **Enhanced**: Clear action paths with direct links to update management and external changelog resources
+- **Added**: Comprehensive system diagnostics readily available for troubleshooting and system analysis
+
 ## [v1.3.36] - 2025-09-25
 
 ### 🔧 **ENHANCED: Quick Server Creation Error Handling & Smart Defaults**

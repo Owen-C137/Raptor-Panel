@@ -202,6 +202,16 @@
                         <input type="text" class="form-control" id="quickCustomName" name="custom_name" maxlength="255" placeholder="Enter server name...">
                     </div>
 
+                    <!-- Required Variables Section -->
+                    <div id="requiredVariablesSection" style="display: none;">
+                        <div class="alert alert-warning">
+                            <h6><i class="fa fa-exclamation-triangle me-1"></i> This egg requires additional configuration:</h6>
+                            <div id="requiredVariablesList">
+                                <!-- Required variables will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-12">
                             <div class="alert alert-secondary">
@@ -320,6 +330,51 @@
             }
         });
 
+        // Handle egg selection change - show required variables
+        $('#quickEgg').on('change', function() {
+            const eggId = $(this).val();
+            const requiredVariablesSection = $('#requiredVariablesSection');
+            const requiredVariablesList = $('#requiredVariablesList');
+            
+            // Clear previous required variables
+            requiredVariablesList.empty();
+            requiredVariablesSection.hide();
+            
+            if (eggId && quickServerData) {
+                // Find the selected egg across all nests
+                let selectedEgg = null;
+                quickServerData.nests.forEach(nest => {
+                    const egg = nest.eggs.find(e => e.id == eggId);
+                    if (egg) selectedEgg = egg;
+                });
+                
+                if (selectedEgg && selectedEgg.required_variables && selectedEgg.required_variables.length > 0) {
+                    // Show required variables form
+                    selectedEgg.required_variables.forEach(variable => {
+                        const fieldHtml = `
+                            <div class="mb-3">
+                                <label for="env_${variable.env_variable}" class="form-label">
+                                    ${variable.name} ${variable.is_required ? '<span class="text-danger">*</span>' : ''}
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="env_${variable.env_variable}" 
+                                       name="environment[${variable.env_variable}]" 
+                                       placeholder="${variable.suggested_default}"
+                                       value="${variable.suggested_default}"
+                                       ${variable.is_required ? 'required' : ''}>
+                                <small class="form-text text-muted">
+                                    ${variable.description || 'Environment variable: ' + variable.env_variable}
+                                </small>
+                            </div>
+                        `;
+                        requiredVariablesList.append(fieldHtml);
+                    });
+                    requiredVariablesSection.show();
+                }
+            }
+        });
+
         // Handle random name checkbox
         $('#quickRandomName').on('change', function() {
             if ($(this).is(':checked')) {
@@ -394,6 +449,8 @@
             $('#quickServerForm')[0].reset();
             $('#quickEgg').prop('disabled', true).empty().append('<option value="">Select an egg...</option>');
             $('#customNameField').hide();
+            $('#requiredVariablesSection').hide();
+            $('#requiredVariablesList').empty();
             $('#quickPreset').val('medium');
         }
 
