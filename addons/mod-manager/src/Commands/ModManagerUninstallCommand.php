@@ -267,6 +267,14 @@ class ModManagerUninstallCommand extends Command
 
     private function cleanupFileSystem(): void
     {
+        $this->task('Removing published assets', function () {
+            $assetsDir = public_path('assets/mod-manager');
+            if (File::exists($assetsDir)) {
+                File::deleteDirectory($assetsDir);
+            }
+            return true;
+        });
+
         $this->task('Removing published configuration', function () {
             $configFile = config_path('mod-manager.php');
             if (File::exists($configFile)) {

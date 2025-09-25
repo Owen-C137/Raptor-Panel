@@ -131,6 +131,10 @@ Route::group(['prefix' => 'servers'], function () {
     Route::post('/view/{server:id}/manage/transfer', [Admin\Servers\ServerTransferController::class, 'transfer'])->name('admin.servers.view.manage.transfer');
     Route::post('/view/{server:id}/delete', [Admin\ServersController::class, 'delete']);
 
+    // Quick Server Creation Routes
+    Route::get('/quick/data', [Admin\Servers\QuickServerController::class, 'data'])->name('admin.servers.quick.data');
+    Route::post('/quick/create', [Admin\Servers\QuickServerController::class, 'create'])->name('admin.servers.quick.create');
+
     Route::patch('/view/{server:id}/details', [Admin\ServersController::class, 'setDetails']);
     Route::patch('/view/{server:id}/database', [Admin\ServersController::class, 'resetDatabasePassword']);
 

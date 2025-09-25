@@ -278,10 +278,18 @@ class ModManagerInstallCommand extends Command
         }
         $this->info('   ✅ Storage directories created');
 
+        $this->line('   Publishing public assets...');
+        $this->publishAssets();
+        $this->info('   ✅ Public assets published');
+
         $this->line('   Clearing application cache...');
         Artisan::call('config:clear');
         Artisan::call('cache:clear');
         $this->info('   ✅ Application cache cleared');
+
+        $this->line('   Preparing cache directories...');
+        Artisan::call('mod-manager:prepare-cache');
+        $this->info('   ✅ Cache directories prepared');
     }
 
     private function testApiConnectivity(): void
@@ -446,5 +454,35 @@ class ModManagerInstallCommand extends Command
         $this->info('📚 Documentation: Check README.md in addons/mod-manager/');
         $this->info('🐛 Issues: Run php artisan mod-manager:verify for diagnostics');
         $this->info('');
+    }
+
+    /**
+     * Publish mod-manager assets to public directory
+     */
+    private function publishAssets(): void
+    {
+        $sourceDir = base_path('addons/mod-manager/resources/images');
+        $targetDir = public_path('assets/mod-manager');
+
+        if (!File::exists($sourceDir)) {
+            throw new \Exception('Source assets directory not found: ' . $sourceDir);
+        }
+
+        // Create target directory if it doesn't exist
+        if (!File::exists($targetDir)) {
+            File::makeDirectory($targetDir, 0755, true);
+        }
+
+        // Copy all files from source to target
+        $files = File::files($sourceDir);
+        foreach ($files as $file) {
+            $filename = $file->getFilename();
+            File::copy($file->getPathname(), $targetDir . '/' . $filename);
+        }
+
+        // Set proper permissions
+        exec('chown -R www-data:www-data ' . escapeshellarg($targetDir));
+        exec('chmod -R 644 ' . escapeshellarg($targetDir));
+        exec('chmod 755 ' . escapeshellarg($targetDir));
     }
 }

@@ -152,6 +152,110 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | 🚀 PERFORMANCE OPTIMIZATION SETTINGS
+    |--------------------------------------------------------------------------
+    */
+    'performance' => [
+        'batch_processing' => [
+            'enabled' => env('MOD_MANAGER_BATCH_ENABLED', true),
+            'chunk_size' => env('MOD_MANAGER_CHUNK_SIZE', 100),
+            'memory_threshold' => env('MOD_MANAGER_MEMORY_THRESHOLD', '1.5G'),
+            'gc_frequency' => env('MOD_MANAGER_GC_FREQUENCY', 50),
+        ],
+        'database' => [
+            'bulk_insert_size' => env('MOD_MANAGER_BULK_INSERT', 100),
+            'transaction_size' => env('MOD_MANAGER_TRANSACTION_SIZE', 500),
+            'index_optimization' => env('MOD_MANAGER_INDEX_OPT', true),
+        ],
+        'category_optimization' => [
+            'priority_sorting' => env('MOD_MANAGER_PRIORITY_SORT', true),
+            'parallel_categories' => env('MOD_MANAGER_PARALLEL_CATS', false), // Future feature
+            'smart_caching' => env('MOD_MANAGER_SMART_CACHE', true),
+        ]
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | 🛡️ CIRCUIT BREAKER & RESILIENCE
+    |--------------------------------------------------------------------------
+    */
+    'circuit_breaker' => [
+        'enabled' => env('MOD_MANAGER_CIRCUIT_BREAKER', true),
+        'max_failures' => env('MOD_MANAGER_CB_MAX_FAILURES', 5),
+        'timeout_minutes' => env('MOD_MANAGER_CB_TIMEOUT', 5),
+        'reset_timeout_minutes' => env('MOD_MANAGER_CB_RESET', 10),
+    ],
+
+    'retry' => [
+        'max_attempts' => env('MOD_MANAGER_MAX_RETRIES', 3),
+        'base_delay_seconds' => env('MOD_MANAGER_RETRY_DELAY', 1),
+        'max_delay_seconds' => env('MOD_MANAGER_MAX_RETRY_DELAY', 30),
+        'exponential_backoff' => env('MOD_MANAGER_EXP_BACKOFF', true),
+        'jitter_enabled' => env('MOD_MANAGER_JITTER', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | 📊 API ANALYTICS & MONITORING
+    |--------------------------------------------------------------------------
+    */
+    'analytics' => [
+        'enabled' => env('MOD_MANAGER_ANALYTICS', true),
+        'metrics_retention_days' => env('MOD_MANAGER_METRICS_DAYS', 30),
+        'performance_tracking' => env('MOD_MANAGER_PERF_TRACK', true),
+        'error_rate_threshold' => env('MOD_MANAGER_ERROR_THRESHOLD', 5.0), // 5% error rate
+        'detailed_logging' => env('MOD_MANAGER_DETAILED_LOG', false),
+    ],
+
+    'api_deduplication' => [
+        'enabled' => env('MOD_MANAGER_API_DEDUP', true),
+        'ttl_seconds' => env('MOD_MANAGER_DEDUP_TTL', 30),
+        'cache_prefix' => 'mod-manager:api-dedup',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | 🎯 CATEGORY INTELLIGENCE
+    |--------------------------------------------------------------------------
+    */
+    'category_intelligence' => [
+        'priority_scoring' => env('MOD_MANAGER_PRIORITY_SCORING', true),
+        'auto_priority_adjustment' => env('MOD_MANAGER_AUTO_PRIORITY', true),
+        'popularity_weight' => env('MOD_MANAGER_POPULARITY_WEIGHT', 0.3),
+        'mod_count_weight' => env('MOD_MANAGER_MOD_COUNT_WEIGHT', 0.4),
+        'recency_weight' => env('MOD_MANAGER_RECENCY_WEIGHT', 0.3),
+        'cache_ttl_hours' => env('MOD_MANAGER_CAT_CACHE_TTL', 6),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | 📈 ENHANCED PROGRESS TRACKING
+    |--------------------------------------------------------------------------
+    */
+    'progress_tracking' => [
+        'real_time_updates' => env('MOD_MANAGER_REAL_TIME', true),
+        'detailed_metrics' => env('MOD_MANAGER_DETAILED_METRICS', true),
+        'eta_calculation' => env('MOD_MANAGER_ETA_CALC', true),
+        'category_progress' => env('MOD_MANAGER_CAT_PROGRESS', true),
+        'efficiency_monitoring' => env('MOD_MANAGER_EFFICIENCY', true),
+        'update_frequency_seconds' => env('MOD_MANAGER_UPDATE_FREQ', 2),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | 🔧 HARVEST OPTIMIZATION
+    |--------------------------------------------------------------------------
+    */
+    'harvest_optimization' => [
+        'smart_category_ordering' => env('MOD_MANAGER_SMART_ORDER', true),
+        'skip_empty_categories' => env('MOD_MANAGER_SKIP_EMPTY', true),
+        'adaptive_batch_sizing' => env('MOD_MANAGER_ADAPTIVE_BATCH', true),
+        'memory_aware_processing' => env('MOD_MANAGER_MEMORY_AWARE', true),
+        'predictive_caching' => env('MOD_MANAGER_PREDICTIVE_CACHE', true),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | File System Configuration
     |--------------------------------------------------------------------------
     */

@@ -46,6 +46,9 @@ class ModManagerServiceProvider extends ServiceProvider
                 ModManagerStatusCommand::class,
                 ModManagerVerifyCommand::class,
                 \PterodactylAddons\ModManager\Commands\TestApiStructureCommand::class,
+                \PterodactylAddons\ModManager\Commands\ModManagerPublishAssetsCommand::class,
+                \PterodactylAddons\ModManager\Commands\PrepareCacheDirectoriesCommand::class,
+                \PterodactylAddons\ModManager\Commands\BenchmarkFileProcessingCommand::class,
             ]);
         }
     }

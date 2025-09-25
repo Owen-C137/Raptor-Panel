@@ -233,9 +233,24 @@ class Server extends Model
     /**
      * Gets the default allocation for a server.
      */
-    public function allocation(): HasOne
+    public function allocation(): BelongsTo
     {
-        return $this->hasOne(Allocation::class, 'id', 'allocation_id');
+        return $this->belongsTo(Allocation::class, 'allocation_id');
+    }
+
+    /**
+     * Custom accessor to ensure allocation attribute returns the relationship, not the column.
+     * This overrides the conflicting 'allocation' database column.
+     */
+    public function getAllocationAttribute()
+    {
+        // If the relationship is already loaded, return it
+        if ($this->relationLoaded('allocation')) {
+            return $this->getRelation('allocation');
+        }
+        
+        // Otherwise load and return the relationship
+        return $this->getRelationValue('allocation');
     }
 
     /**
