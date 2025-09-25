@@ -2,6 +2,34 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.36] - 2025-09-25
+
+### 🔧 **ENHANCED: Quick Server Creation Error Handling & Smart Defaults**
+- **Enhanced**: Comprehensive error handling for Quick Server Creation with detailed validation feedback
+- **Added**: Advanced smart defaults for 20+ common egg variable patterns (passwords, ports, versions, etc.)
+- **Improved**: Better debugging information for failed server creation attempts
+- **Added**: Enhanced logging for environment variable processing and server creation workflow
+- **Fixed**: Support for complex egg configurations with multiple required variables
+- **Enhanced**: Intelligent default generation for Minecraft, Source Engine, and database variables
+- **Added**: Debug mode returns detailed validation errors and egg information for troubleshooting
+
+### 🎯 **SMART DEFAULTS COVERAGE**
+- **Password/Secret Fields**: Auto-generated secure passwords with random suffixes
+- **Server Names/MOTD**: Dynamic server names with randomization
+- **Port Numbers**: Safe port ranges to avoid conflicts (25000-35000 range)
+- **Player/Slot Limits**: Reasonable defaults (20 players) for game servers
+- **Version Fields**: "latest" defaults for version-specific configurations
+- **Boolean Settings**: Intelligent true/false defaults based on variable context
+- **Database Settings**: Complete database connection defaults (host, port, user, name)
+- **Minecraft Specific**: Gamemode, difficulty, world seed generation
+- **Source Engine**: Tickrate, FPS limits, and performance settings
+
+### 🛡️ **ERROR HANDLING IMPROVEMENTS**
+- **ValidationException**: Detailed error responses with egg-specific information
+- **Debug Logging**: Comprehensive variable processing logs for troubleshooting
+- **User-Friendly Messages**: Clear feedback when eggs require manual configuration
+- **Admin Feedback**: Detailed server creation logs for debugging failed attempts
+
 ## [v1.3.35] - 2025-09-24
 
 ### 🔥 **CRITICAL: Server Allocation Relationship Fix**

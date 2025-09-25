@@ -291,11 +291,18 @@ class QuickServerController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             \Log::error('Quick server creation validation failed', [
                 'errors' => $e->errors(),
-                'data' => $validated
+                'data' => $validated,
+                'server_data' => $serverData ?? null,
+                'environment' => $environment ?? null
             ]);
             
             return response()->json([
-                'error' => 'Validation failed: ' . implode(', ', array_flatten($e->errors()))
+                'error' => 'Validation failed: This egg requires additional configuration that Quick Create cannot automatically provide.',
+                'details' => $e->errors(),
+                'debug_info' => [
+                    'egg_name' => $egg->name ?? 'Unknown',
+                    'missing_requirements' => 'Check server logs for detailed validation errors'
+                ]
             ], 422);
 
         } catch (\Exception $e) {
@@ -365,14 +372,40 @@ class QuickServerController extends Controller
         
         $variables = $egg->variables ?? collect();
         
+        \Log::debug('Processing egg variables', [
+            'egg_id' => $egg->id,
+            'egg_name' => $egg->name,
+            'variable_count' => $variables->count(),
+            'variables' => $variables->pluck('env_variable', 'name')->toArray()
+        ]);
+        
         foreach ($variables as $variable) {
+            $defaultValue = '';
+            
+            // First try the variable's default value
             if (!empty($variable->default_value)) {
-                $environment[$variable->env_variable] = $variable->default_value;
+                $defaultValue = $variable->default_value;
             } else {
-                // Provide sensible defaults for common variables
-                $environment[$variable->env_variable] = $this->getSmartDefault($variable);
+                // Generate smart default
+                $defaultValue = $this->getSmartDefault($variable);
             }
+            
+            $environment[$variable->env_variable] = $defaultValue;
+            
+            \Log::debug('Set environment variable', [
+                'env_variable' => $variable->env_variable,
+                'name' => $variable->name,
+                'value' => $defaultValue,
+                'user_viewable' => $variable->user_viewable,
+                'user_editable' => $variable->user_editable
+            ]);
         }
+
+        \Log::info('Generated environment variables for quick creation', [
+            'egg_id' => $egg->id,
+            'variable_count' => count($environment),
+            'environment' => $environment
+        ]);
 
         return $environment;
     }
@@ -384,38 +417,118 @@ class QuickServerController extends Controller
     {
         $envVar = strtoupper($variable->env_variable);
         $name = strtolower($variable->name ?? '');
+        $description = strtolower($variable->description ?? '');
         
-        // Common password fields
-        if (str_contains($envVar, 'PASSWORD') || str_contains($envVar, 'PASS')) {
-            return 'quicktest' . rand(100, 999);
+        // Log the variable we're trying to default for debugging
+        \Log::debug('Generating smart default for variable', [
+            'env_variable' => $envVar,
+            'name' => $name,
+            'description' => $description,
+            'user_viewable' => $variable->user_viewable,
+            'user_editable' => $variable->user_editable,
+            'rules' => $variable->rules
+        ]);
+        
+        // Common password/secret fields
+        if (str_contains($envVar, 'PASSWORD') || str_contains($envVar, 'PASS') || 
+            str_contains($envVar, 'SECRET') || str_contains($envVar, 'TOKEN')) {
+            return 'quicktest' . rand(1000, 9999);
         }
         
         // Common server names
-        if (str_contains($envVar, 'SERVER_NAME') || str_contains($envVar, 'SESSION_NAME')) {
+        if (str_contains($envVar, 'SERVER_NAME') || str_contains($envVar, 'SESSION_NAME') ||
+            str_contains($envVar, 'MOTD') || str_contains($name, 'server name')) {
             return 'Quick Test Server ' . rand(100, 999);
         }
         
         // World/Map names
-        if (str_contains($envVar, 'WORLD') || str_contains($envVar, 'MAP')) {
-            return 'world' . rand(100, 999);
+        if (str_contains($envVar, 'WORLD') || str_contains($envVar, 'MAP') || 
+            str_contains($envVar, 'LEVEL') || str_contains($name, 'world')) {
+            return 'quicktest' . rand(100, 999);
         }
         
-        // Player limits
-        if (str_contains($envVar, 'PLAYER') || str_contains($envVar, 'SLOT')) {
-            return '10';
+        // Player/User limits
+        if (str_contains($envVar, 'PLAYER') || str_contains($envVar, 'SLOT') ||
+            str_contains($envVar, 'MAX') && (str_contains($name, 'player') || str_contains($name, 'user'))) {
+            return '20';
         }
         
         // Port numbers (avoid conflicts)
-        if (str_contains($envVar, 'PORT')) {
-            return (string) rand(20000, 30000);
+        if (str_contains($envVar, 'PORT') && !str_contains($envVar, 'RCON')) {
+            return (string) rand(25000, 30000);
         }
         
-        // Boolean values
-        if (str_contains($name, 'enable') || str_contains($name, 'auto')) {
+        // RCON ports specifically  
+        if (str_contains($envVar, 'RCON_PORT')) {
+            return (string) rand(30001, 35000);
+        }
+        
+        // Memory settings
+        if (str_contains($envVar, 'MEMORY') || str_contains($envVar, 'RAM')) {
+            return '1024';
+        }
+        
+        // Version numbers
+        if (str_contains($envVar, 'VERSION') || str_contains($name, 'version')) {
+            return 'latest';
+        }
+        
+        // Boolean values (true/false or 1/0)
+        if (str_contains($name, 'enable') || str_contains($name, 'auto') ||
+            str_contains($envVar, 'ENABLE') || str_contains($envVar, 'AUTO') ||
+            str_contains($description, 'enable') || str_contains($description, 'true/false')) {
             return '1';
         }
         
-        // Default fallback
+        // Minecraft specific
+        if (str_contains($envVar, 'GAMEMODE')) {
+            return 'survival';
+        }
+        if (str_contains($envVar, 'DIFFICULTY')) {
+            return 'normal';
+        }
+        if (str_contains($envVar, 'SEED')) {
+            return (string) rand(1000000, 9999999);
+        }
+        
+        // Source engine specific
+        if (str_contains($envVar, 'TICKRATE')) {
+            return '64';
+        }
+        if (str_contains($envVar, 'FPS_MAX')) {
+            return '300';
+        }
+        
+        // Database connections
+        if (str_contains($envVar, 'DB_') || str_contains($envVar, 'DATABASE')) {
+            if (str_contains($envVar, 'HOST')) return 'localhost';
+            if (str_contains($envVar, 'PORT')) return '3306';
+            if (str_contains($envVar, 'USER')) return 'quicktest';
+            if (str_contains($envVar, 'NAME')) return 'quicktest_db';
+        }
+        
+        // Common URLs/endpoints
+        if (str_contains($envVar, 'URL') || str_contains($envVar, 'ENDPOINT')) {
+            return 'http://localhost';
+        }
+        
+        // API Keys (generate random string)
+        if (str_contains($envVar, 'API') && (str_contains($envVar, 'KEY') || str_contains($envVar, 'TOKEN'))) {
+            return 'quicktest_' . bin2hex(random_bytes(16));
+        }
+        
+        // Default fallback - check variable rules for hints
+        if (!empty($variable->rules)) {
+            $rules = strtolower($variable->rules);
+            if (str_contains($rules, 'numeric') || str_contains($rules, 'integer')) {
+                return '1';
+            }
+            if (str_contains($rules, 'boolean')) {
+                return '1';
+            }
+        }
+        
+        // Final fallback
         return 'quicktest';
     }
 
