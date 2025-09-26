@@ -139,4 +139,19 @@ Route::group([
         Route::post('/reinstall', [Client\Servers\SettingsController::class, 'reinstall']);
         Route::put('/docker-image', [Client\Servers\SettingsController::class, 'dockerImage']);
     });
+
+    // Mod Manager routes
+    Route::group(['prefix' => '/mods'], function () {
+        Route::get('/installed', [\PterodactylAddons\ModManager\Http\Controllers\Client\ModManagerController::class, 'getInstalledMods'])
+            ->name('api.client.servers.mods.installed');
+        
+        Route::get('/available', [\PterodactylAddons\ModManager\Http\Controllers\Client\ModManagerController::class, 'getAvailableMods'])
+            ->name('api.client.servers.mods.available');
+        
+        Route::post('/install', [\PterodactylAddons\ModManager\Http\Controllers\Client\ModManagerController::class, 'installMod'])
+            ->name('api.client.servers.mods.install');
+        
+        Route::delete('/uninstall', [\PterodactylAddons\ModManager\Http\Controllers\Client\ModManagerController::class, 'uninstallMod'])
+            ->name('api.client.servers.mods.uninstall');
+    });
 });

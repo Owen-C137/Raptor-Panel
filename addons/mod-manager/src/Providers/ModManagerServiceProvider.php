@@ -92,6 +92,9 @@ class ModManagerServiceProvider extends ServiceProvider
             ->prefix('admin/mod-manager/api')
             ->name('admin.mod-manager.api.')
             ->group(base_path('addons/mod-manager/routes/api.php'));
+
+        // Load client API routes - NO middleware here, let them be loaded by the main routes
+        // This will be loaded by the main api-client.php route file
     }
 
     /**

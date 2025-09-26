@@ -2,6 +2,43 @@
 
 All notable changes to Raptor Panel will be documented in this file.
 
+## [v1.3.38] - 2025-09-26
+
+### 🎮 **MAJOR: Complete Mod Manager Implementation**
+- **NEW**: Full mod management system for Minecraft servers with CurseForge integration
+- **Added**: Client-side "Manage Mods" navigation item in server interface
+- **Added**: Real-time mod detection from server's `mods/` directory with file scanning
+- **Added**: Complete mod installation/uninstallation system with Wings daemon integration
+- **Added**: Mod browser with search functionality for discovering new mods
+
+### 🔧 **MOD MANAGER CORE FEATURES**
+- **Installed Mods Display**: Shows all currently installed `.jar` files from the server's mods directory
+- **Mod Information**: Displays mod names, file sizes, versions (extracted from filenames), and last modified dates
+- **File System Integration**: Direct integration with Pterodactyl's Wings daemon for secure file operations
+- **Installation Tracking**: Database tracking of mod installations with user attribution and status management
+- **Smart Name Extraction**: Automatic extraction of readable mod names from complex filenames
+
+### 🛡️ **SYSTEM ARCHITECTURE & SECURITY**
+- **Self-Contained Addon**: Complete implementation in `addons/mod-manager/` following Pterodactyl addon guidelines
+- **Proper Route Integration**: Routes integrated into Pterodactyl's existing server middleware stack
+- **Secure API**: All endpoints protected by Pterodactyl's authentication and authorization system
+- **Database Schema**: 8 comprehensive migration files for mod data, files, installations, and relationships
+- **PSR-4 Compliance**: Proper namespace structure with `PterodactylAddons\ModManager`
+
+### 🎨 **USER INTERFACE ENHANCEMENTS**
+- **OneUI Integration**: Consistent design language with existing Pterodactyl interface
+- **Responsive Layout**: Mobile-friendly design with proper padding and container constraints
+- **Real-time Updates**: Immediate UI updates after mod installation/removal operations
+- **Empty State Handling**: User-friendly messaging when no mods are installed with clear call-to-action
+- **Error Handling**: Comprehensive error display with debugging information for troubleshooting
+
+### 🚀 **TECHNICAL IMPLEMENTATION**
+- **React/TypeScript Frontend**: Modern component architecture with proper state management
+- **Laravel Backend**: RESTful API controllers with comprehensive error handling and logging
+- **Wings Integration**: Direct communication with Pterodactyl's daemon system for file operations
+- **HTTP Client**: Proper Pterodactyl API client usage with authentication and request handling
+- **Install/Uninstall Commands**: Complete addon lifecycle management with cleanup capabilities
+
 ## [v1.3.37] - 2025-09-25
 
 ### 🎨 **MAJOR: Enhanced Admin Dashboard with Version Management**
